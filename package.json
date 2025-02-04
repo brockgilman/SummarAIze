@@ -1,0 +1,21 @@
+{
+  "name": "summaraize",
+  "version": "1.0.0",
+  "description": "An AI tool for students to summarize articles and store them.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/brockgilman/SummarAIze.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/brockgilman/SummarAIze/issues"
+  },
+  "homepage": "https://github.com/brockgilman/SummarAIze#readme"
+}
