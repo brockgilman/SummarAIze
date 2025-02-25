@@ -1,0 +1,11 @@
+{
+  "projects": {
+    "default": "summaraize-8487f"
+  },
+  "targets": {},
+  "etags": {
+    "summaraize-8487f": {
+      "extensionInstances": {}
+    }
+  }
+}
