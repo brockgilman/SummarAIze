@@ -17,5 +17,8 @@
   "bugs": {
     "url": "https://github.com/brockgilman/SummarAIze/issues"
   },
-  "homepage": "https://github.com/brockgilman/SummarAIze#readme"
+  "homepage": "https://github.com/brockgilman/SummarAIze#readme",
+  "dependencies": {
+    "lucide-react": "^0.477.0"
+  }
 }
