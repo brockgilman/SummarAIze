@@ -2,7 +2,7 @@ import Image from 'next/image';
 
 export default function Logo() {
   return (
-    <div className="flex items-center space-x-2">
+    <div className="absolute top-0 left-0 p-4 bg-white z-50">
       <Image
         src="/summaraizeLogo.svg"
         alt="SummarAIze Logo"

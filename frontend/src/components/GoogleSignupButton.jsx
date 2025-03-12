@@ -10,8 +10,8 @@ export default function GoogleSignupButton() {
       const provider = new GoogleAuthProvider();
       await signInWithPopup(auth, provider);
 
-      // Redirect to the "Dashboard" page after successful login
-      navigate('/dashboard');
+      // Redirect to the "HomePage" page after successful login
+      navigate('/homepage');
     } catch (error) {
       console.error("Error during Google sign-in:", error.message);
     }
