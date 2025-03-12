@@ -1,14 +1,17 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';  // Import Router and Routes
-import Home from './app/Homepage';  // Import your Home component
-import Dashboard from './app/Dashboard';  // Create and import a Dashboard component (or any other page you want to redirect to)
+import LandingPage from './app/LandingPage';  // Import your LandingPage component
+import HomePage from './app/HomePage';  // Create and import a HomePage component (or any other page you want to redirect to)
+import SignUp from './components/sign-up/SignUp';
 
 function App() {
   return (
     <Router>
       <div className="h-screen">
         <Routes>
-          <Route path="/" element={<Home />} /> {/* Home page */}
-          <Route path="/dashboard" element={<Dashboard />} /> {/* Success page or dashboard */}
+          <Route path="/" element={<LandingPage />} /> {/* Landing page */}
+          <Route path="/dashboard" element={<HomePage />} /> {/* Success page or home page */}
+          <Route path="/signup" element={<SignUp />} /> {/* Signup page */}
+        
         </Routes>
       </div>
     </Router>
