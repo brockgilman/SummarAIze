@@ -39,7 +39,7 @@ export const surfacesCustomizations = {
         borderRadius: 8,
         '&:hover': { backgroundColor: gray[50] },
         '&:focus-visible': { backgroundColor: 'transparent' },
-        ...theme.applyStyles('dark', {
+        ...theme.applyStyles('light', {
           '&:hover': { backgroundColor: gray[800] },
         }),
       }),
@@ -66,7 +66,7 @@ export const surfacesCustomizations = {
           borderRadius: (theme.vars || theme).shape.borderRadius,
           border: `1px solid ${(theme.vars || theme).palette.divider}`,
           boxShadow: 'none',
-          ...theme.applyStyles('dark', {
+          ...theme.applyStyles('light', {
             backgroundColor: gray[800],
           }),
           variants: [
@@ -78,7 +78,7 @@ export const surfacesCustomizations = {
                 border: `1px solid ${(theme.vars || theme).palette.divider}`,
                 boxShadow: 'none',
                 background: 'hsl(0, 0%, 100%)',
-                ...theme.applyStyles('dark', {
+                ...theme.applyStyles('light', {
                   background: alpha(gray[900], 0.4),
                 }),
               },

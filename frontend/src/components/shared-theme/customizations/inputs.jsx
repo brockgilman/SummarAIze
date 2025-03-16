@@ -70,7 +70,7 @@ export const inputsCustomizations = {
               '&:active': {
                 backgroundColor: gray[800],
               },
-              ...theme.applyStyles('dark', {
+              ...theme.applyStyles('light', {
                 color: 'black',
                 backgroundColor: gray[50],
                 backgroundImage: `linear-gradient(to bottom, ${gray[100]}, ${gray[50]})`,
@@ -124,7 +124,7 @@ export const inputsCustomizations = {
               '&:active': {
                 backgroundColor: gray[200],
               },
-              ...theme.applyStyles('dark', {
+              ...theme.applyStyles('light', {
                 backgroundColor: gray[800],
                 borderColor: gray[700],
                 '&:hover': {
@@ -154,7 +154,7 @@ export const inputsCustomizations = {
               '&:active': {
                 backgroundColor: alpha(brand[200], 0.7),
               },
-              ...theme.applyStyles('dark', {
+              ...theme.applyStyles('light', {
                 color: brand[50],
                 border: '1px solid',
                 borderColor: brand[900],
@@ -181,7 +181,7 @@ export const inputsCustomizations = {
               '&:active': {
                 backgroundColor: gray[200],
               },
-              ...theme.applyStyles('dark', {
+              ...theme.applyStyles('light', {
                 color: gray[50],
                 '&:hover': {
                   backgroundColor: gray[700],
@@ -205,7 +205,7 @@ export const inputsCustomizations = {
               '&:active': {
                 backgroundColor: alpha(brand[200], 0.7),
               },
-              ...theme.applyStyles('dark', {
+              ...theme.applyStyles('light', {
                 color: brand[100],
                 '&:hover': {
                   backgroundColor: alpha(brand[900], 0.5),
@@ -239,7 +239,7 @@ export const inputsCustomizations = {
         '&:active': {
           backgroundColor: gray[200],
         },
-        ...theme.applyStyles('dark', {
+        ...theme.applyStyles('light', {
           backgroundColor: gray[800],
           borderColor: gray[700],
           '&:hover': {
@@ -283,7 +283,7 @@ export const inputsCustomizations = {
         [`& .${toggleButtonGroupClasses.selected}`]: {
           color: brand[500],
         },
-        ...theme.applyStyles('dark', {
+        ...theme.applyStyles('light', {
           [`& .${toggleButtonGroupClasses.selected}`]: {
             color: '#fff',
           },
@@ -299,7 +299,7 @@ export const inputsCustomizations = {
         textTransform: 'none',
         borderRadius: '10px',
         fontWeight: 500,
-        ...theme.applyStyles('dark', {
+        ...theme.applyStyles('light', {
           color: gray[400],
           boxShadow: '0 4px 16px rgba(0, 0, 0, 0.5)',
           [`&.${toggleButtonClasses.selected}`]: {
@@ -346,7 +346,7 @@ export const inputsCustomizations = {
             backgroundColor: brand[600],
           },
         },
-        ...theme.applyStyles('dark', {
+        ...theme.applyStyles('light', {
           borderColor: alpha(gray[700], 0.8),
           boxShadow: '0 0 0 1.5px hsl(210, 0%, 0%) inset',
           backgroundColor: alpha(gray[900], 0.8),
@@ -394,7 +394,7 @@ export const inputsCustomizations = {
           outline: `3px solid ${alpha(brand[500], 0.5)}`,
           borderColor: brand[400],
         },
-        ...theme.applyStyles('dark', {
+        ...theme.applyStyles('light', {
           '&:hover': {
             borderColor: gray[500],
           },
@@ -427,7 +427,7 @@ export const inputsCustomizations = {
     styleOverrides: {
       root: ({ theme }) => ({
         color: (theme.vars || theme).palette.grey[500],
-        ...theme.applyStyles('dark', {
+        ...theme.applyStyles('light', {
           color: (theme.vars || theme).palette.grey[400],
         }),
       }),
