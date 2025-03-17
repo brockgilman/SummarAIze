@@ -16,10 +16,13 @@ import Stack from "@mui/material/Stack"
 import MuiCard from "@mui/material/Card"
 import { styled } from "@mui/material/styles"
 import { GoogleIcon, FacebookIcon} from "./components/CustomIcons"
-import {createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth"
+import { getAuth, createUserWithEmailAndPassword} from "firebase/auth"
 import { auth } from "../firebase/firebaseConfig"
 import { handleGoogleSignup } from "../firebase/googleAuth";
 import { useNavigate } from "react-router-dom";
+import { db } from "../firebase/firebaseConfig";
+import { getUserID } from "../firebase/firebaseUserID";
+import { setDoc, doc } from "firebase/firestore";
 
 const Card = styled(MuiCard)(({ theme }) => ({
   display: "flex",
@@ -112,30 +115,50 @@ export default function SignUp(props) {
 
   const navigate = useNavigate();
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
+    event.preventDefault(); // Prevent default form submission
+  
+    // Check if there are any validation errors
     if (nameError || emailError || passwordError) {
-      event.preventDefault()
-      return
+      return; // Don't proceed if there are errors
     }
+  
+    // Get form data
     const data = new FormData(event.currentTarget);
     const name = data.get("name");
     const email = data.get("email");
     const password = data.get("password");
-
-    if (!validateInputs()) return; // Validate before proceeding
-
-    createUserWithEmailAndPassword(auth, email, password)
-      .then((userCredential) => {
-        console.log("User created:", userCredential.user);
-      })
-      .catch((error) => {
-        console.error("Error:", error.message);
-        alert(error.message); // Show Firebase error message
+  
+    // Validate inputs before proceeding
+    if (!validateInputs()) return;
+  
+    try {
+      const auth = getAuth();
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      console.log("User created:", userCredential.user);
+  
+      // Get the user UID and store the email/password under their UID
+      getUserID(async (uid) => {
+        if (uid) {
+          try {
+            await setDoc(doc(db, "users", uid), {
+              email: email,
+              password: password, // TODO: Use hashing for password
+            });
+            console.log("User data stored in Firestore.");
+          } catch (error) {
+            console.error("Error storing user data:", error.message);
+          }
+        }
       });
+  
       alert("Account created successfully!");
       navigate("/homepage"); // Redirect to homepage
-  };
-
+    } catch (error) {
+      console.error("Error:", error.message);
+      alert(error.message); // Show Firebase error message
+    }
+  };  
   return (
     <>
       <CssBaseline enableColorScheme />
