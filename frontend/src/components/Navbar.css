@@ -3,7 +3,7 @@
     top: 0;
     left: 0;
     width: 100%;
-    padding: 20px 10%;
+    padding: 20px 5%; /* Reduced from 10% to 5% */
     background: white;
     display: flex;
     justify-content: space-between;
@@ -13,8 +13,24 @@
 
 .logo {
     font-size: 32px;
-    color: grey;
+    color: #0F2841;
     font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: 0.3s;
+    margin-right: auto; /* Push logo to the left */
+}
+
+/* Add hover styles for the logo link */
+.logo:hover {
+    color: #1e538c; /* Lighter blue on hover */
+}
+
+.navbar {
+    display: flex;
+    align-items: center;
+    margin-left: auto; /* Push navbar to the right */
 }
 
 .navbar a {
@@ -30,13 +46,30 @@
     position: absolute;
     top: 100%;
     left: 0;
-    width: 100%;
+    width: 0;
     height: 2px;
-    background: #fff;
+    background: grey;
     transition: .3s;
 }
 
-.navbar a::hover::before {
+.navbar a:hover::before {
     width: 100%;
 }
 
+/* Updated button styles */
+.navbar button {
+    background-color: #0F2841;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    font-size: 18px;
+    font-weight: 500;
+    margin-left: 40px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.navbar button:hover {
+    opacity: 0.9;
+}

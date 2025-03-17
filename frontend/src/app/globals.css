@@ -20,20 +20,50 @@
   --ring: 0 0% 3.9%;
 }
 
-/* Reset default margins and padding to fix extra white space */
-* {
+/* Reset default margins and padding */
+*,
+*::before,
+*::after {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
 
+/* Basic styles for body */
 body {
   color: #333;
   background-color: white;
   font-family: Arial, Helvetica, sans-serif;
-  padding-top: 64px; /* Adjust based on navbar height to prevent overlap */
+  padding-top: 150px; /* Adjust based on navbar height to prevent overlap */
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh; /* Ensure the body stretches full height */
 }
 
+/* Additional container styles */
+.main-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100%; /* Full page height */
+  padding: 2rem 1rem; /* Add spacing to main container */
+  margin-top: 0; /* Ensure no extra margin */
+}
+
+/* Move content to the left */
+.content-container {
+  margin-left: 3rem; /* Adjust the left margin here */
+}
+
+/* Footer style */
+footer {
+  margin-top: auto; /* Push footer to the bottom */
+  text-align: center;
+  padding: 1rem 0;
+}
+
+
+/* Add Tailwind's utility layer for custom classes */
 @layer utilities {
   .text-balance {
     text-wrap: balance;

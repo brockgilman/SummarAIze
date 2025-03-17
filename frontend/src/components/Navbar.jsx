@@ -11,8 +11,9 @@ const Navbar = () => {
 
   return (
     <header className="header">
-      <a href="/" className="logo flex items-center space-x-2">  {/* Use flex for horizontal layout */}
-        <Logo />  {/* Logo component renders the SVG */} 
+      <a href="/" className="logo flex items-center space-x-2">
+      <Logo />
+      <span className="text-gray-100 hover:text-gray-900">SummarAIze</span>  {/* Changed to span */}
       </a>
 
       <nav className="navbar">

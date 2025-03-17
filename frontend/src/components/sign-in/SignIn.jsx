@@ -15,6 +15,13 @@ import MuiCard from '@mui/material/Card';
 import { styled } from '@mui/material/styles';
 import ForgotPassword from './components/ForgotPassword';
 import { GoogleIcon, FacebookIcon} from './components/CustomIcons';
+import { handleGoogleSignup } from "../firebase/googleAuth";
+import { useNavigate } from "react-router-dom";
+import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
+import { db } from "../firebase/firebaseConfig";
+import { doc, setDoc } from "firebase/firestore";
+import { getUserID } from "../firebase/firebaseUserID";
+
 
 const Card = styled(MuiCard)(({ theme }) => ({
   display: 'flex',
@@ -72,17 +79,46 @@ export default function SignIn(props) {
   const handleClose = () => {
     setOpen(false);
   };
-
-  const handleSubmit = (event) => {
+  
+  const navigate = useNavigate();
+  
+  const handleSubmit = async (event) => {
+    event.preventDefault(); // Prevent form from reloading
+  
     if (emailError || passwordError) {
-      event.preventDefault();
       return;
     }
+  
     const data = new FormData(event.currentTarget);
-    console.log({
-      email: data.get('email'),
-      password: data.get('password'),
-    });
+    const email = data.get("email");
+    const password = data.get("password");
+  
+    try {
+      const auth = getAuth();
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      console.log("User logged in:", userCredential.user);
+  
+      // Get the user UID and store the email/password under their UID
+      getUserID(async (uid) => {
+        if (uid) {
+          try {
+            await setDoc(doc(db, "users", uid), {
+              email: email,
+              password: password, // TODO: Use hashing
+            });
+            console.log("User data stored in Firestore.");
+          } catch (error) {
+            console.error("Error storing user data:", error.message);
+          }
+        }
+      });
+  
+      alert("Logged in successfully!");
+      navigate("/homepage");
+    } catch (error) {
+      console.error("Error:", error.message);
+      alert(error.message);
+    }
   };
 
   const validateInputs = () => {
@@ -124,6 +160,7 @@ export default function SignIn(props) {
           >
             Sign in
           </Typography>
+          <script type = "module" src = "login.js" defer></script>
           <Box
             component="form"
             onSubmit={handleSubmit}
@@ -197,7 +234,7 @@ export default function SignIn(props) {
             <Button
               fullWidth
               variant="outlined"
-              onClick={() => alert('Sign in with Google')}
+              onClick={() => handleGoogleSignup(navigate)}
               startIcon={<GoogleIcon />}
             >
               Sign in with Google
@@ -213,7 +250,7 @@ export default function SignIn(props) {
             <Typography sx={{ textAlign: 'center' }}>
               Don&apos;t have an account?{' '}
               <Link
-                href="/material-ui/getting-started/templates/sign-in/"
+                href="/signup"
                 variant="body2"
                 sx={{ alignSelf: 'center' }}
               >

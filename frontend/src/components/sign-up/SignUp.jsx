@@ -16,7 +16,10 @@ import Stack from "@mui/material/Stack"
 import MuiCard from "@mui/material/Card"
 import { styled } from "@mui/material/styles"
 import { GoogleIcon, FacebookIcon} from "./components/CustomIcons"
-import { useRouter } from 'next/router'
+import {createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth"
+import { auth } from "../firebase/firebaseConfig"
+import { handleGoogleSignup } from "../firebase/googleAuth";
+import { useNavigate } from "react-router-dom";
 
 const Card = styled(MuiCard)(({ theme }) => ({
   display: "flex",
@@ -107,19 +110,31 @@ export default function SignUp(props) {
     return isValid
   }
 
+  const navigate = useNavigate();
+
   const handleSubmit = (event) => {
     if (nameError || emailError || passwordError) {
       event.preventDefault()
       return
     }
-    const data = new FormData(event.currentTarget)
-    console.log({
-      name: data.get("name"),
-      lastName: data.get("lastName"),
-      email: data.get("email"),
-      password: data.get("password"),
-    })
-  }
+    const data = new FormData(event.currentTarget);
+    const name = data.get("name");
+    const email = data.get("email");
+    const password = data.get("password");
+
+    if (!validateInputs()) return; // Validate before proceeding
+
+    createUserWithEmailAndPassword(auth, email, password)
+      .then((userCredential) => {
+        console.log("User created:", userCredential.user);
+      })
+      .catch((error) => {
+        console.error("Error:", error.message);
+        alert(error.message); // Show Firebase error message
+      });
+      alert("Account created successfully!");
+      navigate("/homepage"); // Redirect to homepage
+  };
 
   return (
     <>
@@ -179,7 +194,7 @@ export default function SignUp(props) {
               control={<Checkbox value="allowExtraEmails" color="primary" />}
               label="I want to receive updates via email."
             />
-            <Button type="submit" fullWidth variant="contained" onClick={validateInputs}>
+            <Button id = "submit" type="submit" fullWidth variant="contained" onClick={validateInputs}>
               Sign up
             </Button>
           </Box>
@@ -190,7 +205,7 @@ export default function SignUp(props) {
             <Button
               fullWidth
               variant="outlined"
-              onClick={() => alert("Sign up with Google")}
+              onClick={() => handleGoogleSignup(navigate)}
               startIcon={<GoogleIcon />}
             >
               Sign up with Google
@@ -205,7 +220,7 @@ export default function SignUp(props) {
             </Button>
             <Typography sx={{ textAlign: "center" }}>
               Already have an account?{" "}
-              <Link href="/material-ui/getting-started/templates/sign-in/" variant="body2" sx={{ alignSelf: "center" }}>
+              <Link href="/login" variant="body2" sx={{ alignSelf: "center" }}>
                 Sign in
               </Link>
             </Typography>
