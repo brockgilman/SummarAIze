@@ -1,45 +1,56 @@
 import './globals.css';
 import SignupButtons from "../components/SignupButtons";
 import Navbar from "../components/Navbar";
+import { GoogleIcon } from '../app/sign-in/components/CustomIcons'; // Assuming you have a GoogleIcon component
+import { useEffect } from 'react';
 
 export default function LandingPage() {
+  // Add landing-page class to body element
+  useEffect(() => {
+    // Add the class to the body when component mounts
+    document.body.classList.add('landing-page');
+    
+    // Remove the class when component unmounts
+    return () => {
+      document.body.classList.remove('landing-page');
+    };
+  }, []);
+
   return (
-    <main className="min-h-screen bg-white text-gray-800 flex flex-col">
+    <div className="min-h-screen flex flex-col">
       <Navbar />
-
-      <div className="flex flex-col lg:flex-row items-center justify-between max-w-6xl mx-auto px-6 py-12 lg:py-20 space-y-8 lg:space-y-0">
-        {/* Text Section */}
-        <div className="w-full lg:w-1/2 space-y-8">
-          <h1 className="text-6xl md:text-7xl lg:text-8xl font-bold leading-relaxed text-gray-900">
-            AI-powered summaries<br />
-            that enhance your<br />
-            understanding and<br />
-            accelerate your learning.
-          </h1>
-
-          <p className="text-2xl md:text-3xl text-gray-700 leading-relaxed">
-            Work with an AI partner that helps you extract key insights⁠—⁠to simplify long articles, clarify challenging content, and keep your reading efficient.
-          </p>
-
-          <SignupButtons />
+      
+      {/* Main Content Section */}
+      <main className="flex-grow">
+        <div className="flex-container">
+          {/* Textbox (Left Half) */}
+          <div className="textbox">
+            <h1 className="text-6xl md:text-7xl lg:text-8xl font-bold leading-relaxed text-gray-900">
+              AI-powered summaries<br />
+              that enhance your<br />
+              understanding and<br />
+              accelerate your learning.
+            </h1>
+            
+            <p className="text-2xl md:text-3xl text-gray-700 leading-relaxed">
+              Work with an AI partner that helps you extract key insights⁠—⁠to simplify long articles, clarify challenging content, and keep your reading efficient.
+            </p>
+            
+            <div className="mt-8">
+              <SignupButtons />
+            </div>
+          </div>
+          
+          {/* GIF Container (Right Half) */}
+          <div className="gif-container">
+            <img
+              src="/summarizeimportant.gif"
+              alt="SummarAIze Demo"
+              className="w-full rounded-lg shadow-lg"
+            />
+          </div>
         </div>
-
-        {/* GIF Section */}
-        <div className="w-full lg:w-1/2 flex justify-center lg:justify-end">
-          <img 
-            src="summarizeimportant.gif" 
-            alt="SummarAIze Demo" 
-            className="w-3/4 lg:w-[70%] rounded-lg shadow-lg"
-          />
-        </div>
-      </div>
-
-      {/* Centered Authors' Names */}
-      <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2">
-        <p className="text-xl text-gray-700 text-center">
-          By: Brock Gilman, Kyle Scarmack, Shri Kumarasri, and Leo Cherevko
-        </p>
-      </div>
-    </main>
+      </main>
+    </div>
   );
 }

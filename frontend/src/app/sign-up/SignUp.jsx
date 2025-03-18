@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { useEffect } from "react"
 import Box from "@mui/material/Box"
 import Button from "@mui/material/Button"
 import Checkbox from "@mui/material/Checkbox"
@@ -15,14 +16,15 @@ import Typography from "@mui/material/Typography"
 import Stack from "@mui/material/Stack"
 import MuiCard from "@mui/material/Card"
 import { styled } from "@mui/material/styles"
-import { GoogleIcon, FacebookIcon} from "./components/CustomIcons"
-import { getAuth, createUserWithEmailAndPassword} from "firebase/auth"
-import { auth } from "../firebase/firebaseConfig"
-import { handleGoogleSignup } from "../firebase/googleAuth";
+import { GoogleIcon } from "./components/CustomIcons"
+import { getAuth, createUserWithEmailAndPassword } from "firebase/auth"
+import { auth } from "../../components/firebase/firebaseConfig"
+import { handleGoogleSignup } from "../../components/firebase/googleAuth";
 import { useNavigate } from "react-router-dom";
-import { db } from "../firebase/firebaseConfig";
-import { getUserID } from "../firebase/firebaseUserID";
+import { db } from "../../components/firebase/firebaseConfig";
+import { getUserID } from "../../components/firebase/firebaseUserID";
 import { setDoc, doc } from "firebase/firestore";
+import LogoNavbar from "../../components/LogoNavbar"
 
 const Card = styled(MuiCard)(({ theme }) => ({
   display: "flex",
@@ -37,16 +39,18 @@ const Card = styled(MuiCard)(({ theme }) => ({
   [theme.breakpoints.up("sm")]: {
     width: "450px",
   },
-}))
+}));
 
 const SignUpContainer = styled(Stack)(({ theme }) => ({
-  height: "calc((1 - var(--template-frame-height, 0)) * 100dvh)",
-  minHeight: "100%",
-  padding: theme.spacing(2),
+  height: "90vh",
+  width: "100vw",
+  padding: 0, // Ensures no extra padding
+  margin: 0, // Ensures no extra margin
   display: "flex",
   justifyContent: "center",
   alignItems: "center",
-  backgroundColor: "#ffffff",
+  marginTop: "-10vh", // Moves the card upwards
+  backgroundColor: "#f0f0f0",
   [theme.breakpoints.up("sm")]: {
     padding: theme.spacing(4),
   },
@@ -75,6 +79,17 @@ export default function SignUp(props) {
   const [passwordErrorMessage, setPasswordErrorMessage] = React.useState("")
   const [nameError, setNameError] = React.useState(false)
   const [nameErrorMessage, setNameErrorMessage] = React.useState("")
+
+  // Add signup-page class to body element
+  useEffect(() => {
+    // Add the class to the body when component mounts
+    document.body.classList.add('signup-page');
+    
+    // Remove the class when component unmounts
+    return () => {
+      document.body.classList.remove('signup-page');
+    };
+  }, []);
 
   const validateInputs = () => {
     const email = document.getElementById("email")
@@ -150,9 +165,7 @@ export default function SignUp(props) {
             console.error("Error storing user data:", error.message);
           }
         }
-      });
-  
-      alert("Account created successfully!");
+      });  
       navigate("/homepage"); // Redirect to homepage
     } catch (error) {
       console.error("Error:", error.message);
@@ -162,6 +175,7 @@ export default function SignUp(props) {
   return (
     <>
       <CssBaseline enableColorScheme />
+      <LogoNavbar />
       <SignUpContainer direction="column" justifyContent="center">
         <Card variant="outlined">
           <Typography component="h1" variant="h4" sx={{ width: "100%", fontSize: "clamp(2rem, 10vw, 2.15rem)" }}>
@@ -217,8 +231,8 @@ export default function SignUp(props) {
               control={<Checkbox value="allowExtraEmails" color="primary" />}
               label="I want to receive updates via email."
             />
-            <Button id = "submit" type="submit" fullWidth variant="contained" onClick={validateInputs}>
-              Sign up
+           <Button id="submit" type="submit" fullWidth variant="contained" onClick={validateInputs} sx={{ backgroundColor: '#0F2841', color: '#ffffff'}}>
+            Sign up
             </Button>
           </Box>
           <Divider>
@@ -233,17 +247,9 @@ export default function SignUp(props) {
             >
               Sign up with Google
             </Button>
-            <Button
-              fullWidth
-              variant="outlined"
-              onClick={() => alert("Sign up with Facebook")}
-              startIcon={<FacebookIcon />}
-            >
-              Sign up with Facebook
-            </Button>
             <Typography sx={{ textAlign: "center" }}>
               Already have an account?{" "}
-              <Link href="/login" variant="body2" sx={{ alignSelf: "center" }}>
+              <Link href="/login" variant="body2" sx={{ color: '#0F2841', alignSelf: "center" }}>
                 Sign in
               </Link>
             </Typography>
