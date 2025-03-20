@@ -49,9 +49,6 @@
     {
       "source": "functions",
       "codebase": "default",
-      "predeploy": [
-        "npm --prefix \"$RESOURCE_DIR\" run lint"
-      ],
       "ignore": [
         "node_modules",
         ".git",
@@ -78,9 +75,6 @@
         "destination": "/index.html"
       }
     ]
-  },
-  "remoteconfig": {
-    "template": "remoteconfig.template.json"
   },
   "extensions": {},
   "database": {
