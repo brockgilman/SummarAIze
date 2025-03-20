@@ -10,6 +10,22 @@ export default function LandingPage() {
     // Add the class to the body when component mounts
     document.body.classList.add('landing-page');
     
+    // Function to get cookie by name
+    function getCookie(name) {
+      const value = `; ${document.cookie}`;
+      const parts = value.split(`; ${name}=`);
+      if (parts.length === 2) return parts.pop().split(';').shift();
+      return null;
+    }
+    
+    // Check if auth cookie exists (replace 'authToken' with your actual cookie name)
+    const authCookie = getCookie('extension_user_uid');
+    
+    // If user is already logged in, redirect to homepage
+    if (authCookie) {
+      window.location.href = '/homepage';
+    }
+    
     // Remove the class when component unmounts
     return () => {
       document.body.classList.remove('landing-page');

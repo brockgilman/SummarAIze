@@ -1,6 +1,8 @@
 let currentArticleContent = '';
 let selectedTone = 'casual';
 let selectedLength = 'short';
+let userUID = null;
+const FIREBASE_API_ENDPOINT = 'https://summaraize-8487f.web.app/api/save-summary'; // Replace with your actual endpoint
 
 // Function to display status messages
 function updateStatus(message) {
@@ -9,6 +11,27 @@ function updateStatus(message) {
   setTimeout(() => {
     status.textContent = '';
   }, 3000);
+}
+
+// Function to update the UI based on authentication status
+function updateSaveButtonText() {
+  const saveButton = document.getElementById('apply');
+  const authIndicator = document.getElementById('auth-indicator');
+  const authText = document.getElementById('auth-text');
+  
+  if (userUID) {
+    // User is logged in
+    saveButton.textContent = 'Save';
+    authIndicator.classList.remove('logged-out');
+    authIndicator.classList.add('logged-in');
+    authText.textContent = 'Logged in';
+  } else {
+    // User is not logged in
+    saveButton.textContent = 'Login to Save';
+    authIndicator.classList.remove('logged-in');
+    authIndicator.classList.add('logged-out');
+    authText.textContent = 'Not logged in';
+  }
 }
 
 // Get the current tab and extract article content
@@ -56,9 +79,47 @@ async function getArticleContent() {
   return results[0]?.result;
 }
 
+// Get user UID from cookie
+async function getUserUIDFromCookie() {
+  try {
+    const response = await chrome.runtime.sendMessage({
+      action: 'getCookie',
+      cookieParams: {
+        url: 'https://summaraize-8487f.web.app/homepage', // Replace with your actual domain
+        name: 'extension_user_uid'
+      }
+    });
+    
+    if (response.success) {
+      userUID = response.value;
+      console.log('User UID found:', userUID);
+      
+      // Check if we have a valid UID value
+      if (userUID && userUID.length > 0) {
+        return userUID;
+      } else {
+        console.error('Invalid UID in cookie');
+        return null;
+      }
+    } else {
+      console.error('Cookie error:', response.error);
+      return null;
+    }
+  } catch (error) {
+    console.error('Error getting cookie:', error);
+    return null;
+  }
+}
+
 // Initialize popup when DOM is loaded
 document.addEventListener('DOMContentLoaded', async () => {
   try {
+    // Get user UID from cookie
+    await getUserUIDFromCookie();
+    
+    // Update the save button text based on authentication status
+    updateSaveButtonText();
+    
     // Extract article content when popup opens
     const content = await getArticleContent();
     if (content) {
@@ -111,6 +172,43 @@ async function makeApiRequest(prompt) {
     return response;
   } catch (error) {
     console.error('API Error:', error);
+    throw error;
+  }
+}
+
+// Save summary to Firebase
+async function saveSummaryToFirebase(summary) {
+  // Make sure we have a user UID
+  if (!userUID) {
+    const uid = await getUserUIDFromCookie();
+    if (!uid) {
+      throw new Error('User not authenticated. Please login first.');
+    }
+  }
+  
+  try {
+    const summaryData = {
+      userId: userUID,
+      'paper-link': currentArticleContent.url,
+      'summary-content': summary,
+      'summary-length': selectedLength,
+      'summary-tone': selectedTone,
+      timestamp: new Date().toISOString()
+    };
+    
+    const response = await chrome.runtime.sendMessage({
+      action: 'saveSummaryToFirebase',
+      apiEndpoint: FIREBASE_API_ENDPOINT,
+      summaryData
+    });
+    
+    if (!response.success) {
+      throw new Error(response.error || 'Failed to save summary');
+    }
+    
+    return response.data;
+  } catch (error) {
+    console.error('Save to Firebase Error:', error);
     throw error;
   }
 }
@@ -172,7 +270,7 @@ document.getElementById('generate').addEventListener('click', async () => {
   }
 });
 
-// Apply button click handler - saves the summary (implementation depends on use case)
+// Apply button click handler - saves the summary to Firebase
 document.getElementById('apply').addEventListener('click', async () => {
   try {
     const summary = document.getElementById('responseBox').value;
@@ -181,17 +279,33 @@ document.getElementById('apply').addEventListener('click', async () => {
       return;
     }
     
-    // Here you might want to implement functionality to save the summary
-    // For example, copying to clipboard or saving to local storage
+    // Check if user is authenticated
+    if (!userUID) {
+      await getUserUIDFromCookie();
+      if (!userUID) {
+        updateStatus('Not logged in. Redirecting to login page...');
+        
+        // Get current tab
+        const tab = await getCurrentTab();
+        
+        // Open the login page in a new tab
+        chrome.tabs.create({ 
+          url: 'https://summaraize-8487f.web.app/',
+          active: true
+        });
+        return;
+      }
+    }
     
-    // Copy to clipboard example:
+    updateStatus('Saving summary...');
+    await saveSummaryToFirebase(summary);
+    
+    // Copy to clipboard as well
     await navigator.clipboard.writeText(summary);
-    updateStatus('Summary copied to clipboard');
-    
-    // Additional implementation for saving or using the summary would go here
+    updateStatus('Summary saved and copied to clipboard');
     
   } catch (error) {
-    updateStatus('Error saving summary');
+    updateStatus(`Error: ${error.message}`);
     console.error('Save Error:', error);
   }
 });

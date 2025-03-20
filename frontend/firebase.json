@@ -1,13 +1,9 @@
 {
   "emulators": {
-    "dataconnect": {
-      "dataDir": "dataconnect/.dataconnect/pgliteData",
-      "port": 9399
-    },
     "apphosting": {
-      "port": 5002,
+      "port": 5050,
       "rootDirectory": "./",
-      "startCommand": "npm run dev"
+      "startCommand": "npm run dev && node "
     },
     "auth": {
       "port": 9099
@@ -21,11 +17,15 @@
     "database": {
       "port": 9000
     },
+    "dataconnect": {
+      "port": 9399,
+      "enabled": false
+    },
     "hosting": {
       "port": 5000
     },
     "pubsub": {
-      "port": 8085
+      "port": 3001
     },
     "eventarc": {
       "port": 9299
@@ -49,9 +49,6 @@
     {
       "source": "functions",
       "codebase": "default",
-      "predeploy": [
-        "npm --prefix \"$RESOURCE_DIR\" run lint"
-      ],
       "ignore": [
         "node_modules",
         ".git",
@@ -70,13 +67,14 @@
     ],
     "rewrites": [
       {
+        "source": "/api/**",
+        "function": "api"
+      },
+      {
         "source": "**",
         "destination": "/index.html"
       }
     ]
-  },
-  "remoteconfig": {
-    "template": "remoteconfig.template.json"
   },
   "extensions": {},
   "database": {
