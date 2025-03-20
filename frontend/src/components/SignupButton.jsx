@@ -1,19 +1,32 @@
-import { useNavigate } from 'react-router-dom';
+"use client";
+
+import { useNavigate } from "react-router-dom";
+import ArrowForwardIcon from "@mui/icons-material/ArrowForward"; // Import arrow icon
 
 export default function SignupButton() {
-    const navigate = useNavigate();
+  const navigate = useNavigate();
 
-    const handleSignup = () => {
-        navigate("/signup"); // Redirects to the signup page when clicked
-      };
+  const handleSignup = () => {
+    navigate("/signup");
+  };
 
   return (
     <button
-        onClick={handleSignup}
-      className="bg-[#0F2841] text-white px-6 py-3 rounded-md flex items-center justify-center text-lg w-full sm:w-auto"
+      onClick={handleSignup}
+      style={{ 
+        backgroundColor: "#0F2841", 
+        color: "white",
+        width: "100%", // Take up full width of parent container
+        height: "50px", // Fixed height
+        display: "flex", // Use flexbox for centering
+        justifyContent: "center", // Horizontally center
+        alignItems: "center", // Vertically center
+        gap: "10px", // Space between the icon and text
+      }}
+      className="rounded-md hover:opacity-90 transition-opacity"
     >
-      Sign up <span className="ml-1 text-xs sm:text-sm">It's free</span>
+      <span className="text-xl font-semibold">Sign up, It's free</span>
+      <ArrowForwardIcon style={{ fontSize: "1.2rem", verticalAlign: "middle" }} /> {/* Adjusted icon size and alignment */}
     </button>
   );
 }
-

@@ -1,7 +1,6 @@
 import './globals.css';
 import SignupButtons from "../components/SignupButtons";
 import Navbar from "../components/Navbar";
-import { GoogleIcon } from '../app/sign-in/components/CustomIcons'; // Assuming you have a GoogleIcon component
 import { useEffect } from 'react';
 
 export default function LandingPage() {
@@ -67,6 +66,11 @@ export default function LandingPage() {
           </div>
         </div>
       </main>
+
+      {/* Footer Section */}
+      <footer className="text-2xl md:text-3xl text-gray-700 leading-relaxed">
+        Trusted by UF students and researchers
+      </footer>
     </div>
   );
 }

@@ -27,7 +27,7 @@ const Navbar = () => {
           onClick={handleGetSummarAIze} // Redirects to Chrome Web Store
           className="bg-[#0F2841] text-white px-6 py-3 rounded-md flex items-center justify-center text-lg w-full sm:w-auto"
         >
-          Get SummarAIze
+          Get SummarAIze, It's free -&gt;
         </button>
       </nav>
     </header>
