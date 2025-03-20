@@ -1,5 +1,4 @@
 import { useNavigate } from 'react-router-dom';
-import SignUp from "./sign-up/SignUp";
 
 export default function SignupButton() {
     const navigate = useNavigate();
@@ -17,3 +16,4 @@ export default function SignupButton() {
     </button>
   );
 }
+

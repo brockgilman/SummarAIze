@@ -14,56 +14,45 @@ import Stack from '@mui/material/Stack';
 import MuiCard from '@mui/material/Card';
 import { styled } from '@mui/material/styles';
 import ForgotPassword from './components/ForgotPassword';
-import { GoogleIcon, FacebookIcon} from './components/CustomIcons';
-import { handleGoogleSignup } from "../firebase/googleAuth";
+import { GoogleIcon } from './components/CustomIcons';
+import { handleGoogleSignup } from "../../components/firebase/googleAuth";
 import { useNavigate } from "react-router-dom";
 import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
-import { db } from "../firebase/firebaseConfig";
+import { db } from "../../components/firebase/firebaseConfig";
 import { doc, setDoc } from "firebase/firestore";
-import { getUserID } from "../firebase/firebaseUserID";
-
+import { getUserID } from "../../components/firebase/firebaseUserID";
+import LogoNavbar from "../../components/LogoNavbar"
+import { useEffect } from "react" 
 
 const Card = styled(MuiCard)(({ theme }) => ({
-  display: 'flex',
-  flexDirection: 'column',
-  alignSelf: 'center',
-  width: '100%',
+  display: "flex",
+  flexDirection: "column",
+  alignSelf: "center",
+  width: "100%",
   padding: theme.spacing(4),
   gap: theme.spacing(2),
-  margin: 'auto',
-  [theme.breakpoints.up('sm')]: {
-    maxWidth: '450px',
+  margin: "auto",
+  backgroundColor: "#ffffff",
+  boxShadow: "hsla(0, 0.00%, 100.00%, 0.05) 0px 5px 15px 0px, hsla(0, 0.00%, 100.00%, 0.05) 0px 15px 35px -5px",
+  [theme.breakpoints.up("sm")]: {
+    width: "450px",
   },
-  boxShadow:
-    'hsla(220, 30%, 5%, 0.05) 0px 5px 15px 0px, hsla(220, 25%, 10%, 0.05) 0px 15px 35px -5px',
-  ...theme.applyStyles('dark', {
-    boxShadow:
-      'hsla(220, 30%, 5%, 0.5) 0px 5px 15px 0px, hsla(220, 25%, 10%, 0.08) 0px 15px 35px -5px',
-  }),
 }));
 
 const SignInContainer = styled(Stack)(({ theme }) => ({
-  height: 'calc((1 - var(--template-frame-height, 0)) * 100dvh)',
-  minHeight: '100%',
-  padding: theme.spacing(2),
-  [theme.breakpoints.up('sm')]: {
+  height: "90vh",
+  width: "100vw",
+  padding: 0, // Ensures no extra padding
+  margin: 0, // Ensures no extra margin
+  display: "flex",
+  justifyContent: "center",
+  alignItems: "center",
+  marginTop: "-10vh", // Moves the card upwards
+  backgroundColor: "#f0f0f0",
+  [theme.breakpoints.up("sm")]: {
     padding: theme.spacing(4),
   },
-  '&::before': {
-    content: '""',
-    display: 'block',
-    position: 'absolute',
-    zIndex: -1,
-    inset: 0,
-    backgroundImage:
-      'radial-gradient(ellipse at 50% 50%, hsl(210, 100%, 97%), hsl(0, 0%, 100%))',
-    backgroundRepeat: 'no-repeat',
-    ...theme.applyStyles('dark', {
-      backgroundImage:
-        'radial-gradient(at 50% 50%, hsla(210, 100%, 16%, 0.5), hsl(220, 30%, 5%))',
-    }),
-  },
-}));
+}))
 
 export default function SignIn(props) {
   const [emailError, setEmailError] = React.useState(false);
@@ -71,6 +60,17 @@ export default function SignIn(props) {
   const [passwordError, setPasswordError] = React.useState(false);
   const [passwordErrorMessage, setPasswordErrorMessage] = React.useState('');
   const [open, setOpen] = React.useState(false);
+
+  // Add signin-page class to body element
+  useEffect(() => {
+  // Add the class to the body when component mounts
+  document.body.classList.add('signin-page');
+  
+  // Remove the class when component unmounts
+  return () => {
+    document.body.classList.remove('signin-page');
+  };
+}, []);
 
   const handleClickOpen = () => {
     setOpen(true);
@@ -151,6 +151,7 @@ export default function SignIn(props) {
   return (
     <div>
       <CssBaseline enableColorScheme />
+      <LogoNavbar />
       <SignInContainer direction="column" justifyContent="space-between">
         <Card variant="outlined">
           <Typography
@@ -216,6 +217,7 @@ export default function SignIn(props) {
               fullWidth
               variant="contained"
               onClick={validateInputs}
+              sx={{ backgroundColor: '#0F2841', color: '#ffffff'}}
             >
               Sign in
             </Button>
@@ -224,7 +226,7 @@ export default function SignIn(props) {
               type="button"
               onClick={handleClickOpen}
               variant="body2"
-              sx={{ alignSelf: 'center' }}
+              sx={{ color: '#0F2841', alignSelf: 'center' }}
             >
               Forgot your password?
             </Link>
@@ -239,20 +241,12 @@ export default function SignIn(props) {
             >
               Sign in with Google
             </Button>
-            <Button
-              fullWidth
-              variant="outlined"
-              onClick={() => alert('Sign in with Facebook')}
-              startIcon={<FacebookIcon />}
-            >
-              Sign in with Facebook
-            </Button>
             <Typography sx={{ textAlign: 'center' }}>
               Don&apos;t have an account?{' '}
               <Link
                 href="/signup"
                 variant="body2"
-                sx={{ alignSelf: 'center' }}
+                sx={{ color: '#0F2841', alignSelf: 'center' }}
               >
                 Sign up
               </Link>
@@ -260,6 +254,5 @@ export default function SignIn(props) {
           </Box>
         </Card>
       </SignInContainer>
-    </div>
-  );
+    </div>);
 }
