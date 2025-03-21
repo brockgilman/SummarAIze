@@ -72,10 +72,15 @@ body.signin-page {
 
 /* Footer style */
 footer {
-  margin-top: auto; /* Push footer to the bottom */
+  position: relative; /* Allows movement using top */
+  top: 90px; /* Adjust this value to push the footer down (increase for more distance) */
   text-align: center;
-  padding: 1rem 0;
+  padding: 1.5rem 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #4a4a4a;
 }
+
 
 h1 {
   margin-bottom: 2rem; /* Add margin below h1 elements */
@@ -121,6 +126,7 @@ button {
   justify-content: right; /* Center the GIF horizontally */
   align-items: center; /* Center the GIF vertically */
   padding: 0; /* Remove padding */
+  margin-top: 50px; /* Push the GIF container down */
 }
 
 /* Responsive Layout for Larger Screens */

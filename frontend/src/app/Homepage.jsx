@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { getUserID } from "../components/firebase/firebaseUserID";
 import LogoNavbar from '../components/LogoNavbar';
-
+import SignoutButton from '../components/SignoutButton';
 
 const HomePage = () => {
   useEffect(() => {
@@ -40,9 +40,14 @@ const HomePage = () => {
   };
 
   return (
-    <div className="flex items-center justify-center h-screen bg-blue-100">
+    <div className="relative flex items-center justify-center h-screen bg-blue-100">
       <LogoNavbar />
       <h1>Saved Summaries</h1>
+
+      {/* Add a wrapper for the SignoutButton to place it in the bottom left */}
+      <div className="absolute bottom-0 left-0 p-4">
+        <SignoutButton />
+      </div>
     </div>
   );
 };
