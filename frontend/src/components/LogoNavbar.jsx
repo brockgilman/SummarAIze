@@ -7,7 +7,7 @@ const LogoNavbar = () => {
     <header className="header">
       <a href="/" className="logo flex items-center space-x-2">
       <Logo />
-      <span className="text-gray-100 hover:text-gray-900">SummarAIze</span>  {/* Changed to span */}
+      <span className="text-gray-100 hover:text-gray-900">SummarAIze</span>
       </a>
     </header>
   );

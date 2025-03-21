@@ -126,8 +126,43 @@ button {
   justify-content: right; /* Center the GIF horizontally */
   align-items: center; /* Center the GIF vertically */
   padding: 0; /* Remove padding */
-  margin-top: 50px; /* Push the GIF container down */
+  margin-top: 60px; /* Push the GIF container down */
 }
+
+/* Sign-up Button */
+.signup-button {
+  background-color: #0F2841;
+  color: white;
+  width: 100%;
+  height: 50px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+}
+
+.signup-button:hover {
+  opacity: 0.9;
+}
+
+/* Google Sign-up Button */
+.google-signup-button {
+  background-color: white;
+  color: grey;
+  border: 1px solid grey;
+  width: 100%;
+  height: 50px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+}
+
+.google-signup-button:hover {
+  border: 2px solid #0F2841; /* Change outline to blue on hover */
+  opacity: 0.9;
+}
+
 
 /* Responsive Layout for Larger Screens */
 @media (min-width: 1024px) {

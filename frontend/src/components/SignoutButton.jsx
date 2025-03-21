@@ -4,11 +4,9 @@ export default function SignOutButton() {
   const navigate = useNavigate();
 
   const handleSignOut = () => {
-    // Clear the user cookie
     document.cookie = "extension_user_uid=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; SameSite=None; Secure";
     console.log("Cookie cleared");
 
-    // Redirect to landing page
     navigate('/');
   };
 

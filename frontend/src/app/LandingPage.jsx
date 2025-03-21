@@ -35,10 +35,8 @@ export default function LandingPage() {
     <div className="min-h-screen flex flex-col">
       <Navbar />
       
-      {/* Main Content Section */}
       <main className="flex-grow">
         <div className="flex-container">
-          {/* Textbox (Left Half) */}
           <div className="textbox">
             <h1 className="text-6xl md:text-7xl lg:text-8xl font-bold leading-relaxed text-gray-900">
               AI-powered summaries<br />
@@ -56,7 +54,6 @@ export default function LandingPage() {
             </div>
           </div>
           
-          {/* GIF Container (Right Half) */}
           <div className="gif-container">
             <img
               src="/summarizeimportant.gif"
@@ -67,7 +64,6 @@ export default function LandingPage() {
         </div>
       </main>
 
-      {/* Footer Section */}
       <footer className="text-2xl md:text-3xl text-gray-700 leading-relaxed">
         Trusted by UF students and researchers
       </footer>

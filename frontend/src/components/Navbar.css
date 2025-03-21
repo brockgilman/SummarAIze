@@ -3,13 +3,13 @@
     top: 0;
     left: 0;
     width: 100%;
-    padding: 40px 5%; /* Reduced top and bottom padding */
+    padding: 40px 5%;
     background: white;
     display: flex;
     justify-content: space-between;
     align-items: center;
     z-index: 100;
-    height: 60px; /* Set a specific height for the navbar */
+    height: 60px;
 }
 
 .logo {
@@ -20,18 +20,17 @@
     align-items: center;
     gap: 10px;
     transition: 0.3s;
-    margin-right: auto; /* Push logo to the left */
+    margin-right: auto;
 }
 
-/* Add hover styles for the logo link */
 .logo:hover {
-    color: #1e538c; /* Lighter blue on hover */
+    color: #1e538c;
 }
 
 .navbar {
     display: flex;
     align-items: center;
-    margin-left: auto; /* Push navbar to the right */
+    margin-left: auto;
 }
 
 .navbar a {
@@ -57,7 +56,6 @@
     width: 100%;
 }
 
-/* Updated button styles */
 .navbar button {
     background-color: #0F2841;
     color: white;

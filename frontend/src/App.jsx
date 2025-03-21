@@ -1,6 +1,6 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';  // Import Router and Routes
-import LandingPage from './app/LandingPage';  // Import your LandingPage component
-import HomePage from './app/HomePage';  // Create and import a HomePage component (or any other page you want to redirect to)
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import LandingPage from './app/LandingPage';
+import HomePage from './app/HomePage';
 import SignUp from './app/sign-up/SignUp';
 import Features from './app/Features';
 import Demo from './app/Demo';
