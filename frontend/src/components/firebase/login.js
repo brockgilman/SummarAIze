@@ -7,7 +7,7 @@ signInWithEmailAndPassword(auth, email, password)
       })
       .catch((error) => {
         console.error("Error:", error.message);
-        alert(error.message); // Show Firebase error message
+        alert(error.message);
       });
       alert("Logged in successfully!");
-      navigate("/homepage"); // Redirect to homepage
+      navigate("/homepage");

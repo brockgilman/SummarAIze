@@ -4,7 +4,7 @@ export default function Logo() {
       <img
         src="/summaraizeLogo.svg"
         alt="SummarAIze Logo"
-        style={{ maxWidth: '100px', maxHeight: '100px' }} // Inline styles to control size
+        style={{ maxWidth: '100px', maxHeight: '100px' }}
       />
     </div>
   );

@@ -4,7 +4,6 @@ import Logo from './Logo';
 
 const Navbar = () => {
 
-  // Function to handle the redirection to Chrome Web Store
   const handleGetSummarAIze = () => {
       window.location.href = 'https://chromewebstore.google.com/';
   };
@@ -13,7 +12,7 @@ const Navbar = () => {
     <header className="header">
       <a href="/" className="logo flex items-center space-x-2">
       <Logo />
-      <span className="text-gray-100 hover:text-gray-900">SummarAIze</span>  {/* Changed to span */}
+      <span className="text-gray-100 hover:text-gray-900">SummarAIze</span>
       </a>
 
       <nav className="navbar">
@@ -22,9 +21,8 @@ const Navbar = () => {
         <a href="/about" className="text-gray-700 hover:text-gray-900">About</a>
         <a href="/login" className="text-gray-700 font-semibold hover:text-gray-900">Log in</a>
         
-        {/* "Get SummarAIze" Button */}
         <button
-          onClick={handleGetSummarAIze} // Redirects to Chrome Web Store
+          onClick={handleGetSummarAIze}
           className="bg-[#0F2841] text-white px-6 py-3 rounded-md flex items-center justify-center text-lg w-full sm:w-auto"
         >
           Get SummarAIze, It's free -&gt;
