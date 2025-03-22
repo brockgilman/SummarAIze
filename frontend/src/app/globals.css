@@ -42,17 +42,17 @@ body {
 
 /* Landing Page Body */
 body.landing-page {
-  padding-top: 140px; /* Reduced padding-top for landing page */
+  padding-top: 155px; /* Reduced padding-top for landing page */
 }
 
 /* Signup Page Body */
 body.signup-page {
-  padding-top: 150px; /* Custom padding-top for signup page */
+  padding-top: 165px; /* Custom padding-top for signup page */
 }
 
 /* Sign-in Page Body */
 body.signin-page {
-  padding-top: 150px; /* Custom padding-top for sign-in page */
+  padding-top: 165px; /* Custom padding-top for sign-in page */
 }
 
 /* Additional container styles */
@@ -143,7 +143,10 @@ button {
 
 .signup-button:hover {
   opacity: 0.9;
+  border: none; /* Ensure no border is applied */
+  transition: .3s;
 }
+
 
 /* Google Sign-up Button */
 .google-signup-button {

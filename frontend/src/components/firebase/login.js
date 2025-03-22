@@ -10,4 +10,4 @@ signInWithEmailAndPassword(auth, email, password)
         alert(error.message);
       });
       alert("Logged in successfully!");
-      navigate("/homepage");
+      navigate("/summaries");

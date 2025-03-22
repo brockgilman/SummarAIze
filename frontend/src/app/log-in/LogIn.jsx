@@ -54,7 +54,7 @@ const SignInContainer = styled(Stack)(({ theme }) => ({
   },
 }))
 
-export default function SignIn(props) {
+export default function LogIn(props) {
   const [emailError, setEmailError] = React.useState(false);
   const [emailErrorMessage, setEmailErrorMessage] = React.useState('');
   const [passwordError, setPasswordError] = React.useState(false);
@@ -114,7 +114,7 @@ export default function SignIn(props) {
       });
   
       alert("Logged in successfully!");
-      navigate("/homepage");
+      navigate("/summaries");
     } catch (error) {
       console.error("Error:", error.message);
       alert(error.message);
@@ -159,7 +159,7 @@ export default function SignIn(props) {
             variant="h4"
             sx={{ width: '100%', fontSize: 'clamp(2rem, 10vw, 2.15rem)' }}
           >
-            Sign in
+            Log in
           </Typography>
           <script type = "module" src = "login.js" defer></script>
           <Box
@@ -219,7 +219,7 @@ export default function SignIn(props) {
               onClick={validateInputs}
               sx={{ backgroundColor: '#0F2841', color: '#ffffff'}}
             >
-              Sign in
+              Log in
             </Button>
             <Link
               component="button"
