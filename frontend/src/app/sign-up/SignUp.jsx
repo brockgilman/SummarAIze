@@ -166,7 +166,7 @@ export default function SignUp(props) {
           }
         }
       });  
-      navigate("/homepage"); // Redirect to homepage
+      navigate("/summaries"); // Redirect to homepage
     } catch (error) {
       console.error("Error:", error.message);
       alert(error.message); // Show Firebase error message
@@ -250,7 +250,7 @@ export default function SignUp(props) {
             <Typography sx={{ textAlign: "center" }}>
               Already have an account?{" "}
               <Link href="/login" variant="body2" sx={{ color: '#0F2841', alignSelf: "center" }}>
-                Sign in
+                Log in
               </Link>
             </Typography>
           </Box>

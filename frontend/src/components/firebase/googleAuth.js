@@ -5,7 +5,7 @@ export const handleGoogleSignup = async (navigate) => {
   try {
     const provider = new GoogleAuthProvider();
     await signInWithPopup(auth, provider);
-    navigate("/homepage");
+    navigate("/summaries");
   } catch (error) {
     console.error("Error during Google sign-in:", error.message);
   }

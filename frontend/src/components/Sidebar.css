@@ -1,0 +1,151 @@
+/* Main sidebar container */
+.sidebar-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 275px;
+    height: 100vh;
+    background-color: #CFD4DA;
+    color: #000; /* gray-300 */
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    z-index: 10;
+  }
+  
+  /* Logo section */
+  .sidebar-logo {
+    padding: 16px; /* Add padding for better spacing */
+  }
+  
+  /* Logo link */
+  .sidebar-logo .logo {
+    font-size: 24px;
+    color: #0F2841; /* Default text color */
+    font-weight: 700; /* Bold font weight */
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: color 0.3s ease; /* Smooth transition for hover effect */
+    text-decoration: none; /* Remove underline from link */
+  }
+  
+  /* Hover effect for logo text */
+  .sidebar-logo .logo:hover {
+    color: #1e538c; /* Light blue color on hover */
+  }
+  
+  /* Logo text */
+  .sidebar-logo-text {
+    font-size: 20px; /* Match the font size from .logo */
+    color: inherit; /* Inherit color from parent */
+    font-weight: 700; /* Bold font weight */
+  }
+  
+  /* Navigation menu */
+  .sidebar-nav {
+    flex: 1;
+    padding: 0 1.5rem;
+  }
+  
+  .sidebar-nav-list {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+  }
+  
+  .sidebar-nav-item {
+    margin-bottom: 1rem;
+  }
+  
+  .sidebar-nav-link {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.5rem 0;
+    text-decoration: none;
+    color: #000;
+    transition: color 0.2s ease;
+  }
+  
+  .sidebar-nav-link:hover {
+    color: #000;
+    font-weight: 500;
+    transition: 0.3s;
+  }
+  
+  .sidebar-nav-link svg {
+    width: 1.5rem;
+    height: 1.5rem;
+  }
+  
+  .sidebar-nav-text {
+    font-size: 1.125rem;
+  }
+  
+  /* Footer section */
+  .sidebar-footer {
+    margin-top: auto;
+    padding: 1.5rem;
+    padding-bottom: 2rem;
+  }
+  
+  /* Footer link */
+  .sidebar-footer-link {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.5rem 0;
+    text-decoration: none;
+    color: #000; /* Default text color */
+    transition: color 0.2s ease;
+    user-select: none; /* Disable text selection */
+    cursor: pointer; /* Change cursor to pointer (glove) */
+  }
+  
+  .sidebar-footer-link:hover {
+    color: #000;
+    font-weight: 500;
+    transition: 0.3s;
+  }
+  
+  .sidebar-user-email {
+    margin-top: 0.5rem;
+    margin-left: 2.25rem;
+    font-size: 0.875rem;
+    color: #000; /* gray-400 */
+  }
+  
+  /* Content area adjustment to account for sidebar */
+  .main-content {
+    margin-left: 600px;
+    padding: 2rem;
+    min-height: 100vh;
+  }
+  
+  /* Responsive adjustments */
+  @media (max-width: 1200px) {
+    .sidebar-container {
+      width: 300px;
+    }
+  
+    .main-content {
+      margin-left: 300px;
+    }
+  }
+  
+  @media (max-width: 768px) {
+    .sidebar-container {
+      transform: translateX(-100%);
+      transition: transform 0.3s ease;
+    }
+  
+    .sidebar-container.open {
+      transform: translateX(0);
+    }
+  
+    .main-content {
+      margin-left: 0;
+    }
+  }

@@ -22,7 +22,7 @@ export default function LandingPage() {
     
     // If user is already logged in, redirect to homepage
     if (authCookie) {
-      window.location.href = '/homepage';
+      window.location.href = '/summaries';
     }
     
     // Remove the class when component unmounts

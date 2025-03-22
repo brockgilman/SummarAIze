@@ -1,11 +1,15 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import LandingPage from './app/LandingPage';
-import HomePage from './app/HomePage';
+import Summaries from './app/Summaries';
 import SignUp from './app/sign-up/SignUp';
 import Features from './app/Features';
 import Demo from './app/Demo';
 import About from './app/About';
-import SignIn from './app/sign-in/SignIn';
+import LogIn from './app/log-in/LogIn';
+import Generate from './app/Generate';
+import Trash from './app/Trash';
+import Account from './app/Account';
+
 
 function App() {
   return (
@@ -13,12 +17,15 @@ function App() {
       <div className="h-screen">
         <Routes>
           <Route path="/" element={<LandingPage />} /> {/* Landing page */}
-          <Route path="/homepage" element={<HomePage />} /> {/* Success page or home page */}
+          <Route path="/summaries" element={<Summaries />} /> {/* Home page */}
           <Route path="/signup" element={<SignUp />} /> {/* Signup page */}
           <Route path="/features" element={<Features />} /> {/* Features */}
           <Route path="/demo" element={<Demo />} /> {/* Demo */}
           <Route path="/about" element={<About />} /> {/* About */}
-          <Route path="/login" element={<SignIn />} /> {/* Login page */}
+          <Route path="/login" element={<LogIn />} /> {/* Login page */}
+          <Route path="/generate" element={<Generate />} /> {/* Generate summary page */}
+          <Route path="/trash" element={<Trash />} /> {/* Trash page */}
+          <Route path="/account" element={<Account />} /> {/* Account page */}
         </Routes>
       </div>
     </Router>
