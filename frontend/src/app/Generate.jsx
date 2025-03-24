@@ -24,16 +24,17 @@ const theme = createTheme({
           padding: '8px 16px',
           textTransform: 'none',
           fontWeight: 600,
+          // default state
           backgroundColor: '#CFD4DA',
+          // hover state
           '&:hover': {
-            // 10% darker than #CFD4DA
             backgroundColor: '#BABFC4',
           },
-          // Selected (dark blue #0F2841)
+          // selected state
           '&.Mui-selected': {
             color: '#CFD4DA',
             backgroundColor: '#0F2841',
-            // Hover => 90% opacity of #0F2841
+            // hover state
             '&:hover': {
               backgroundColor: 'rgba(15, 40, 65, 0.9)',
             },
@@ -64,6 +65,7 @@ const theme = createTheme({
   },
 });
 
+// var delcarations
 const Generate = () => {
   const [selectedTone, setSelectedTone] = useState('casual');
   const [selectedLength, setSelectedLength] = useState('short');
@@ -77,7 +79,7 @@ const Generate = () => {
 
   const API_KEY = "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";
 
-  // Count words and sentences
+  // count words and sentences
   const countWordsAndSentences = (text) => {
     if (!text) return { words: 0, sentences: 0 };
     const words = text.trim().split(/\s+/).filter((word) => word.length > 0).length;
@@ -85,7 +87,7 @@ const Generate = () => {
     return { words, sentences };
   };
 
-  // Update stats when input changes
+  // update stats when input changes
   useEffect(() => {
     setInputStats(countWordsAndSentences(textInput));
   }, [textInput]);
@@ -95,33 +97,33 @@ const Generate = () => {
     setOutputStats(countWordsAndSentences(responseText));
   }, [responseText]);
 
-  // Tone toggle
+  // tone toggle
   const handleToneChange = (event, newTone) => {
     if (newTone !== null) {
       setSelectedTone(newTone);
     }
   };
 
-  // Length toggle
+  // length toggle
   const handleLengthChange = (event, newLength) => {
     if (newLength !== null) {
       setSelectedLength(newLength);
     }
   };
 
-  // Input text change
+  // input text change
   const handleTextChange = (e) => {
     setTextInput(e.target.value);
   };
 
-  // Paste from clipboard
+  // paste from clipboard
   const pasteFromClipboard = () => {
     navigator.clipboard.readText()
       .then((text) => setTextInput(text))
       .catch((err) => console.error('Failed to read clipboard contents:', err));
   };
 
-  // Generate summary
+  // generate summary
   const generateSummary = async () => {
     if (!textInput) {
       setError('Please paste text to summarize');
@@ -131,7 +133,7 @@ const Generate = () => {
     setError('');
 
     try {
-      // Build your prompt with user selections
+      // ai prompt
       const prompt = `
         Please summarize this content in a ${selectedTone} tone and ${selectedLength} length.
         
@@ -152,7 +154,7 @@ const Generate = () => {
         Please make sure the summary is accurate and relevant to the content.
       `;
 
-      // Call the Groq API
+      // api call
       const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
         method: 'POST',
         headers: {
@@ -172,7 +174,7 @@ const Generate = () => {
       }
 
       const data = await response.json();
-      console.log('Groq API response:', data); // For debugging
+      console.log('Groq API response:', data); // api error state for debugging
 
       if (data.choices && data.choices[0]?.message?.content) {
         setResponseText(data.choices[0].message.content);
@@ -187,14 +189,14 @@ const Generate = () => {
     }
   };
 
-  // Save summary
+  // save summary for future use
   const saveSummary = async () => {
     if (!responseText) {
       setError('No summary to save');
       return;
     }
     try {
-      // Implementation for saving summary
+      // implementation for saving summary
       alert('Summary saved successfully!');
     } catch (err) {
       setError(`Error saving: ${err.message}`);
@@ -207,6 +209,7 @@ const Generate = () => {
         {/* Fixed sidebar on the left */}
         <Sidebar />
 
+        {/* TODO: still figuring out how to make sidebar dynamic */}
         {/* Main content offset from sidebar */}
         <div
           className="p-6"
