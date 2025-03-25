@@ -19,10 +19,11 @@ import { handleGoogleSignup } from "../../components/firebase/googleAuth";
 import { useNavigate } from "react-router-dom";
 import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
 import { db } from "../../components/firebase/firebaseConfig";
-import { doc, setDoc } from "firebase/firestore";
+import { doc, getDoc } from "firebase/firestore";
 import { getUserID } from "../../components/firebase/firebaseUserID";
 import LogoNavbar from "../../components/LogoNavbar"
 import { useEffect } from "react" 
+import bcrypt from 'bcryptjs';
 
 const Card = styled(MuiCard)(({ theme }) => ({
   display: "flex",
@@ -63,14 +64,12 @@ export default function LogIn(props) {
 
   // Add signin-page class to body element
   useEffect(() => {
-  // Add the class to the body when component mounts
-  document.body.classList.add('signin-page');
-  
-  // Remove the class when component unmounts
-  return () => {
-    document.body.classList.remove('signin-page');
-  };
-}, []);
+    document.body.classList.add('signin-page');
+    
+    return () => {
+      document.body.classList.remove('signin-page');
+    };
+  }, []);
 
   const handleClickOpen = () => {
     setOpen(true);
@@ -94,29 +93,35 @@ export default function LogIn(props) {
     const password = data.get("password");
   
     try {
+      // First, authenticate with Firebase Authentication
       const auth = getAuth();
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      console.log("User logged in:", userCredential.user);
-  
-      // Get the user UID and store the email/password under their UID
-      getUserID(async (uid) => {
-        if (uid) {
-          try {
-            await setDoc(doc(db, "users", uid), {
-              email: email,
-              password: password, // TODO: Use hashing
-            });
-            console.log("User data stored in Firestore.");
-          } catch (error) {
-            console.error("Error storing user data:", error.message);
-          }
+      const user = userCredential.user;
+
+      // Fetch the user's document from Firestore
+      const userDocRef = doc(db, "users", user.uid);
+      const userDoc = await getDoc(userDocRef);
+
+      if (userDoc.exists()) {
+        const userData = userDoc.data();
+        
+        // Verify the password using bcrypt
+        // Note: In a real-world scenario, you'd typically verify on the backend
+        const isPasswordValid = bcrypt.compareSync(password, userData.password);
+
+        if (isPasswordValid) {
+          console.log("User logged in successfully!");
+          alert("Logged in successfully!");
+          navigate("/summaries");
+        } else {
+          // This should rarely happen if Firebase auth passed
+          throw new Error("Invalid credentials");
         }
-      });
-  
-      alert("Logged in successfully!");
-      navigate("/summaries");
+      } else {
+        throw new Error("User document not found");
+      }
     } catch (error) {
-      console.error("Error:", error.message);
+      console.error("Login Error:", error.message);
       alert(error.message);
     }
   };
@@ -161,7 +166,6 @@ export default function LogIn(props) {
           >
             Log in
           </Typography>
-          <script type = "module" src = "login.js" defer></script>
           <Box
             component="form"
             onSubmit={handleSubmit}
@@ -254,5 +258,6 @@ export default function LogIn(props) {
           </Box>
         </Card>
       </SignInContainer>
-    </div>);
+    </div>
+  );
 }
