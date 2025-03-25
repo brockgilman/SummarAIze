@@ -1,5 +1,3 @@
-"use client"
-
 import * as React from "react"
 import { useEffect } from "react"
 import Box from "@mui/material/Box"
@@ -25,6 +23,7 @@ import { db } from "../../components/firebase/firebaseConfig";
 import { getUserID } from "../../components/firebase/firebaseUserID";
 import { setDoc, doc } from "firebase/firestore";
 import LogoNavbar from "../../components/LogoNavbar"
+import bcrypt from 'bcryptjs';
 
 const Card = styled(MuiCard)(({ theme }) => ({
   display: "flex",
@@ -82,10 +81,8 @@ export default function SignUp(props) {
 
   // Add signup-page class to body element
   useEffect(() => {
-    // Add the class to the body when component mounts
     document.body.classList.add('signup-page');
     
-    // Remove the class when component unmounts
     return () => {
       document.body.classList.remove('signup-page');
     };
@@ -152,13 +149,18 @@ export default function SignUp(props) {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       console.log("User created:", userCredential.user);
   
-      // Get the user UID and store the email/password under their UID
+      // Hash the password
+      const salt = bcrypt.genSaltSync(10);
+      const hashedPassword = bcrypt.hashSync(password, salt);
+  
+      // Get the user UID and store the email and hashed password
       getUserID(async (uid) => {
         if (uid) {
           try {
             await setDoc(doc(db, "users", uid), {
+              name: name, // Added name to user document
               email: email,
-              password: password, // TODO: Use hashing for password
+              password: hashedPassword, // Store hashed password
             });
             console.log("User data stored in Firestore.");
           } catch (error) {
@@ -172,6 +174,7 @@ export default function SignUp(props) {
       alert(error.message); // Show Firebase error message
     }
   };  
+
   return (
     <>
       <CssBaseline enableColorScheme />
