@@ -240,16 +240,18 @@ document.getElementById('generate').addEventListener('click', async () => {
     Please provide a summary that captures the main findings, methodology, and implications of the research.
     
     TONE GUIDELINES:
-    - If formal: use academic language, maintain objectivity, and focus on the scientific content
-    - If explanatory: explain concepts in more accessible terms, include more background context
-    - If concise: create a brief, to-the-point summary focusing only on key findings and implications
-    
+    - If casual: use conversational language, explain concepts in an accessible way
+    - If knowledgeable: use more technical language with proper terminology
+    - If expert: use specialized terminology, maintain academic style
+
     LENGTH GUIDELINES:
     - If short: 1-2 paragraphs (about 150 words)
     - If medium: 3-4 paragraphs (about 300 words)
     - If long: 5-6 paragraphs (about 500 words)
-    
-    Ensure the summary accurately reflects the core content of the article.
+
+    DO NOT include any before/after text in the summary, just the summary itself.
+
+    Please make sure the summary is accurate and relevant to the content.
     `;
 
     const response = await makeApiRequest(prompt);
