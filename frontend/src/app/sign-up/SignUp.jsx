@@ -16,7 +16,6 @@ import MuiCard from "@mui/material/Card";
 import { styled } from "@mui/material/styles";
 import { GoogleIcon } from "./components/CustomIcons";
 import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
-import { auth } from "../../components/firebase/firebaseConfig";
 import { handleGoogleSignup } from "../../components/firebase/googleAuth";
 import { useNavigate } from "react-router-dom";
 import { db } from "../../components/firebase/firebaseConfig";
@@ -43,19 +42,18 @@ const Card = styled(MuiCard)(({ theme }) => ({
 const SignUpContainer = styled(Stack)(({ theme }) => ({
   height: "90vh",
   width: "100vw",
-  padding: 0, // Ensures no extra padding
-  margin: 0, // Ensures no extra margin
+  padding: 0,
+  margin: 0, 
   display: "flex",
   justifyContent: "center",
   alignItems: "center",
-  marginTop: "-10vh", // Moves the card upwards
+  marginTop: "-10vh",
   backgroundColor: "#f0f0f0",
   [theme.breakpoints.up("sm")]: {
     padding: theme.spacing(4),
   },
 }));
 
-// Custom styled TextField with white background
 const WhiteTextField = styled(TextField)({
   "& .MuiOutlinedInput-root": {
     backgroundColor: "#ffffff",
@@ -78,9 +76,8 @@ export default function SignUp(props) {
   const [passwordErrorMessage, setPasswordErrorMessage] = React.useState("");
   const [nameError, setNameError] = React.useState(false);
   const [nameErrorMessage, setNameErrorMessage] = React.useState("");
-  const [emailUpdates, setEmailUpdates] = useState(false); // Track the checkbox state
+  const [emailUpdates, setEmailUpdates] = useState(false);
 
-  // Add signup-page class to body element
   useEffect(() => {
     document.body.classList.add("signup-page");
 
@@ -129,24 +126,22 @@ export default function SignUp(props) {
   const navigate = useNavigate();
 
   const handleSubmit = async (event) => {
-    event.preventDefault(); // Prevent default form submission
+    event.preventDefault();
 
-    // Check if there are any validation errors
     if (nameError || emailError || passwordError) {
-      return; // Don't proceed if there are errors
+      return;
     }
 
-    // Get form data
     const data = new FormData(event.currentTarget);
     const name = data.get("name");
     const email = data.get("email");
     const password = data.get("password");
 
-    // Validate inputs before proceeding
     if (!validateInputs()) return;
 
     try {
       const auth = getAuth();
+      // Create user with email and password
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       console.log("User created:", userCredential.user);
 
@@ -156,7 +151,8 @@ export default function SignUp(props) {
 
       // Get the user UID and store the email and hashed password
       getUserID(async (uid) => {
-        console.log("Fetched UID:", uid); // Verify that UID is being fetched
+        console.log("Fetched UID:", uid);
+        // Store user data in Firebase
         if (uid) {
           try {
             await setDoc(doc(db, "users", uid), {
@@ -172,10 +168,11 @@ export default function SignUp(props) {
           }
         }
       });
-      navigate("/summaries"); // Redirect to homepage
+      // On successful sign up, navigate to summaries page
+      navigate("/summaries");
     } catch (error) {
       console.error("Error:", error.message);
-      alert(error.message); // Show Firebase error message
+      alert(error.message);
     }
   };
 
@@ -234,6 +231,7 @@ export default function SignUp(props) {
                 color={passwordError ? "error" : "primary"}
               />
             </FormControl>
+            {/* Email Updates Checkbox */}
             <FormControlLabel
               control={<Checkbox checked={emailUpdates} onChange={() => setEmailUpdates(!emailUpdates)} color="primary" />}
               label="I want to receive updates via email."
@@ -246,6 +244,7 @@ export default function SignUp(props) {
             <Typography sx={{ color: "text.secondary" }}>or</Typography>
           </Divider>
           <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+            {/* Google Signup Button */}
             <Button
               fullWidth
               variant="outlined"
@@ -256,6 +255,7 @@ export default function SignUp(props) {
             </Button>
             <Typography sx={{ textAlign: "center" }}>
               Already have an account?{" "}
+              {/* Redirect to Login */}
               <Link href="/login" variant="body2" sx={{ color: '#0F2841', alignSelf: "center" }}>
                 Log in
               </Link>

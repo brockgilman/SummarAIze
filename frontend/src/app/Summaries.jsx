@@ -3,6 +3,7 @@ import { getUserID } from "../components/firebase/firebaseUserID";
 import Sidebar from "../components/Sidebar";
 
 const Summaries = () => {
+  // Manage user sessions and cookies based on remember me preference
   useEffect(() => {
     const unsubscribe = getUserID((uid) => {
       let storedUser = null;

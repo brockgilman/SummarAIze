@@ -35,6 +35,7 @@ function ForgotPassword({ open, handleClose }) {
     setIsLoading(true);
     
     try {
+      // Send password reset email provided by Firebase
       await sendPasswordResetEmail(auth, email);
       setSnackbar({
         open: true,

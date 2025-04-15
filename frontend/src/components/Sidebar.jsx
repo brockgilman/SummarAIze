@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { BookText, Trash2, User, LogOut, SquarePen } from 'lucide-react';
 import './sidebar.css';
 import SidebarLogo from './SidebarLogo';
-import { getUserEmail } from './firebase/firebaseUserEmail'; // Import the function to get user email
+import { getUserEmail } from './firebase/firebaseUserEmail';
 
 const Sidebar = () => {
   const [userEmail, setUserEmail] = useState(null); // State to store user email
@@ -13,7 +13,7 @@ const Sidebar = () => {
   // Fetch user email from Firebase Authentication
   useEffect(() => {
     const unsubscribe = getUserEmail((email) => {
-      setUserEmail(email); // Set user email if user is logged in
+      setUserEmail(email); // Set user email when user is logged in
       setLoading(false); // Set loading to false after authentication state is determined
     });
 
@@ -22,7 +22,7 @@ const Sidebar = () => {
   }, []); // Only run once on component mount
 
   const handleSignOut = (event) => {
-    event.preventDefault(); // Prevent default anchor behavior
+    event.preventDefault();
     document.cookie = "extension_user_uid=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; SameSite=None; Secure";
     console.log("Cookie cleared");
 
@@ -79,13 +79,13 @@ const Sidebar = () => {
         </ul>
       </nav>
 
-      {/* Footer with Sign Out */}
+      {/* Footer with sign out */}
       <div className="sidebar-footer">
         <a className="sidebar-footer-link" onClick={handleSignOut}>
           <LogOut />
           <span>Log Out</span>
         </a>
-        {/* Display the user email if available */}
+        {/* Display user email */}
         <div className="sidebar-user-email">
           {userEmail ? userEmail : "No user logged in"} {/* Display email or message */}
         </div>

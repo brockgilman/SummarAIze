@@ -10,7 +10,6 @@ import Generate from './app/Generate';
 import Trash from './app/Trash';
 import Account from './app/Account';
 
-
 function App() {
   return (
     <Router>

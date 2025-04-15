@@ -3,11 +3,12 @@ import './Navbar.css';
 import Logo from './Logo';
 
 const Navbar = () => {
-
+  // TODO: Function to redirect user to SummarAIze extension on Chrome webstore
   const handleGetSummarAIze = () => {
       window.location.href = 'https://chromewebstore.google.com/';
   };
 
+  // Navbar elements and page redirects
   return (
     <header className="header">
       <a href="/" className="logo flex items-center space-x-2">

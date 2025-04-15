@@ -20,7 +20,6 @@ import { useNavigate } from "react-router-dom";
 import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
 import { db } from "../../components/firebase/firebaseConfig";
 import { doc, getDoc } from "firebase/firestore";
-import { getUserID } from "../../components/firebase/firebaseUserID";
 import LogoNavbar from "../../components/LogoNavbar"
 import bcrypt from 'bcryptjs';
 
@@ -94,32 +93,42 @@ export default function LogIn(props) {
         const isPasswordValid = bcrypt.compareSync(password, userData.password);
   
         if (isPasswordValid) {
-          // Save to localStorage whether user wants to be remembered
+          // Save to database whether user wants to be remembered
           localStorage.setItem('extension_user', JSON.stringify({
             uid: user.uid,
             rememberMe: rememberMe
           }));
   
           if (rememberMe) {
-            // Persist cookie for 7 days
+            // Cookie will trigger for 7 days
             document.cookie = `extension_user_uid=${user.uid}; path=/; max-age=${7 * 24 * 60 * 60}; SameSite=None; Secure`;
           } else {
-            // Clear any existing cookie (in case user previously selected remember me)
+            // Clear any existing cookie in case user previously selected remember me
             document.cookie = `extension_user_uid=; path=/; max-age=0`;
-          }
-  
-          alert("Logged in successfully!");
+          }  
           navigate("/summaries");
         } else {
-          throw new Error("Invalid credentials");
+          throw new Error("Invalid password.");
         }
       } else {
-        throw new Error("User document not found");
+        throw new Error("User not found.");
       }
     } catch (error) {
-      console.error("Login Error:", error.message);
-      alert(error.message);
-    }
+      console.error("Login Error:", error);
+    
+      let errorMessage = "Something went wrong. Please try again later.";
+    
+      // Handle Firebase auth error codes with specific messages
+      if (error.code === "auth/invalid-credential" || error.code === "auth/wrong-password") {
+        errorMessage = "The email or password you entered is incorrect.";
+      } else if (error.code === "auth/user-not-found") {
+        errorMessage = "We couldn't find an account associated with this email.";
+      } else if (error.code === "auth/too-many-requests") {
+        errorMessage = "Too many login attempts. Please try again later.";
+      }
+    
+      alert(errorMessage);
+    }    
   };
   
 
@@ -193,6 +202,7 @@ export default function LogIn(props) {
               />
             </FormControl>
             <FormControl>
+              {/* Remember Me Checkbox */}
               <FormControlLabel
                 control={<Checkbox checked={rememberMe} onChange={(e) => setRememberMe(e.target.checked)} color="primary" />}
                 label="Remember me"
@@ -202,17 +212,20 @@ export default function LogIn(props) {
             <Button type="submit" fullWidth variant="contained" onClick={validateInputs} sx={{ backgroundColor: '#0F2841', color: '#ffffff'}}>
               Log in
             </Button>
+            {/* Forgot Password Popup */}
             <Link component="button" type="button" onClick={handleClickOpen} variant="body2" sx={{ color: '#0F2841', alignSelf: 'center' }}>
               Forgot your password?
             </Link>
           </Box>
           <Divider>or</Divider>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            {/* Google Sign In Button */}
             <Button fullWidth variant="outlined" onClick={() => handleGoogleSignup(navigate)} startIcon={<GoogleIcon />}>
               Sign in with Google
             </Button>
             <Typography sx={{ textAlign: 'center' }}>
               Don&apos;t have an account?{' '}
+              {/* Redirect to Signup page */}
               <Link href="/signup" variant="body2" sx={{ color: '#0F2841', alignSelf: 'center' }}>
                 Sign up
               </Link>
