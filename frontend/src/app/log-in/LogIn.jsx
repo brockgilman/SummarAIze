@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Checkbox from '@mui/material/Checkbox';
@@ -22,7 +22,6 @@ import { db } from "../../components/firebase/firebaseConfig";
 import { doc, getDoc } from "firebase/firestore";
 import { getUserID } from "../../components/firebase/firebaseUserID";
 import LogoNavbar from "../../components/LogoNavbar"
-import { useEffect } from "react" 
 import bcrypt from 'bcryptjs';
 
 const Card = styled(MuiCard)(({ theme }) => ({
@@ -43,12 +42,12 @@ const Card = styled(MuiCard)(({ theme }) => ({
 const SignInContainer = styled(Stack)(({ theme }) => ({
   height: "90vh",
   width: "100vw",
-  padding: 0, // Ensures no extra padding
-  margin: 0, // Ensures no extra margin
+  padding: 0,
+  margin: 0,
   display: "flex",
   justifyContent: "center",
   alignItems: "center",
-  marginTop: "-10vh", // Moves the card upwards
+  marginTop: "-10vh",
   backgroundColor: "#f0f0f0",
   [theme.breakpoints.up("sm")]: {
     padding: theme.spacing(4),
@@ -56,65 +55,62 @@ const SignInContainer = styled(Stack)(({ theme }) => ({
 }))
 
 export default function LogIn(props) {
-  const [emailError, setEmailError] = React.useState(false);
-  const [emailErrorMessage, setEmailErrorMessage] = React.useState('');
-  const [passwordError, setPasswordError] = React.useState(false);
-  const [passwordErrorMessage, setPasswordErrorMessage] = React.useState('');
-  const [open, setOpen] = React.useState(false);
+  const [emailError, setEmailError] = useState(false);
+  const [emailErrorMessage, setEmailErrorMessage] = useState('');
+  const [passwordError, setPasswordError] = useState(false);
+  const [passwordErrorMessage, setPasswordErrorMessage] = useState('');
+  const [open, setOpen] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
 
-  // Add signin-page class to body element
   useEffect(() => {
     document.body.classList.add('signin-page');
-    
     return () => {
       document.body.classList.remove('signin-page');
     };
   }, []);
 
-  const handleClickOpen = () => {
-    setOpen(true);
-  };
+  const handleClickOpen = () => setOpen(true);
+  const handleClose = () => setOpen(false);
 
-  const handleClose = () => {
-    setOpen(false);
-  };
-  
   const navigate = useNavigate();
-  
+
   const handleSubmit = async (event) => {
-    event.preventDefault(); // Prevent form from reloading
-  
-    if (emailError || passwordError) {
-      return;
-    }
+    event.preventDefault();
+    if (!validateInputs()) return;
   
     const data = new FormData(event.currentTarget);
     const email = data.get("email");
     const password = data.get("password");
   
     try {
-      // First, authenticate with Firebase Authentication
       const auth = getAuth();
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
-
-      // Fetch the user's document from Firestore
       const userDocRef = doc(db, "users", user.uid);
       const userDoc = await getDoc(userDocRef);
-
+  
       if (userDoc.exists()) {
         const userData = userDoc.data();
-        
-        // Verify the password using bcrypt
-        // Note: In a real-world scenario, you'd typically verify on the backend
         const isPasswordValid = bcrypt.compareSync(password, userData.password);
-
+  
         if (isPasswordValid) {
-          console.log("User logged in successfully!");
+          // Save to localStorage whether user wants to be remembered
+          localStorage.setItem('extension_user', JSON.stringify({
+            uid: user.uid,
+            rememberMe: rememberMe
+          }));
+  
+          if (rememberMe) {
+            // Persist cookie for 7 days
+            document.cookie = `extension_user_uid=${user.uid}; path=/; max-age=${7 * 24 * 60 * 60}; SameSite=None; Secure`;
+          } else {
+            // Clear any existing cookie (in case user previously selected remember me)
+            document.cookie = `extension_user_uid=; path=/; max-age=0`;
+          }
+  
           alert("Logged in successfully!");
           navigate("/summaries");
         } else {
-          // This should rarely happen if Firebase auth passed
           throw new Error("Invalid credentials");
         }
       } else {
@@ -125,11 +121,11 @@ export default function LogIn(props) {
       alert(error.message);
     }
   };
+  
 
   const validateInputs = () => {
     const email = document.getElementById('email');
     const password = document.getElementById('password');
-
     let isValid = true;
 
     if (!email.value || !/\S+@\S+\.\S+/.test(email.value)) {
@@ -157,26 +153,12 @@ export default function LogIn(props) {
     <div>
       <CssBaseline enableColorScheme />
       <LogoNavbar />
-      <SignInContainer direction="column" justifyContent="space-between">
+      <SignInContainer direction="column">
         <Card variant="outlined">
-          <Typography
-            component="h1"
-            variant="h4"
-            sx={{ width: '100%', fontSize: 'clamp(2rem, 10vw, 2.15rem)' }}
-          >
+          <Typography component="h1" variant="h4" sx={{ width: '100%', fontSize: 'clamp(2rem, 10vw, 2.15rem)' }}>
             Log in
           </Typography>
-          <Box
-            component="form"
-            onSubmit={handleSubmit}
-            noValidate
-            sx={{
-              display: 'flex',
-              flexDirection: 'column',
-              width: '100%',
-              gap: 2,
-            }}
-          >
+          <Box component="form" onSubmit={handleSubmit} noValidate sx={{ display: 'flex', flexDirection: 'column', width: '100%', gap: 2 }}>
             <FormControl>
               <FormLabel htmlFor="email">Email</FormLabel>
               <TextField
@@ -204,54 +186,34 @@ export default function LogIn(props) {
                 type="password"
                 id="password"
                 autoComplete="current-password"
-                autoFocus
                 required
                 fullWidth
                 variant="outlined"
                 color={passwordError ? 'error' : 'primary'}
               />
             </FormControl>
-            <FormControlLabel
-              control={<Checkbox value="remember" color="primary" />}
-              label="Remember me"
-            />
+            <FormControl>
+              <FormControlLabel
+                control={<Checkbox checked={rememberMe} onChange={(e) => setRememberMe(e.target.checked)} color="primary" />}
+                label="Remember me"
+              />
+            </FormControl>
             <ForgotPassword open={open} handleClose={handleClose} />
-            <Button
-              type="submit"
-              fullWidth
-              variant="contained"
-              onClick={validateInputs}
-              sx={{ backgroundColor: '#0F2841', color: '#ffffff'}}
-            >
+            <Button type="submit" fullWidth variant="contained" onClick={validateInputs} sx={{ backgroundColor: '#0F2841', color: '#ffffff'}}>
               Log in
             </Button>
-            <Link
-              component="button"
-              type="button"
-              onClick={handleClickOpen}
-              variant="body2"
-              sx={{ color: '#0F2841', alignSelf: 'center' }}
-            >
+            <Link component="button" type="button" onClick={handleClickOpen} variant="body2" sx={{ color: '#0F2841', alignSelf: 'center' }}>
               Forgot your password?
             </Link>
           </Box>
           <Divider>or</Divider>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-            <Button
-              fullWidth
-              variant="outlined"
-              onClick={() => handleGoogleSignup(navigate)}
-              startIcon={<GoogleIcon />}
-            >
+            <Button fullWidth variant="outlined" onClick={() => handleGoogleSignup(navigate)} startIcon={<GoogleIcon />}>
               Sign in with Google
             </Button>
             <Typography sx={{ textAlign: 'center' }}>
               Don&apos;t have an account?{' '}
-              <Link
-                href="/signup"
-                variant="body2"
-                sx={{ color: '#0F2841', alignSelf: 'center' }}
-              >
+              <Link href="/signup" variant="body2" sx={{ color: '#0F2841', alignSelf: 'center' }}>
                 Sign up
               </Link>
             </Typography>

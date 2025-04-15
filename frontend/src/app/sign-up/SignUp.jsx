@@ -1,29 +1,29 @@
-import * as React from "react"
-import { useEffect } from "react"
-import Box from "@mui/material/Box"
-import Button from "@mui/material/Button"
-import Checkbox from "@mui/material/Checkbox"
-import CssBaseline from "@mui/material/CssBaseline"
-import Divider from "@mui/material/Divider"
-import FormControlLabel from "@mui/material/FormControlLabel"
-import FormLabel from "@mui/material/FormLabel"
-import FormControl from "@mui/material/FormControl"
-import Link from "@mui/material/Link"
-import TextField from "@mui/material/TextField"
-import Typography from "@mui/material/Typography"
-import Stack from "@mui/material/Stack"
-import MuiCard from "@mui/material/Card"
-import { styled } from "@mui/material/styles"
-import { GoogleIcon } from "./components/CustomIcons"
-import { getAuth, createUserWithEmailAndPassword } from "firebase/auth"
-import { auth } from "../../components/firebase/firebaseConfig"
+import * as React from "react";
+import { useEffect, useState } from "react";
+import Box from "@mui/material/Box";
+import Button from "@mui/material/Button";
+import Checkbox from "@mui/material/Checkbox";
+import CssBaseline from "@mui/material/CssBaseline";
+import Divider from "@mui/material/Divider";
+import FormControlLabel from "@mui/material/FormControlLabel";
+import FormLabel from "@mui/material/FormLabel";
+import FormControl from "@mui/material/FormControl";
+import Link from "@mui/material/Link";
+import TextField from "@mui/material/TextField";
+import Typography from "@mui/material/Typography";
+import Stack from "@mui/material/Stack";
+import MuiCard from "@mui/material/Card";
+import { styled } from "@mui/material/styles";
+import { GoogleIcon } from "./components/CustomIcons";
+import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
+import { auth } from "../../components/firebase/firebaseConfig";
 import { handleGoogleSignup } from "../../components/firebase/googleAuth";
 import { useNavigate } from "react-router-dom";
 import { db } from "../../components/firebase/firebaseConfig";
 import { getUserID } from "../../components/firebase/firebaseUserID";
 import { setDoc, doc } from "firebase/firestore";
-import LogoNavbar from "../../components/LogoNavbar"
-import bcrypt from 'bcryptjs';
+import LogoNavbar from "../../components/LogoNavbar";
+import bcrypt from "bcryptjs";
 
 const Card = styled(MuiCard)(({ theme }) => ({
   display: "flex",
@@ -53,7 +53,7 @@ const SignUpContainer = styled(Stack)(({ theme }) => ({
   [theme.breakpoints.up("sm")]: {
     padding: theme.spacing(4),
   },
-}))
+}));
 
 // Custom styled TextField with white background
 const WhiteTextField = styled(TextField)({
@@ -69,111 +69,115 @@ const WhiteTextField = styled(TextField)({
       borderColor: "rgba(0, 0, 0, 0.23)",
     },
   },
-})
+});
 
 export default function SignUp(props) {
-  const [emailError, setEmailError] = React.useState(false)
-  const [emailErrorMessage, setEmailErrorMessage] = React.useState("")
-  const [passwordError, setPasswordError] = React.useState(false)
-  const [passwordErrorMessage, setPasswordErrorMessage] = React.useState("")
-  const [nameError, setNameError] = React.useState(false)
-  const [nameErrorMessage, setNameErrorMessage] = React.useState("")
+  const [emailError, setEmailError] = React.useState(false);
+  const [emailErrorMessage, setEmailErrorMessage] = React.useState("");
+  const [passwordError, setPasswordError] = React.useState(false);
+  const [passwordErrorMessage, setPasswordErrorMessage] = React.useState("");
+  const [nameError, setNameError] = React.useState(false);
+  const [nameErrorMessage, setNameErrorMessage] = React.useState("");
+  const [emailUpdates, setEmailUpdates] = useState(false); // Track the checkbox state
 
   // Add signup-page class to body element
   useEffect(() => {
-    document.body.classList.add('signup-page');
-    
+    document.body.classList.add("signup-page");
+
     return () => {
-      document.body.classList.remove('signup-page');
+      document.body.classList.remove("signup-page");
     };
   }, []);
 
   const validateInputs = () => {
-    const email = document.getElementById("email")
-    const password = document.getElementById("password")
-    const name = document.getElementById("name")
+    const email = document.getElementById("email");
+    const password = document.getElementById("password");
+    const name = document.getElementById("name");
 
-    let isValid = true
+    let isValid = true;
 
     if (!email.value || !/\S+@\S+\.\S+/.test(email.value)) {
-      setEmailError(true)
-      setEmailErrorMessage("Please enter a valid email address.")
-      isValid = false
+      setEmailError(true);
+      setEmailErrorMessage("Please enter a valid email address.");
+      isValid = false;
     } else {
-      setEmailError(false)
-      setEmailErrorMessage("")
+      setEmailError(false);
+      setEmailErrorMessage("");
     }
 
     if (!password.value || password.value.length < 6) {
-      setPasswordError(true)
-      setPasswordErrorMessage("Password must be at least 6 characters long.")
-      isValid = false
+      setPasswordError(true);
+      setPasswordErrorMessage("Password must be at least 6 characters long.");
+      isValid = false;
     } else {
-      setPasswordError(false)
-      setPasswordErrorMessage("")
+      setPasswordError(false);
+      setPasswordErrorMessage("");
     }
 
     if (!name.value || name.value.length < 1) {
-      setNameError(true)
-      setNameErrorMessage("Name is required.")
-      isValid = false
+      setNameError(true);
+      setNameErrorMessage("Name is required.");
+      isValid = false;
     } else {
-      setNameError(false)
-      setNameErrorMessage("")
+      setNameError(false);
+      setNameErrorMessage("");
     }
 
-    return isValid
-  }
+    return isValid;
+  };
 
   const navigate = useNavigate();
 
   const handleSubmit = async (event) => {
     event.preventDefault(); // Prevent default form submission
-  
+
     // Check if there are any validation errors
     if (nameError || emailError || passwordError) {
       return; // Don't proceed if there are errors
     }
-  
+
     // Get form data
     const data = new FormData(event.currentTarget);
     const name = data.get("name");
     const email = data.get("email");
     const password = data.get("password");
-  
+
     // Validate inputs before proceeding
     if (!validateInputs()) return;
-  
+
     try {
       const auth = getAuth();
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       console.log("User created:", userCredential.user);
-  
+
       // Hash the password
       const salt = bcrypt.genSaltSync(10);
       const hashedPassword = bcrypt.hashSync(password, salt);
-  
+
       // Get the user UID and store the email and hashed password
       getUserID(async (uid) => {
+        console.log("Fetched UID:", uid); // Verify that UID is being fetched
         if (uid) {
           try {
             await setDoc(doc(db, "users", uid), {
-              name: name, // Added name to user document
+              name: name,
               email: email,
-              password: hashedPassword, // Store hashed password
+              password: hashedPassword,
+              rememberMe: false, // Default value
+              emailUpdates: emailUpdates, // Store emailUpdates value based on checkbox
             });
             console.log("User data stored in Firestore.");
           } catch (error) {
             console.error("Error storing user data:", error.message);
           }
         }
-      });  
+      });
       navigate("/summaries"); // Redirect to homepage
     } catch (error) {
       console.error("Error:", error.message);
       alert(error.message); // Show Firebase error message
     }
-  };  
+  };
 
   return (
     <>
@@ -231,11 +235,11 @@ export default function SignUp(props) {
               />
             </FormControl>
             <FormControlLabel
-              control={<Checkbox value="allowExtraEmails" color="primary" />}
+              control={<Checkbox checked={emailUpdates} onChange={() => setEmailUpdates(!emailUpdates)} color="primary" />}
               label="I want to receive updates via email."
             />
-           <Button id="submit" type="submit" fullWidth variant="contained" onClick={validateInputs} sx={{ backgroundColor: '#0F2841', color: '#ffffff'}}>
-            Sign up
+            <Button id="submit" type="submit" fullWidth variant="contained" sx={{ backgroundColor: '#0F2841', color: '#ffffff' }}>
+              Sign up
             </Button>
           </Box>
           <Divider>
@@ -260,5 +264,5 @@ export default function SignUp(props) {
         </Card>
       </SignUpContainer>
     </>
-  )
+  );
 }

@@ -4,38 +4,40 @@ import Sidebar from "../components/Sidebar";
 
 const Summaries = () => {
   useEffect(() => {
-    // Set up cookie creation when component mounts
     const unsubscribe = getUserID((uid) => {
-      if (uid) {
-        // Create cookie with the user's UID
-        setCookie('extension_user_uid', uid, 30); // Cookie expires in 30 days
-        console.log('User ID cookie created:', uid);
+      let storedUser = null;
+
+      try {
+        storedUser = JSON.parse(localStorage.getItem("extension_user"));
+      } catch (err) {
+        console.warn("Failed to parse extension_user from localStorage:", err);
+      }
+
+      const rememberMe = storedUser?.rememberMe === true;
+
+      if (uid && rememberMe) {
+        setCookie("extension_user_uid", uid, 7);
       } else {
-        console.log('No user authenticated');
+        clearCookie("extension_user_uid");
       }
     });
 
-    // Clean up the auth listener when component unmounts
     return () => {
       if (unsubscribe) {
         unsubscribe();
       }
     };
-  }, []); // Empty dependency array ensures this runs once on component mount
+  }, []);
 
-  // Helper function to set cookie
   const setCookie = (name, value, days) => {
-    let expires = '';
-    
-    if (days) {
-      const date = new Date();
-      date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
-      expires = '; expires=' + date.toUTCString();
-    }
-    
-    // Set cookie with SameSite=None and Secure flags to make it accessible from extension
+    const date = new Date();
+    date.setTime(date.getTime() + days * 24 * 60 * 60 * 1000);
+    const expires = "; expires=" + date.toUTCString();
     document.cookie = `${name}=${encodeURIComponent(value)}${expires}; path=/; SameSite=None; Secure`;
-    console.log("Cookie online"); 
+  };
+
+  const clearCookie = (name) => {
+    document.cookie = `${name}=; path=/; max-age=0; SameSite=None; Secure`;
   };
 
   return (
