@@ -20,7 +20,7 @@
   --ring: 0 0% 3.9%;
 }
 
-/* Reset default margins and padding */
+/* Base styles */
 *,
 *::before,
 *::after {
@@ -29,7 +29,7 @@
   box-sizing: border-box;
 }
 
-/* Basic styles for body */
+/* Global styles based on Grammarly inspiration */
 body {
   color: #333;
   background-color: white;
@@ -38,40 +38,40 @@ body {
   flex-direction: column;
 }
 
-/* Landing Page Body */
+/* Landing Page body padding */
 body.landing-page {
-  padding-top: 155px; /* Reduced padding-top for landing page */
+  padding-top: 155px;
 }
 
-/* Signup Page Body */
+/* SignUp Page body padding*/
 body.signup-page {
-  padding-top: 165px; /* Custom padding-top for signup page */
+  padding-top: 165px;
 }
 
-/* Sign-in Page Body */
+/* LogIn Page body padding*/
 body.signin-page {
-  padding-top: 165px; /* Custom padding-top for sign-in page */
+  padding-top: 165px;
 }
 
-/* Additional container styles */
+/* Landing Page container styles */
 .main-container {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  height: 100%; /* Full page height */
+  height: 100%;
   padding: 2rem 1rem; /* Add spacing to main container */
-  margin-top: 0; /* Ensure no extra margin */
+  margin-top: 0; /* No extra margin */
 }
 
-/* Move content to the left */
+/* Move text content to the left */
 .content-container {
   margin-left: 0; /* Remove left margin */
 }
 
 /* Footer style */
 footer {
-  position: relative; /* Allows movement using top */
-  top: 90px; /* Adjust this value to push the footer down (increase for more distance) */
+  position: relative; /* Allows movement */
+  top: 90px; /* Push footer down */
   text-align: center;
   padding: 1.5rem 0;
   font-size: 1.25rem;
@@ -79,7 +79,7 @@ footer {
   color: #4a4a4a;
 }
 
-
+/* Add spacing for landing page elements */
 h1 {
   margin-bottom: 2rem; /* Add margin below h1 elements */
 }
@@ -99,31 +99,26 @@ button {
   }
 }
 
-/* Parent Container */
+/* Parent container */
 .flex-container {
   display: flex;
-  flex-direction: column; /* Stack vertically on small screens */
-  align-items: center; /* Center items horizontally */
-  justify-content: center; /* Center items vertically */
+  align-items: center; /* Center text horizontally */
+  justify-content: center; /* Center text vertically */
   width: 100%;
-  max-width: 1250px; /* Adjust as needed */
-  margin: 0; /* Remove auto-centering margins */
-  padding: 0; /* Remove extra padding */
+  max-width: 1250px; /* Adjusted width so landing page elements stay within certain borders */
 }
 
-/* Textbox (Left Half) */
+/* Textbox (left half) */
 .textbox {
   width: 100%; /* Full width on small screens */
-  padding: 0; /* Remove padding */
 }
 
-/* GIF Container (Right Half) */
+/* GIF container (right half) */
 .gif-container {
   width: 100%; /* Full width on small screens */
   display: flex;
-  justify-content: right; /* Center the GIF horizontally */
-  align-items: center; /* Center the GIF vertically */
-  padding: 0; /* Remove padding */
+  justify-content: right; /* Center GIF horizontally */
+  align-items: center; /* Center GIF vertically */
   margin-top: 60px; /* Push the GIF container down */
 }
 
@@ -139,14 +134,14 @@ button {
   gap: 10px;
 }
 
+/* Sign-up button hover effect */
 .signup-button:hover {
   opacity: 0.9;
-  border: none; /* Ensure no border is applied */
+  border: none; /* Make sure no border is applied */
   transition: .3s;
 }
 
-
-/* Google Sign-up Button */
+/* Google sign-up button */
 .google-signup-button {
   background-color: white;
   color: grey;
@@ -159,18 +154,17 @@ button {
   gap: 10px;
 }
 
+/* Google sign-up button hover effect */
 .google-signup-button:hover {
-  border: 2px solid #0F2841; /* Change outline to blue on hover */
+  border: 2px solid #0F2841; /* Change outline to theme blue on hover */
   opacity: 0.9;
 }
 
 
-/* Responsive Layout for Larger Screens */
+/* Responsive layout for larger screens */
 @media (min-width: 1024px) {
   .flex-container {
-    flex-direction: row; /* Side by side on larger screens */
     align-items: flex-start; /* Align items to the top */
-    justify-content: space-between; /* Space between text and GIF */
   }
 
 }

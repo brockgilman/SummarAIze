@@ -12,6 +12,7 @@
     height: 60px;
 }
 
+/* Style logo text */
 .logo {
     font-size: 24px;
     color: #0F2841;
@@ -23,6 +24,7 @@
     margin-right: auto;
 }
 
+/* Add a hover effect to the logo */
 .logo:hover {
     color: #1e538c;
 }
@@ -34,13 +36,14 @@
 }
 
 .navbar a {
-    position: relative;
+    position: relative; /* For hover underline */
     font-size: 18px;
     color: grey;
     font-weight: 500;
-    margin-left: 40px;
+    margin-left: 40px; /* Spacing between links */
 }
 
+/* Add animated underline on hover */
 .navbar a::before {
     content: '';
     position: absolute;
@@ -52,10 +55,12 @@
     transition: .3s;
 }
 
+/* Show underline on hover */
 .navbar a:hover::before {
     width: 100%;
 }
 
+/* Style the Get SummarAIze navbar button for Chrome Webstore Redirect */
 .navbar button {
     background-color: #0F2841;
     color: white;
@@ -70,6 +75,7 @@
     margin-top: 0px; 
 }
 
+/* Transparency on hover for Get SummarAIze button */
 .navbar button:hover {
     opacity: 0.9;
 }

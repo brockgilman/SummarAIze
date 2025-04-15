@@ -1,10 +1,10 @@
-"use client";
-
 import { useNavigate } from "react-router-dom";
 
+// Button component to handle sign-up (with email)
 export default function SignupButton() {
   const navigate = useNavigate();
 
+  // Navigate to sign-up page
   const handleSignup = () => {
     navigate("/signup");
   };

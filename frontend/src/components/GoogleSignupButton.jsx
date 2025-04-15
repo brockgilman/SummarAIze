@@ -1,9 +1,8 @@
-"use client";
-
 import { useNavigate } from "react-router-dom";
 import { handleGoogleSignup } from "./firebase/googleAuth";
 import { GoogleIcon } from "../app/sign-up/components/CustomIcons";
 
+// Button component to handle Google sign-up
 export default function GoogleSignupButton() {
   const navigate = useNavigate();
 

@@ -1,6 +1,6 @@
 import { getAuth, sendPasswordResetEmail} from "firebase/auth";
-import { auth } from "./firebaseConfig";
 
+// Function to handle password reset provided by Firebase
 const reset = document.getElementById("reset");
 reset.addEventListener("click", function(event) {
     event.preventDefault()
@@ -10,13 +10,11 @@ reset.addEventListener("click", function(event) {
     sendPasswordResetEmail(auth, email)
     .then(() => {
         // Password reset email sent!
-        // ..
         alert("Password reset email sent! Please check your inbox.");
     })
     .catch((error) => {
         const errorCode = error.code;
         const errorMessage = error.message;
-        // ..
         alert(errorMessage)
     });
 

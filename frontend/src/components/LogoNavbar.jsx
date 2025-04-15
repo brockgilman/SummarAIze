@@ -2,6 +2,7 @@ import React from 'react';
 import './Navbar.css';
 import Logo from './Logo';
 
+// Function for Navbar only with the logo, used in Signup and Login pages
 const LogoNavbar = () => {
   return (
     <header className="header">
