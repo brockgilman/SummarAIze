@@ -1,31 +1,35 @@
+'use client';
 import './globals.css';
 import SignupButtons from "../components/SignupButtons";
 import Navbar from "../components/Navbar";
 import { useEffect } from 'react';
 
 export default function LandingPage() {
-  // Add landing-page class to body element
   useEffect(() => {
-    // Add the class to the body when component mounts
     document.body.classList.add('landing-page');
-    
-    // Function to get cookie by name
+
     function getCookie(name) {
       const value = `; ${document.cookie}`;
       const parts = value.split(`; ${name}=`);
       if (parts.length === 2) return parts.pop().split(';').shift();
       return null;
     }
-    
-    // Check if auth cookie exists (replace 'authToken' with your actual cookie name)
+
     const authCookie = getCookie('extension_user_uid');
-    
-    // If user is already logged in, redirect to homepage
-    if (authCookie) {
+
+    // Check if rememberMe is set to true in localStorage
+    let rememberMe = false;
+    try {
+      const storedUser = JSON.parse(localStorage.getItem('extension_user'));
+      rememberMe = storedUser?.rememberMe === true;
+    } catch (err) {
+      console.warn('Could not parse extension_user from localStorage:', err);
+    }
+
+    if (authCookie && rememberMe) {
       window.location.href = '/summaries';
     }
-    
-    // Remove the class when component unmounts
+
     return () => {
       document.body.classList.remove('landing-page');
     };
@@ -34,7 +38,6 @@ export default function LandingPage() {
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
-      
       <main className="flex-grow">
         <div className="flex-container">
           <div className="textbox">
@@ -44,16 +47,13 @@ export default function LandingPage() {
               understanding and<br />
               accelerate your learning.
             </h1>
-            
             <p className="text-2xl md:text-3xl text-gray-700 leading-relaxed">
               Work with an AI partner that helps you extract key insights⁠—⁠to simplify long articles, clarify challenging content, and keep your reading efficient.
             </p>
-            
             <div className="mt-8">
               <SignupButtons />
             </div>
           </div>
-          
           <div className="gif-container">
             <img
               src="/summarizeimportant.gif"
@@ -63,7 +63,6 @@ export default function LandingPage() {
           </div>
         </div>
       </main>
-
       <footer className="text-2xl md:text-3xl text-gray-700 leading-relaxed">
         Trusted by UF students and researchers
       </footer>
