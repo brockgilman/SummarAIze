@@ -246,7 +246,7 @@ const Demo = () => {
                     }
                   }}
                 >
-                  Try for Free
+                  Generate
                 </Button>
               </div>
             </div>
