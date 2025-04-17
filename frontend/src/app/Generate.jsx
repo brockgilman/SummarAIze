@@ -54,6 +54,7 @@ const theme = createTheme({
           boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2)',
           border: '1px solid rgba(169, 201, 255, 0.2)',
           width: '100%',
+          maxWidth: '100%',
         },
         grouped: {
           margin: 2,
@@ -212,36 +213,40 @@ const Generate = () => {
         {/* TODO: still figuring out how to make sidebar dynamic */}
         {/* Main content offset from sidebar */}
         <div
-          className="p-6"
+          className="p-10"
           style={{
-            marginLeft: '275px',          // match sidebar width from Sidebar.css
-            width: 'calc(100% - 275px)', // fill remaining space
+            marginLeft: '350px',
+            marginRight: '350px',
+            marginTop: '20px',
+            width: 'calc(100% - 350px)', 
           }}
         >
           <h1 className="text-3xl font-bold mb-8">Generate Summary</h1>
 
           {/* Tone & Length Toggles */}
           <div className="mb-8 space-y-6">
-            <div>
-              <div className="text-white font-extrabold mb-2">Tone</div>
+            <div className="w-full flex items-center gap-4">
+              <div className="text-white font-semibold" style={{ minWidth: '60px' }}>Tone</div>
               <ToggleButtonGroup
                 value={selectedTone}
                 exclusive
                 onChange={handleToneChange}
                 fullWidth
+                sx={{ width: '100%' }}
               >
                 <ToggleButton value="casual">Casual</ToggleButton>
                 <ToggleButton value="knowledgeable">Knowledgeable</ToggleButton>
                 <ToggleButton value="expert">Expert</ToggleButton>
               </ToggleButtonGroup>
             </div>
-            <div>
-              <div className="text-white font-semibold mb-2">Length</div>
+            <div className="w-full flex items-center gap-4">
+              <div className="text-white font-semibold" style={{ minWidth: '60px' }}>Length</div>
               <ToggleButtonGroup
                 value={selectedLength}
                 exclusive
                 onChange={handleLengthChange}
                 fullWidth
+                sx={{ width: '100%' }}
               >
                 <ToggleButton value="short">Short</ToggleButton>
                 <ToggleButton value="medium">Medium</ToggleButton>
@@ -251,21 +256,29 @@ const Generate = () => {
           </div>
 
           {/* Side-by-side text fields */}
-          <div className="flex flex-row gap-6 mb-6" style={{ display: 'flex', width: '100%', minHeight: '400px' }}>
+          <div className="flex flex-row mb-6" 
+            style={{ 
+              display: 'flex', 
+              width: '100%', 
+              minHeight: '400px',
+              border: '2px solid #CFD4DA',
+              borderRadius: '25px',
+              overflow: 'hidden',
+              backgroundColor: '#FFFFFF',
+              marginTop: '32px'
+            }}>
             {/* Left (Input) */}
-            <div style={{ flex: '1 1 50%', display: 'flex', flexDirection: 'column' }}>
-              <div className="flex justify-between items-center mb-2">
-                <label className="text-white font-semibold">Input Text</label>
-                <div className="text-sm text-gray-400">
-                  {inputStats.words} words | {inputStats.sentences} sentences
-                </div>
+            <div style={{ 
+              flex: '1 1 50%', 
+              display: 'flex', 
+              flexDirection: 'column',
+              padding: '12px',
+              borderRight: '2px solid #CFD4DA',
+              position: 'relative'
+            }}>
+              <div className="mb-1">
+                <label className="text-black font-semibold">Input Text</label>
               </div>
-              <button
-                onClick={pasteFromClipboard}
-                className="mb-2 w-32 bg-[#478cde] text-white py-2 px-4 rounded-md font-bold hover:opacity-90 transition shadow-md"
-              >
-                Paste Text
-              </button>
               <TextField
                 inputRef={textareaRef}
                 value={textInput}
@@ -276,33 +289,92 @@ const Generate = () => {
                 placeholder="Paste text to summarize..."
                 sx={{
                   flex: 1,
-                  backgroundColor: '#2c2c2c',
+                  backgroundColor: '#FFFFFF',
+                  borderRadius: '15px',
+                  height: '400px',
                   '& .MuiInputBase-root': {
-                    color: '#fff',
-                    display: 'block',
-                    maxHeight: '300px',
-                    overflowY: 'scroll',
+                    color: '#000',
+                    height: '100%',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    border: 'none',
+                    padding: '6px',
+                    backgroundColor: '#FFFFFF',
+                    borderRadius: '15px',
+                    '& textarea': {
+                      height: 'calc(100% - 30px) !important',
+                      textAlign: 'justify',
+                      overflowY: 'auto !important',
+                      paddingRight: '16px',
+                    }
                   },
                   '& .MuiOutlinedInput-notchedOutline': {
-                    borderColor: 'rgba(169,201,255,0.2)',
+                    border: 'none'
                   },
                   '&:hover .MuiOutlinedInput-notchedOutline': {
-                    borderColor: '#478cde',
+                    border: 'none'
                   },
                   '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                    borderColor: '#478cde',
+                    border: 'none'
                   },
                 }}
               />
+              <div className="text-sm text-gray-600" style={{ 
+                position: 'absolute', 
+                bottom: '8px', 
+                left: '20px',
+                display: 'flex',
+                alignItems: 'center',
+                height: '38px'
+              }}>
+                {inputStats.words} words • {inputStats.sentences} sentences
+              </div>
+              <button
+                onClick={generateSummary}
+                disabled={isGenerating}
+                style={{
+                  position: 'absolute',
+                  bottom: '8px',
+                  right: '20px',
+                  backgroundColor: '#0F2841',
+                  color: '#CFD4DA',
+                  padding: '8px 32px',
+                  height: '38px',
+                  borderRadius: '6px',
+                  border: 'none',
+                  fontWeight: 600,
+                  fontSize: '16px',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease',
+                  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}
+                onMouseOver={(e) => {
+                  e.currentTarget.style.backgroundColor = 'rgba(15, 40, 65, 0.9)';
+                }}
+                onMouseOut={(e) => {
+                  e.currentTarget.style.backgroundColor = '#0F2841';
+                }}
+                onMouseDown={(e) => e.currentTarget.style.backgroundColor = 'rgba(15, 40, 65, 0.8)'}
+                onMouseUp={(e) => e.currentTarget.style.backgroundColor = 'rgba(15, 40, 65, 0.9)'}
+                className="disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isGenerating ? 'Generating...' : 'Generate'}
+              </button>
             </div>
 
             {/* Right (Output) */}
-            <div style={{ flex: '1 1 50%', display: 'flex', flexDirection: 'column' }}>
-              <div className="flex justify-between items-center mb-2">
-                <label className="text-white font-semibold">Summary</label>
-                <div className="text-sm text-gray-400">
-                  {outputStats.words} words | {outputStats.sentences} sentences
-                </div>
+            <div style={{ 
+              flex: '1 1 50%', 
+              display: 'flex', 
+              flexDirection: 'column',
+              padding: '12px',
+              position: 'relative'
+            }}>
+              <div className="mb-1">
+                <label className="text-black font-semibold">Summary</label>
               </div>
               <TextField
                 value={responseText}
@@ -313,43 +385,81 @@ const Generate = () => {
                 InputProps={{ readOnly: true }}
                 sx={{
                   flex: 1,
-                  backgroundColor: '#2c2c2c',
+                  backgroundColor: '#FFFFFF',
+                  borderRadius: '15px',
+                  height: '400px',
                   '& .MuiInputBase-root': {
-                    color: '#fff',
-                    display: 'block',
-                    maxHeight: '300px',
-                    overflowY: 'scroll',
+                    color: '#000',
+                    height: '100%',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    border: 'none',
+                    padding: '6px',
+                    backgroundColor: '#FFFFFF',
+                    borderRadius: '15px',
+                    '& textarea': {
+                      height: 'calc(100% - 30px) !important',
+                      textAlign: 'justify',
+                      overflowY: 'auto !important',
+                      paddingRight: '16px',
+                    }
                   },
                   '& .MuiOutlinedInput-notchedOutline': {
-                    borderColor: 'rgba(169,201,255,0.2)',
+                    border: 'none'
                   },
                   '&:hover .MuiOutlinedInput-notchedOutline': {
-                    borderColor: '#478cde',
+                    border: 'none'
                   },
                   '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                    borderColor: '#478cde',
+                    border: 'none'
                   },
                 }}
               />
+              <div className="text-sm text-gray-600" style={{ 
+                position: 'absolute', 
+                bottom: '8px', 
+                left: '20px',
+                display: 'flex',
+                alignItems: 'center',
+                height: '38px'
+              }}>
+                {outputStats.words} words • {outputStats.sentences} sentences
+              </div>
+              <button
+                onClick={saveSummary}
+                disabled={!responseText}
+                style={{
+                  position: 'absolute',
+                  bottom: '8px',
+                  right: '20px',
+                  backgroundColor: '#0F2841',
+                  color: '#CFD4DA',
+                  padding: '8px 32px',
+                  height: '38px',
+                  borderRadius: '6px',
+                  border: 'none',
+                  fontWeight: 600,
+                  fontSize: '16px',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease',
+                  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}
+                onMouseOver={(e) => {
+                  e.currentTarget.style.backgroundColor = 'rgba(15, 40, 65, 0.9)';
+                }}
+                onMouseOut={(e) => {
+                  e.currentTarget.style.backgroundColor = '#0F2841';
+                }}
+                onMouseDown={(e) => e.currentTarget.style.backgroundColor = 'rgba(15, 40, 65, 0.8)'}
+                onMouseUp={(e) => e.currentTarget.style.backgroundColor = 'rgba(15, 40, 65, 0.9)'}
+                className="disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Save
+              </button>
             </div>
-          </div>
-
-          {/* Action Buttons */}
-          <div className="flex justify-center gap-6 mb-4">
-            <button
-              onClick={generateSummary}
-              disabled={isGenerating}
-              className="px-8 bg-[#478cde] text-white py-3 rounded-md font-bold text-lg hover:opacity-90 transition disabled:opacity-50"
-            >
-              {isGenerating ? 'Generating...' : 'Generate'}
-            </button>
-            <button
-              onClick={saveSummary}
-              disabled={!responseText}
-              className="px-8 bg-[#478cde] text-white py-3 rounded-md font-bold text-lg hover:opacity-90 transition disabled:opacity-50"
-            >
-              Save Summary
-            </button>
           </div>
 
           {/* Error Message */}
