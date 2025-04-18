@@ -159,10 +159,20 @@ const Summaries = () => {
   }
 
   return (
+    
     <div className="flex h-screen bg-gray-50">
+    
       <Sidebar />
       {/* Added left padding of 275px */}
-      <div className="flex-1 ml-[275px] md:ml-[300px] pr-8 py-6 overflow-auto">
+      <div className="flex-1 pr-8 py-6 overflow-auto"
+      style={{
+        marginLeft: '300px',
+      }}>
+        <div style={{
+          marginTop: '20px',
+        }}>
+        <h1 className="text-3xl font-bold mb-8">Summaries</h1>
+        </div>
         <div className="mb-6">
           <div className="relative max-w-2xl mx-auto">
             <input
@@ -184,109 +194,167 @@ const Summaries = () => {
             <p className="mt-2">Use the extension to create your first summary</p>
           </div>
         ) : (
-          <div className="grid grid-cols-3 gap-6">
-            {/* New/Upload Card */}
+          <div>
             <div className="bg-white border border-gray-300 rounded shadow-sm hover:shadow-md transition-shadow">
-              <div className="flex flex-col items-center justify-center p-8">
-                <div className="w-16 h-16 mb-4 text-gray-400">
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path>
-                    <polyline points="13 2 13 9 20 9"></polyline>
-                  </svg>
-                </div>
-                <h2 className="text-xl text-gray-700 font-medium mb-6">New</h2>
-                <button className="flex items-center text-sm font-medium text-gray-600 border border-gray-300 rounded px-3 py-1.5 hover:bg-gray-50">
-                  <svg className="w-4 h-4 mr-1 text-gray-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM6.293 6.707a1 1 0 010-1.414l3-3a1 1 0 011.414 0l3 3a1 1 0 01-1.414 1.414L11 5.414V13a1 1 0 11-2 0V5.414L7.707 6.707a1 1 0 01-1.414 0z" clipRule="evenodd" />
-                  </svg>
-                  Upload
-                </button>
-              </div>
-            </div>
-            
-            {/* Summary Cards */}
-            {summaries.map((summary) => (
-              <div
-                key={summary.id}
-                className="max-w-sm rounded overflow-hidden shadow-lg bg-white cursor-pointer transition-shadow hover:shadow-md col-span-1"
-                onClick={() => setActiveSummary(summary)}
-              >
-                <div className="px-6 py-4">
-                  <div className="font-bold text-xl mb-2 truncate">
-                    {summary['paper-link']
-                      ? summary['paper-link'].split('/').pop()
-                      : 'Untitled Summary'}
-                  </div>
-                  <p className="text-gray-700 text-base line-clamp-3">
-                    {truncateText(summary['summary-content'], 150)}
-                  </p>
-                </div>
-                <div className="px-6 pt-4 pb-2 flex flex-wrap items-center gap-2">
-                  {notebooks
-                    .filter((nb) => nb.summaries.includes(summary.id))
-                    .map((nb) => (
-                      <div
-                        key={nb.name}
-                        className="inline-flex items-center bg-gray-200 rounded-full px-3 py-1 text-sm font-semibold text-gray-700"
-                      >
-                        #{nb.name}
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleAddTagClick(e, summary.id);
-                          }}
-                          className="ml-2 w-4 h-4 flex items-center justify-center text-gray-600 hover:text-gray-800"
-                          title="Add to notebook"
-                        >
-                          <svg
-                            className="w-3 h-3"
-                            xmlns="http://www.w3.org/2000/svg"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            viewBox="0 0 24 24"
-                          >
-                            <line x1="12" y1="5" x2="12" y2="19" />
-                            <line x1="5" y1="12" x2="19" y2="12" />
-                          </svg>
-                        </button>
-                      </div>
-                    ))}
-                </div>
-              </div>
-            ))}
-
-            {activeSummary && (
-              <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60">
-                <div className="relative w-full max-w-4xl bg-white rounded-lg shadow-lg p-8 max-h-[90vh] overflow-y-auto">
-                  {/* Close Button */}
-                  <button
-                    onClick={() => setActiveSummary(null)}
-                    className="absolute top-4 right-4 text-gray-500 hover:text-gray-800 text-xl font-bold"
-                  >
-                    &times;
+                <div className="flex flex-col items-center justify-center">
+                  <h2 className="text-xl text-gray-700 font-medium mb-6">New</h2>
+                  <button className="flex items-center text-sm font-medium text-gray-600 border border-gray-300 rounded px-3 py-1.5 hover:bg-gray-50">
+                    <svg className="w-4 h-4 mr-1 text-gray-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM6.293 6.707a1 1 0 010-1.414l3-3a1 1 0 011.414 0l3 3a1 1 0 01-1.414 1.414L11 5.414V13a1 1 0 11-2 0V5.414L7.707 6.707a1 1 0 01-1.414 0z" clipRule="evenodd" />
+                    </svg>
+                    Upload
                   </button>
-
-                  {/* Summary Content */}
-                  <h2 className="text-2xl font-semibold mb-4">
-                    {activeSummary['paper-link']
-                      ? activeSummary['paper-link'].split('/').pop()
-                      : 'Untitled Summary'}
-                  </h2>
-                  <p className="text-gray-700 whitespace-pre-wrap leading-relaxed">
-                    {activeSummary['summary-content']}
-                  </p>
                 </div>
               </div>
-            )}
+            <div style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(3, 1fr)',
+                    columnGap: '15px',
+                    rowGap: '15px',
+                  }}>
+              
+              
+              {/* Summary Cards */}
+              {summaries.map((summary) => (
+                <div
+                  key={summary.id}
+                  className="border-gray-300 rounded-lg p-4 bg-white shadow-sm hover:shadow-md transition-shadow cursor-pointer"
+                  style={{
+                    maxHeight: '300px',
+                    boxShadow: '0 4px 8px 0 rgba(0,0,0,0.2)',
+                    textAlign: 'center',
+                    padding: '10px 5px 0px 5px',
+                    width: '300px',
+                    textWrap: 'pretty',
+                    overflowX: 'hidden',
+                    borderRadius: '20px',
+                  }}
+                  onClick={() => setActiveSummary(summary)}
+                >
+                  <div className="px-6 py-4">
+                    <div className="relative h-[120px] text-gray-700 text-base"
+                    style={{
+                      position: 'relative',
+                      height: '200px',
+                      overflow: 'hidden',
+                    }}>
+                      <p className="whitespace-pre-wrap break-words"
+                      style={{
 
+                      }}>
+                        {summary['summary-content']}
+                      </p>
+                      <div className="absolute bottom-0 left-0 w-full h-6 bg-gradient-to-t from-white to-transparent pointer-events-none"
+                      style={{
+                        position: 'absolute',
+                        bottom: '0',
+                        left: '0',
+                        height: '40px',
+                        width: '100%',
+                        background: 'linear-gradient(to top, white, transparent)',
+                        PointerEvent: 'none',
+                      }} />
+                    </div>
+                  </div>
+                  <div style={{ position: 'relative', marginTop: '10px' }}>
+                    <div style={{
+                      display: 'flex',
+                      flexWrap: 'wrap',
+                      justifyContent: 'center',
+                      gap: '6px',
+                      marginBottom: '10px'
+                    }}>
+                      {notebooks
+                        .filter((nb) => nb.summaries.includes(summary.id))
+                        .map((nb) => (
+                          <span
+                            key={nb.name}
+                            style={{
+                              backgroundColor: 'lightgray',
+                              borderRadius: '100px',
+                              padding: '4px 10px',
+                              fontSize: '0.85rem',
+                              display: 'inline-block',
+                            }}
+                          >
+                            #{nb.name}
+                          </span>
+                        ))}
+                    </div>
+
+                    {/* Plus Button Circle */}
+                    <div style={{
+                      marginTop: '30px',
+                      position: 'relative',
+                      left: '50%',
+                      transform: 'translateX(-50%)',
+                      width: '28px',
+                      height: '28px',
+                      backgroundColor: 'lightgray',
+                      borderRadius: '50%',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      cursor: 'pointer',
+                      boxShadow: '0 2px 5px rgba(0,0,0,0.1)'
+                    }}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleAddTagClick(e, summary.id);
+                      }}
+                      title="Add to notebook"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        stroke="gray"
+                        strokeWidth="2"
+                        viewBox="0 0 24 24"
+                        style={{ width: '14px', height: '14px' }}
+                      >
+                        <line x1="12" y1="5" x2="12" y2="19" />
+                        <line x1="5" y1="12" x2="19" y2="12" />
+                      </svg>
+                    </div>
+                  </div>
+                </div>
+              ))}
+
+              {activeSummary && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60">
+                  <div className="relative w-full max-w-4xl bg-white rounded-lg shadow-lg p-8 max-h-[90vh] overflow-y-auto">
+                    {/* Close Button */}
+                    <button
+                      onClick={() => setActiveSummary(null)}
+                      className="absolute top-4 right-4 text-gray-500 hover:text-gray-800 text-xl font-bold"
+                    >
+                      &times;
+                    </button>
+
+                    {/* Summary Content */}
+                    <h2 className="text-2xl font-semibold mb-4">
+                      {activeSummary['paper-link']
+                        ? activeSummary['paper-link'].split('/').pop()
+                        : 'Untitled Summary'}
+                    </h2>
+                    <p className="text-gray-700 whitespace-pre-wrap leading-relaxed">
+                      {activeSummary['summary-content']}
+                    </p>
+                  </div>
+                </div>
+              )}
+
+            </div>
           </div>
         )}
       </div>
       
       {/* Tag Modal */}
       {showTagModal && (
-        <div className="fixed inset-0 bg-blue bg-opacity-50 flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-blue bg-opacity-50 flex items-center justify-center z-50"
+        style={{
+          marginLeft: '300px',
+        }}>
           <div className="bg-white rounded-lg p-6 w-full max-w-md">
             <h3 className="text-xl font-semibold mb-4">Add to Notebook</h3>
             <div className="mb-4">
