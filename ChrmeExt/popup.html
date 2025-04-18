@@ -9,7 +9,7 @@
         body {
             margin: 0;
             padding: 0;
-            background: #000;
+            background: #FFFFFF;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -20,49 +20,14 @@
         .main-container {
             width: 400px;
             position: relative;
-            padding: 2px;
+            padding: 0;
             border-radius: 15px;
-            background: linear-gradient(90deg, rgba(207, 212, 218, 1) 0%, rgba(71, 140, 222, 1) 100%);
-            box-shadow: 0 0 30px rgba(169, 201, 255, 0.2);
-        }
-
-        .gradient-border {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            border-radius: 15px;
-            z-index: 0;
-            overflow: hidden;
-            opacity: 0.8;
-        }
-
-        .gradient-border::before {
-            content: '';
-            position: absolute;
-            top: -150%;
-            left: -150%;
-            height: 400%;
-            width: 400%;
-            background: conic-gradient(transparent 0deg,
-                    transparent 315deg,
-                    rgba(169, 201, 255, 1) 345deg,
-                    rgba(255, 187, 236, 1) 355deg,
-                    transparent 360deg);
-            animation: rotate 10s linear infinite;
-            filter: blur(6px) brightness(1.5);
-        }
-
-        @keyframes rotate {
-            100% {
-                transform: rotate(360deg);
-            }
+            background: #FFFFFF;
         }
 
         .content {
             position: relative;
-            background: #1a1a1a;
+            background: #FFFFFF;
             padding: 20px;
             border-radius: 15px;
             z-index: 1;
@@ -75,7 +40,7 @@
         }
 
         .toggle-label {
-            color: #fff;
+            color: #000000;
             font-size: 14px;
             margin-bottom: 4px;
             font-weight: 600;
@@ -84,12 +49,12 @@
         .toggle-switch {
             display: flex;
             justify-content: space-between;
-            background: #a9c9ff1a;
+            background: #CFD4DA;
             border-radius: 8px;
             padding: 4px;
             margin: 5px 0;
-            border: 1px solid rgba(169, 201, 255, 0.2);
-            box-shadow: 0 0 10px rgba(169, 201, 255, 0.1);
+            border: none;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         }
 
         .toggle-option {
@@ -98,20 +63,20 @@
             padding: 8px;
             cursor: pointer;
             border-radius: 6px;
-            transition: all 0.3s ease;
-            color: #fff;
-            font-weight: 700;
+            transition: all 0.2s ease;
+            color: #000000;
+            font-weight: 600;
+            background: transparent;
         }
 
         .toggle-option:hover {
-            background: rgba(169, 201, 255, 0.2);
+            background: #BABFC4;
         }
 
         .toggle-option.active {
-            background: linear-gradient(90deg, rgba(207, 212, 218, 1) 0%, rgba(71, 140, 222, 1) 100%);
-            color: #1a1a1a;
-            box-shadow: 0 0 10px rgba(169, 201, 255, 0.3);
-            font-weight: 800;
+            background: #0F2841;
+            color: #FFFFFF;
+            font-weight: 600;
         }
 
         .response-box {
@@ -119,30 +84,28 @@
             min-height: 100px;
             margin: 10px 0;
             padding: 8px;
-            border: 1px solid rgba(169, 201, 255, 0.2);
+            border: 1px solid #CFD4DA;
             border-radius: 4px;
             resize: vertical;
-            background: #1a1a1a;
-            color: #fff;
+            background: #FFFFFF;
+            color: #000000;
             font-family: inherit;
         }
 
         button {
-            background: linear-gradient(90deg, rgba(207, 212, 218, 1) 0%, rgba(71, 140, 222, 1) 100%);
-            color: #fff;
+            background: #0F2841;
+            color: #FFFFFF;
             border: none;
             padding: 10px;
             border-radius: 4px;
             cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 0 10px rgba(169, 201, 255, 0.2);
-            font-weight: 700;
-            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+            transition: all 0.2s ease;
+            font-weight: 600;
+            width: 100%;
         }
 
         button:hover {
-            background: linear-gradient(90deg, rgba(207, 212, 218, 1) 0%, rgba(71, 140, 222, 1) 100%);
-            box-shadow: 0 0 15px rgba(169, 201, 255, 0.3);
+            background: rgba(15, 40, 65, 0.9);
         }
 
         .status-message {
@@ -154,7 +117,7 @@
         }
 
         textarea::placeholder {
-            color: rgba(255, 255, 255, 0.5);
+            color: rgba(0, 0, 0, 0.5);
         }
 
         .auth-status {
@@ -188,7 +151,6 @@
 
 <body>
     <div class="main-container">
-        <div class="gradient-border"></div>
         <div class="content">
             <div class="auth-status">
                 <div id="auth-indicator" class="auth-indicator logged-out"></div>
