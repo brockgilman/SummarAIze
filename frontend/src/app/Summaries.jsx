@@ -162,8 +162,7 @@ const Summaries = () => {
     <div className="flex h-screen bg-gray-50">
       <Sidebar />
       {/* Added left padding of 275px */}
-      <div className="flex-1 ml-[275px] md:ml-[300px] pr-8 py-6 overflow-auto"
-      style={width}>
+      <div className="flex-1 ml-[275px] md:ml-[300px] pr-8 py-6 overflow-auto">
         <div className="mb-6">
           <div className="relative max-w-2xl mx-auto">
             <input

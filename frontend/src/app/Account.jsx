@@ -1,27 +1,29 @@
-import Sidebar from "../components/Sidebar"
-import AccountProfile from "./AccountProfile"
-import { Box } from "@mui/material"
+import Sidebar from "../components/Sidebar";
+import AccountProfile from "./AccountProfile";
+import { Box } from "@mui/material";
 
 const Account = () => {
   return (
     <Box sx={{ display: "flex", minHeight: "100vh" }}>
-      <Sidebar />
+      {/* Sidebar with fixed width */}
+      <Box sx={{ width: 350, flexShrink: 0 }}>
+        <Sidebar />
+      </Box>
 
+      {/* Main content takes up the rest */}
       <Box
         sx={{
-          flexGrow: 1,
-          px: 4,
-          pt: 4,
-          maxWidth: "800px", // Sets a maximum width for the profile box
-          width: "100%",
-          ml: "-140px", // Shifts box to the left closer to sidebar
+          width: "calc(100% - 350px)",
+          p: 4,
           bgcolor: "#fff",
         }}
       >
-        <AccountProfile />
+        <Box sx={{ maxWidth: 800, ml: -60 }}>
+          <AccountProfile />
+        </Box>
       </Box>
     </Box>
-  )
-}
+  );
+};
 
-export default Account
+export default Account;

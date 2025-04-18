@@ -24,6 +24,8 @@ import { setDoc, doc } from "firebase/firestore";
 import LogoNavbar from "../../components/LogoNavbar";
 import bcrypt from "bcryptjs";
 
+const PRIMARY_COLOR = "#0F2841";
+
 const Card = styled(MuiCard)(({ theme }) => ({
   display: "flex",
   flexDirection: "column",
@@ -33,25 +35,21 @@ const Card = styled(MuiCard)(({ theme }) => ({
   gap: theme.spacing(2),
   margin: "auto",
   backgroundColor: "#ffffff",
-  boxShadow: "hsla(0, 0.00%, 100.00%, 0.05) 0px 5px 15px 0px, hsla(0, 0.00%, 100.00%, 0.05) 0px 15px 35px -5px",
+  boxShadow:
+    "hsla(0, 0.00%, 100.00%, 0.05) 0px 5px 15px 0px, hsla(0, 0.00%, 100.00%, 0.05) 0px 15px 35px -5px",
   [theme.breakpoints.up("sm")]: {
     width: "450px",
   },
 }));
 
 const SignUpContainer = styled(Stack)(({ theme }) => ({
-  height: "90vh",
+  minHeight: "90vh",
   width: "100vw",
-  padding: 0,
-  margin: 0, 
+  marginTop: "80px",
   display: "flex",
-  justifyContent: "center",
+  flexDirection: "column",
   alignItems: "center",
-  marginTop: "-10vh",
   backgroundColor: "#f0f0f0",
-  [theme.breakpoints.up("sm")]: {
-    padding: theme.spacing(4),
-  },
 }));
 
 const WhiteTextField = styled(TextField)({
@@ -64,23 +62,27 @@ const WhiteTextField = styled(TextField)({
       borderColor: "rgba(0, 0, 0, 0.23)",
     },
     "&.Mui-focused fieldset": {
-      borderColor: "rgba(0, 0, 0, 0.23)",
+      borderColor: PRIMARY_COLOR,
     },
+  },
+  "& label.Mui-focused": {
+    color: PRIMARY_COLOR,
   },
 });
 
-export default function SignUp(props) {
-  const [emailError, setEmailError] = React.useState(false);
-  const [emailErrorMessage, setEmailErrorMessage] = React.useState("");
-  const [passwordError, setPasswordError] = React.useState(false);
-  const [passwordErrorMessage, setPasswordErrorMessage] = React.useState("");
-  const [nameError, setNameError] = React.useState(false);
-  const [nameErrorMessage, setNameErrorMessage] = React.useState("");
+export default function SignUp() {
+  const [emailError, setEmailError] = useState(false);
+  const [emailErrorMessage, setEmailErrorMessage] = useState("");
+  const [passwordError, setPasswordError] = useState(false);
+  const [passwordErrorMessage, setPasswordErrorMessage] = useState("");
+  const [nameError, setNameError] = useState(false);
+  const [nameErrorMessage, setNameErrorMessage] = useState("");
   const [emailUpdates, setEmailUpdates] = useState(false);
+
+  const navigate = useNavigate();
 
   useEffect(() => {
     document.body.classList.add("signup-page");
-
     return () => {
       document.body.classList.remove("signup-page");
     };
@@ -123,8 +125,6 @@ export default function SignUp(props) {
     return isValid;
   };
 
-  const navigate = useNavigate();
-
   const handleSubmit = async (event) => {
     event.preventDefault();
 
@@ -141,26 +141,22 @@ export default function SignUp(props) {
 
     try {
       const auth = getAuth();
-      // Create user with email and password
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       console.log("User created:", userCredential.user);
 
-      // Hash the password
       const salt = bcrypt.genSaltSync(10);
       const hashedPassword = bcrypt.hashSync(password, salt);
 
-      // Get the user UID and store the email and hashed password
       getUserID(async (uid) => {
         console.log("Fetched UID:", uid);
-        // Store user data in Firebase
         if (uid) {
           try {
             await setDoc(doc(db, "users", uid), {
               name: name,
               email: email,
               password: hashedPassword,
-              rememberMe: false, // Default value
-              emailUpdates: emailUpdates, // Store emailUpdates value based on checkbox
+              rememberMe: false,
+              emailUpdates: emailUpdates,
             });
             console.log("User data stored in Firestore.");
           } catch (error) {
@@ -168,7 +164,7 @@ export default function SignUp(props) {
           }
         }
       });
-      // On successful sign up, navigate to summaries page
+
       navigate("/summaries");
     } catch (error) {
       console.error("Error:", error.message);
@@ -231,12 +227,23 @@ export default function SignUp(props) {
                 color={passwordError ? "error" : "primary"}
               />
             </FormControl>
-            {/* Email Updates Checkbox */}
             <FormControlLabel
-              control={<Checkbox checked={emailUpdates} onChange={() => setEmailUpdates(!emailUpdates)} color="primary" />}
+              control={
+                <Checkbox
+                  checked={emailUpdates}
+                  onChange={() => setEmailUpdates(!emailUpdates)}
+                  color="primary"
+                />
+              }
               label="I want to receive updates via email."
             />
-            <Button id="submit" type="submit" fullWidth variant="contained" sx={{ backgroundColor: '#0F2841', color: '#ffffff' }}>
+            <Button
+              id="submit"
+              type="submit"
+              fullWidth
+              variant="contained"
+              sx={{ backgroundColor: PRIMARY_COLOR, color: "#ffffff" }}
+            >
               Sign up
             </Button>
           </Box>
@@ -244,7 +251,6 @@ export default function SignUp(props) {
             <Typography sx={{ color: "text.secondary" }}>or</Typography>
           </Divider>
           <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-            {/* Google Signup Button */}
             <Button
               fullWidth
               variant="outlined"
@@ -255,8 +261,7 @@ export default function SignUp(props) {
             </Button>
             <Typography sx={{ textAlign: "center" }}>
               Already have an account?{" "}
-              {/* Redirect to Login */}
-              <Link href="/login" variant="body2" sx={{ color: '#0F2841', alignSelf: "center" }}>
+              <Link href="/login" variant="body2" sx={{ color: PRIMARY_COLOR, alignSelf: "center" }}>
                 Log in
               </Link>
             </Typography>

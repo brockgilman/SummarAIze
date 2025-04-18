@@ -43,16 +43,6 @@ body.landing-page {
   padding-top: 155px;
 }
 
-/* SignUp Page body padding*/
-body.signup-page {
-  padding-top: 165px;
-}
-
-/* LogIn Page body padding*/
-body.signin-page {
-  padding-top: 165px;
-}
-
 /* Landing Page container styles */
 .main-container {
   display: flex;
