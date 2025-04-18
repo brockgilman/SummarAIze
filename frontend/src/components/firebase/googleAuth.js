@@ -1,14 +1,34 @@
 import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
-import { auth } from "./firebaseConfig";
+import { doc, getDoc, setDoc, serverTimestamp } from "firebase/firestore";
+import { auth, db } from "./firebaseConfig";
 
-// Function to use Firebase's Google authentication provider to sign in users
 export const handleGoogleSignup = async (navigate) => {
   try {
     const provider = new GoogleAuthProvider();
-    await signInWithPopup(auth, provider);
+    const result = await signInWithPopup(auth, provider);
+    const user = result.user;
+
+    if (!user) return;
+
+    // Redirect immediately
     navigate("/summaries");
+
+    const userRef = doc(db, "users", user.uid);
+    const userSnap = await getDoc(userRef);
+
+    if (!userSnap.exists()) {
+      await setDoc(userRef, {
+        name: user.displayName || "Unnamed",
+        email: user.email || "No email",
+        provider: "google",
+        createdAt: serverTimestamp(),
+      });
+    }
   } catch (error) {
-    console.error("Error during Google sign-in:", error.message);
+    if (error.code !== "auth/popup-closed-by-user") {
+      alert("Google sign-in failed: " + error.message);
+    }
+    console.error("Google Sign-up Error:", error.message);
   }
 };
 
