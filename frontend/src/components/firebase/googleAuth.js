@@ -10,25 +10,29 @@ export const handleGoogleSignup = async (navigate) => {
 
     if (!user) return;
 
-    // Redirect immediately
-    navigate("/summaries");
-
+    // Reference to user document in Firestore
     const userRef = doc(db, "users", user.uid);
     const userSnap = await getDoc(userRef);
 
     if (!userSnap.exists()) {
       await setDoc(userRef, {
+        uid: user.uid,
         name: user.displayName || "Unnamed",
         email: user.email || "No email",
         provider: "google",
-        createdAt: serverTimestamp(),
       });
+      console.log("User added to Firestore");
+    } else {
+      console.log("User already exists in Firestore");
     }
+
+    navigate("/summaries");
+
   } catch (error) {
-    if (error.code !== "auth/popup-closed-by-user") {
+    console.error("Google Sign-up Error:", error.message);
+    if (error.code !== 'auth/popup-closed-by-user') {
       alert("Google sign-in failed: " + error.message);
     }
-    console.error("Google Sign-up Error:", error.message);
   }
 };
 
