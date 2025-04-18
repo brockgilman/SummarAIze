@@ -1,17 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import Checkbox from '@mui/material/Checkbox';
-import CssBaseline from '@mui/material/CssBaseline';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import Divider from '@mui/material/Divider';
-import FormLabel from '@mui/material/FormLabel';
-import FormControl from '@mui/material/FormControl';
-import Link from '@mui/material/Link';
-import TextField from '@mui/material/TextField';
-import Typography from '@mui/material/Typography';
-import Stack from '@mui/material/Stack';
-import MuiCard from '@mui/material/Card';
+import {
+  Box, Button, Checkbox, CssBaseline, FormControlLabel, Divider, FormLabel,
+  FormControl, Link, TextField, Typography, Stack, Card as MuiCard
+} from '@mui/material';
 import { styled } from '@mui/material/styles';
 import ForgotPassword from './components/ForgotPassword';
 import { GoogleIcon } from './components/CustomIcons';
@@ -20,8 +11,12 @@ import { useNavigate } from "react-router-dom";
 import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
 import { db } from "../../components/firebase/firebaseConfig";
 import { doc, getDoc } from "firebase/firestore";
-import LogoNavbar from "../../components/LogoNavbar"
+import LogoNavbar from "../../components/LogoNavbar";
 import bcrypt from 'bcryptjs';
+
+const COOKIE_AGE_DAYS = 7;
+
+const PRIMARY_COLOR = "#0F2841";
 
 const Card = styled(MuiCard)(({ theme }) => ({
   display: "flex",
@@ -32,34 +27,31 @@ const Card = styled(MuiCard)(({ theme }) => ({
   gap: theme.spacing(2),
   margin: "auto",
   backgroundColor: "#ffffff",
-  boxShadow: "hsla(0, 0.00%, 100.00%, 0.05) 0px 5px 15px 0px, hsla(0, 0.00%, 100.00%, 0.05) 0px 15px 35px -5px",
+  boxShadow: "0px 5px 15px rgba(0, 0, 0, 0.05), 0px 15px 35px -5px rgba(0, 0, 0, 0.05)",
   [theme.breakpoints.up("sm")]: {
-    width: "450px",
+    width: "clamp(300px, 90vw, 450px)",
   },
 }));
 
 const SignInContainer = styled(Stack)(({ theme }) => ({
-  height: "90vh",
+  minHeight: "90vh",
   width: "100vw",
-  padding: 0,
-  margin: 0,
+  marginTop: '80px',
   display: "flex",
-  justifyContent: "center",
+  flexDirection: "column",
   alignItems: "center",
-  marginTop: "-10vh",
   backgroundColor: "#f0f0f0",
-  [theme.breakpoints.up("sm")]: {
-    padding: theme.spacing(4),
-  },
-}))
+}));
 
-export default function LogIn(props) {
+export default function LogIn() {
   const [emailError, setEmailError] = useState(false);
   const [emailErrorMessage, setEmailErrorMessage] = useState('');
   const [passwordError, setPasswordError] = useState(false);
   const [passwordErrorMessage, setPasswordErrorMessage] = useState('');
   const [open, setOpen] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
+
+  const navigate = useNavigate();
 
   useEffect(() => {
     document.body.classList.add('signin-page');
@@ -71,41 +63,37 @@ export default function LogIn(props) {
   const handleClickOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
 
-  const navigate = useNavigate();
-
   const handleSubmit = async (event) => {
     event.preventDefault();
     if (!validateInputs()) return;
-  
+
     const data = new FormData(event.currentTarget);
     const email = data.get("email");
     const password = data.get("password");
-  
+
     try {
       const auth = getAuth();
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
       const userDocRef = doc(db, "users", user.uid);
       const userDoc = await getDoc(userDocRef);
-  
+
       if (userDoc.exists()) {
         const userData = userDoc.data();
         const isPasswordValid = bcrypt.compareSync(password, userData.password);
-  
+
         if (isPasswordValid) {
-          // Save to database whether user wants to be remembered
           localStorage.setItem('extension_user', JSON.stringify({
             uid: user.uid,
             rememberMe: rememberMe
           }));
-  
+
           if (rememberMe) {
-            // Cookie will trigger for 7 days
-            document.cookie = `extension_user_uid=${user.uid}; path=/; max-age=${7 * 24 * 60 * 60}; SameSite=None; Secure`;
+            document.cookie = `extension_user_uid=${user.uid}; path=/; max-age=${COOKIE_AGE_DAYS * 86400}; SameSite=None; Secure`;
           } else {
-            // Clear any existing cookie in case user previously selected remember me
             document.cookie = `extension_user_uid=; path=/; max-age=0`;
-          }  
+          }
+
           navigate("/summaries");
         } else {
           throw new Error("Invalid password.");
@@ -115,10 +103,9 @@ export default function LogIn(props) {
       }
     } catch (error) {
       console.error("Login Error:", error);
-    
+
       let errorMessage = "Something went wrong. Please try again later.";
-    
-      // Handle Firebase auth error codes with specific messages
+
       if (error.code === "auth/invalid-credential" || error.code === "auth/wrong-password") {
         errorMessage = "The email or password you entered is incorrect.";
       } else if (error.code === "auth/user-not-found") {
@@ -126,11 +113,10 @@ export default function LogIn(props) {
       } else if (error.code === "auth/too-many-requests") {
         errorMessage = "Too many login attempts. Please try again later.";
       }
-    
+
       alert(errorMessage);
-    }    
+    }
   };
-  
 
   const validateInputs = () => {
     const email = document.getElementById('email');
@@ -168,65 +154,95 @@ export default function LogIn(props) {
             Log in
           </Typography>
           <Box component="form" onSubmit={handleSubmit} noValidate sx={{ display: 'flex', flexDirection: 'column', width: '100%', gap: 2 }}>
+          <FormControl>
+            <FormLabel htmlFor="email">Email</FormLabel>
+            <TextField
+              error={emailError}
+              helperText={emailErrorMessage}
+              id="email"
+              type="email"
+              name="email"
+              placeholder="your@email.com"
+              autoComplete="email"
+              autoFocus
+              required
+              fullWidth
+              variant="outlined"
+              color={emailError ? 'error' : 'primary'}
+              sx={{
+                "& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                  borderColor: PRIMARY_COLOR,
+                },
+                "& .MuiInputLabel-root.Mui-focused": {
+                  color: PRIMARY_COLOR,
+                },
+              }}
+            />
+          </FormControl>
+          <FormControl>
+            <FormLabel htmlFor="password">Password</FormLabel>
+            <TextField
+              error={passwordError}
+              helperText={passwordErrorMessage}
+              name="password"
+              placeholder="••••••"
+              type="password"
+              id="password"
+              autoComplete="current-password"
+              required
+              fullWidth
+              variant="outlined"
+              color={passwordError ? 'error' : 'primary'}
+              sx={{
+                "& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                  borderColor: PRIMARY_COLOR,
+                },
+                "& .MuiInputLabel-root.Mui-focused": {
+                  color: PRIMARY_COLOR,
+                },
+              }}
+            />
+          </FormControl>
+
             <FormControl>
-              <FormLabel htmlFor="email">Email</FormLabel>
-              <TextField
-                error={emailError}
-                helperText={emailErrorMessage}
-                id="email"
-                type="email"
-                name="email"
-                placeholder="your@email.com"
-                autoComplete="email"
-                autoFocus
-                required
-                fullWidth
-                variant="outlined"
-                color={emailError ? 'error' : 'primary'}
-              />
-            </FormControl>
-            <FormControl>
-              <FormLabel htmlFor="password">Password</FormLabel>
-              <TextField
-                error={passwordError}
-                helperText={passwordErrorMessage}
-                name="password"
-                placeholder="••••••"
-                type="password"
-                id="password"
-                autoComplete="current-password"
-                required
-                fullWidth
-                variant="outlined"
-                color={passwordError ? 'error' : 'primary'}
-              />
-            </FormControl>
-            <FormControl>
-              {/* Remember Me Checkbox */}
               <FormControlLabel
                 control={<Checkbox checked={rememberMe} onChange={(e) => setRememberMe(e.target.checked)} color="primary" />}
                 label="Remember me"
               />
             </FormControl>
             <ForgotPassword open={open} handleClose={handleClose} />
-            <Button type="submit" fullWidth variant="contained" onClick={validateInputs} sx={{ backgroundColor: '#0F2841', color: '#ffffff'}}>
+            <Button
+              type="submit"
+              fullWidth
+              variant="contained"
+              onClick={validateInputs}
+              sx={{ backgroundColor: PRIMARY_COLOR, color: '#ffffff' }}
+            >
               Log in
             </Button>
-            {/* Forgot Password Popup */}
-            <Link component="button" type="button" onClick={handleClickOpen} variant="body2" sx={{ color: '#0F2841', alignSelf: 'center' }}>
+            <Link
+              component="button"
+              type="button"
+              onClick={handleClickOpen}
+              variant="body2"
+              sx={{ color: PRIMARY_COLOR, alignSelf: 'center' }}
+            >
               Forgot your password?
             </Link>
           </Box>
           <Divider>or</Divider>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-            {/* Google Sign In Button */}
-            <Button fullWidth variant="outlined" onClick={() => handleGoogleSignup(navigate)} startIcon={<GoogleIcon />}>
+            <Button
+              fullWidth
+              variant="outlined"
+              onClick={() => handleGoogleSignup(navigate)}
+              startIcon={<GoogleIcon />}
+            >
               Sign in with Google
             </Button>
             <Typography sx={{ textAlign: 'center' }}>
               Don&apos;t have an account?{' '}
-              {/* Redirect to Signup page */}
-              <Link href="/signup" variant="body2" sx={{ color: '#0F2841', alignSelf: 'center' }}>
+              <Link href="/signup" variant="body2" sx={{ color: PRIMARY_COLOR }}>
                 Sign up
               </Link>
             </Typography>
