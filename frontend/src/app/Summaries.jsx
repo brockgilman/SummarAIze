@@ -256,13 +256,12 @@ const Summaries = () => {
                       }} />
                     </div>
                   </div>
-                  <div style={{ position: 'relative', marginTop: '10px' }}>
+                  <div style={{ position: 'relative', marginTop: '10px', display: 'flex', marginBottom: '5px'}}>
                     <div style={{
                       display: 'flex',
                       flexWrap: 'wrap',
                       justifyContent: 'center',
                       gap: '6px',
-                      marginBottom: '10px'
                     }}>
                       {notebooks
                         .filter((nb) => nb.summaries.includes(summary.id))
@@ -274,7 +273,6 @@ const Summaries = () => {
                               borderRadius: '100px',
                               padding: '4px 10px',
                               fontSize: '0.85rem',
-                              display: 'inline-block',
                             }}
                           >
                             #{nb.name}
@@ -284,10 +282,8 @@ const Summaries = () => {
 
                     {/* Plus Button Circle */}
                     <div style={{
-                      marginTop: '30px',
                       position: 'relative',
-                      left: '50%',
-                      transform: 'translateX(-50%)',
+                      marginLeft: '5px',
                       width: '28px',
                       height: '28px',
                       backgroundColor: 'lightgray',
@@ -296,7 +292,7 @@ const Summaries = () => {
                       alignItems: 'center',
                       justifyContent: 'center',
                       cursor: 'pointer',
-                      boxShadow: '0 2px 5px rgba(0,0,0,0.1)'
+                      boxShadow: '0 2px 5px rgba(0,0,0,0.1)',
                     }}
                       onClick={(e) => {
                         e.stopPropagation();
