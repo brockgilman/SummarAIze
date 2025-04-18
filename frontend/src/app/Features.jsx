@@ -98,68 +98,72 @@ const Features = () => {
     },
   }
 
-  const renderFeatureSection = (title, description, features, selected, setSelected) => (
-    <Paper elevation={1} sx={{ mb: 6, overflow: "hidden", borderRadius: "8px" }}>
-      <Grid container>
-        <Grid item xs={12} md={7}>
-          <Box sx={{ p: 4 }}>
-            <Typography variant="h4" component="h2" sx={{ fontWeight: 600, mb: 2 }}>
-              {title}
-            </Typography>
-            <Typography variant="body1" sx={{ mb: 2 }}>{description}</Typography>
-            <Box sx={{ mt: 3 }}>
-              {features.map((item) => (
-                <Box
-                  key={item.value}
-                  sx={{
-                    display: selected === item.value ? "block" : "none",
-                    p: 2,
-                    borderLeft: "4px solid #0F2841",
-                    bgcolor: "#f5f5f5",
-                  }}
-                >
-                  <Typography variant="body1">{item.description}</Typography>
-                </Box>
-              ))}
+  const renderFeatureSection = (title, description, features, selected, setSelected) => {
+    const isFlipped = title === "Control Summary Length";
+  
+    return (
+      <Paper elevation={1} sx={{ mb: 6, overflow: "hidden", borderRadius: "8px" }}>
+        <Grid container direction={isFlipped ? "row-reverse" : "row"}>
+          <Grid item xs={12} md={7}>
+            <Box sx={{ p: 4 }}>
+              <Typography variant="h4" component="h2" sx={{ fontWeight: 600, mb: 2 }}>
+                {title}
+              </Typography>
+              <Typography variant="body1" sx={{ mb: 2 }}>{description}</Typography>
+              <Box sx={{ mt: 3 }}>
+                {features.map((item) => (
+                  <Box
+                    key={item.value}
+                    sx={{
+                      display: selected === item.value ? "block" : "none",
+                      p: 2,
+                      borderLeft: "4px solid #0F2841",
+                      bgcolor: "#f5f5f5",
+                    }}
+                  >
+                    <Typography variant="body1">{item.description}</Typography>
+                  </Box>
+                ))}
+              </Box>
             </Box>
-          </Box>
-        </Grid>
-        <Grid item xs={12} md={5} sx={{ bgcolor: "#f5f5f5" }}>
-          <Box
-            sx={{
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-              p: 4,
-              height: "100%",
-            }}
-          >
+          </Grid>
+          <Grid item xs={12} md={5} sx={{ bgcolor: "#f5f5f5" }}>
             <Box
               sx={{
-                width: "100%",
-                maxWidth: 360,
                 display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
                 justifyContent: "center",
+                alignItems: "center",
+                p: 4,
+                height: "100%",
               }}
             >
-              {features.map((item) => (
-                <Button
-                  key={item.value}
-                  variant={selected === item.value ? "contained" : "outlined"}
-                  onClick={() => setSelected(item.value)}
-                  sx={selected === item.value ? selectedButtonStyle : unselectedButtonStyle}
-                >
-                  {item.label}
-                </Button>
-              ))}
+              <Box
+                sx={{
+                  width: "100%",
+                  maxWidth: 360,
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                {features.map((item) => (
+                  <Button
+                    key={item.value}
+                    variant={selected === item.value ? "contained" : "outlined"}
+                    onClick={() => setSelected(item.value)}
+                    sx={selected === item.value ? selectedButtonStyle : unselectedButtonStyle}
+                  >
+                    {item.label}
+                  </Button>
+                ))}
+              </Box>
             </Box>
-          </Box>
+          </Grid>
         </Grid>
-      </Grid>
-    </Paper>
-  )
+      </Paper>
+    );
+  };  
 
   return (
     <div className="min-h-screen bg-gray-50">
