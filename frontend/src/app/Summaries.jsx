@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { getUserID } from "../components/firebase/firebaseUserID";
 import Sidebar from "../components/Sidebar";
-import { collection, getDocs, doc, updateDoc, arrayUnion } from 'firebase/firestore';
+import { collection, getDocs, doc, updateDoc, arrayUnion, deleteField } from 'firebase/firestore';
 import { db } from '../components/firebase/firebaseConfig';
 
 const Summaries = () => {
@@ -14,6 +14,7 @@ const Summaries = () => {
   const [selectedNotebook, setSelectedNotebook] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [activeSummary, setActiveSummary] = useState(null);
+  const [modalPosition, setModalPosition] = useState({ top: 0, left: 0 });
 
 
   useEffect(() => {
@@ -39,6 +40,52 @@ const Summaries = () => {
     };
   }, []); // Empty dependency array ensures this runs once on component mount
   
+  const handleRemoveFromNotebook = async (notebookName, summaryId) => {
+    try {
+      const notebook = notebooks.find(nb => nb.name === notebookName);
+      if (!notebook) return;
+  
+      const summaryKey = Object.keys(notebook).find(
+        (key) => notebook[key] === summaryId && key.startsWith('summary')
+      );
+  
+      if (!summaryKey) return;
+  
+      const currentTotal = notebook.total || 1;
+      const newTotal = currentTotal - 1;
+  
+      const notebookRef = doc(db, `users/${userId}/notebooks/${notebookName}`);
+  
+      // Update Firestore: delete the summary field and update total
+      await updateDoc(notebookRef, {
+        [summaryKey]: deleteField(),
+        total: newTotal,
+      });
+  
+      // Update local state
+      const updatedNotebooks = notebooks.map(nb => {
+        if (nb.name === notebookName) {
+          const newSummaries = nb.summaries.filter(id => id !== summaryId);
+          const updated = { ...nb };
+          delete updated[summaryKey];
+          return {
+            ...updated,
+            summaries: newSummaries,
+            total: newTotal,
+          };
+        }
+        return nb;
+      });
+  
+      setNotebooks(updatedNotebooks);
+      console.log(`Removed summary ${summaryId} from notebook ${notebookName}`);
+    } catch (error) {
+      console.error("Error removing summary from notebook:", error);
+    }
+  };
+  
+  
+  
   
   const fetchUserData = async (uid) => {
     try {
@@ -53,11 +100,15 @@ const Summaries = () => {
       // Fetch user's notebooks
       const notebooksRef = collection(db, `users/${uid}/notebooks`);
       const notebooksSnapshot = await getDocs(notebooksRef);
-      const notebooksData = notebooksSnapshot.docs.map(doc => ({
-        id: doc.id,
-        name: doc.id, // Using document ID as name based on your structure
-        summaries: Object.values(doc.data())
-      }));
+      const notebooksData = notebooksSnapshot.docs.map(doc => {
+        const data = doc.data();
+        return {
+          id: doc.id,
+          name: doc.id,
+          ...data,
+          summaries: Object.values(data).filter(val => typeof val === 'string')
+        };
+      });
       
       setSummaries(summariesData);
       setNotebooks(notebooksData);
@@ -91,47 +142,55 @@ const Summaries = () => {
     }
   };
 
-  const handleAddTagClick = (e, summaryId) => {
-    e.stopPropagation(); // Prevent triggering the summary expansion
-    setSelectedSummary(summaryId);
-    setShowTagModal(true);
-  };
-
   const handleAddToNotebook = async () => {
     if (!selectedSummary || !selectedNotebook) return;
-    
+
+    // Prevent duplicates
+    const targetNotebook = notebooks.find(nb => nb.name === selectedNotebook);
+    if (targetNotebook?.summaries?.includes(selectedSummary)) {
+      console.log("Summary already exists in this notebook.");
+      setShowTagModal(false);
+      setSelectedNotebook('');
+      return;
+    }
+
+  
     try {
-      // Find the next available summary number
       const targetNotebook = notebooks.find(nb => nb.name === selectedNotebook);
-      const summaryCount = Object.keys(targetNotebook || {}).filter(key => key.startsWith('summary')).length;
-      const nextSummaryNum = summaryCount + 1;
-      
-      // Update the notebook document
+      const currentTotal = targetNotebook?.total || 0;
+      console.log(targetNotebook?.total);
+      const nextSummaryNum = currentTotal + 1;
+  
       const notebookRef = doc(db, `users/${userId}/notebooks/${selectedNotebook}`);
+  
+      // Update Firestore: add new summary and increment total
       await updateDoc(notebookRef, {
-        [`summary${nextSummaryNum}`]: selectedSummary
+        [`summary${nextSummaryNum}`]: selectedSummary,
+        total: nextSummaryNum,
       });
-      
+  
       // Update local state
       const updatedNotebooks = notebooks.map(notebook => {
         if (notebook.name === selectedNotebook) {
           return {
             ...notebook,
-            summaries: [...notebook.summaries, selectedSummary]
+            summaries: [...notebook.summaries, selectedSummary],
+            [`summary${nextSummaryNum}`]: selectedSummary,
+            total: nextSummaryNum,
           };
         }
         return notebook;
       });
-      
+  
       setNotebooks(updatedNotebooks);
       setShowTagModal(false);
       setSelectedNotebook('');
-      
-      console.log(`Added summary ${selectedSummary} to notebook ${selectedNotebook}`);
+      console.log(`Added summary ${selectedSummary} as summary${nextSummaryNum} to notebook ${selectedNotebook}`);
     } catch (error) {
       console.error("Error adding summary to notebook:", error);
     }
   };
+  
 
   const formatDate = (timestamp) => {
     if (!timestamp) return 'Unknown date';
@@ -144,11 +203,18 @@ const Summaries = () => {
     }).format(date);
   };
 
-  const truncateText = (text, maxLength = 120) => {
-    if (!text) return '';
-    if (text.length <= maxLength) return text;
-    return text.substring(0, maxLength) + '...';
+  const handleAddTagClick = (e, summaryId) => {
+    e.stopPropagation();
+    const rect = e.currentTarget.getBoundingClientRect();
+  
+    setSelectedSummary(summaryId);
+    setShowTagModal(true);
+    setModalPosition({
+      top: rect.bottom + window.scrollY + 10, // position just below button
+      left: rect.left + rect.width / 2 + window.scrollX, // center horizontally
+    });
   };
+  
 
   if (isLoading) {
     return (
@@ -256,13 +322,12 @@ const Summaries = () => {
                       }} />
                     </div>
                   </div>
-                  <div style={{ position: 'relative', marginTop: '10px' }}>
+                  <div style={{ position: 'relative', marginTop: '10px', display: 'flex', marginBottom: '5px'}}>
                     <div style={{
                       display: 'flex',
                       flexWrap: 'wrap',
                       justifyContent: 'center',
                       gap: '6px',
-                      marginBottom: '10px'
                     }}>
                       {notebooks
                         .filter((nb) => nb.summaries.includes(summary.id))
@@ -270,24 +335,60 @@ const Summaries = () => {
                           <span
                             key={nb.name}
                             style={{
+                              position: 'relative',
                               backgroundColor: 'lightgray',
                               borderRadius: '100px',
                               padding: '4px 10px',
                               fontSize: '0.85rem',
-                              display: 'inline-block',
+                              cursor: 'pointer',
+                              transition: 'background-color 0.2s',
+                            }}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.backgroundColor = 'rgba(211, 211, 211, 0.5)';
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.backgroundColor = 'lightgray';
                             }}
                           >
                             #{nb.name}
+                            {/* Remove Button */}
+                            <span
+                              style={{
+                                position: 'absolute',
+                                top: '-4px',
+                                right: '-4px',
+                                width: '18px',
+                                height: '18px',
+                                borderRadius: '50%',
+                                backgroundColor: '#e53e3e',
+                                color: 'white',
+                                fontWeight: 'bold',
+                                fontSize: '12px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                opacity: 0,
+                                transition: 'opacity 0.2s',
+                              }}
+                              className="remove-button"
+                              onClick={(e) => {
+                                e.stopPropagation(); // Prevent opening the summary
+                                handleRemoveFromNotebook(nb.name, summary.id);
+                              }}
+                              onMouseEnter={(e) => (e.currentTarget.style.opacity = '1')}
+                              onMouseLeave={(e) => (e.currentTarget.style.opacity = '0')}
+                            >
+                              ×
+                            </span>
                           </span>
+
                         ))}
                     </div>
 
                     {/* Plus Button Circle */}
                     <div style={{
-                      marginTop: '30px',
                       position: 'relative',
-                      left: '50%',
-                      transform: 'translateX(-50%)',
+                      marginLeft: '5px',
                       width: '28px',
                       height: '28px',
                       backgroundColor: 'lightgray',
@@ -296,7 +397,7 @@ const Summaries = () => {
                       alignItems: 'center',
                       justifyContent: 'center',
                       cursor: 'pointer',
-                      boxShadow: '0 2px 5px rgba(0,0,0,0.1)'
+                      boxShadow: '0 2px 5px rgba(0,0,0,0.1)',
                     }}
                       onClick={(e) => {
                         e.stopPropagation();
@@ -349,51 +450,86 @@ const Summaries = () => {
         )}
       </div>
       
-      {/* Tag Modal */}
-      {showTagModal && (
-        <div className="fixed inset-0 bg-blue bg-opacity-50 flex items-center justify-center z-50"
-        style={{
-          marginLeft: '300px',
-        }}>
-          <div className="bg-white rounded-lg p-6 w-full max-w-md">
-            <h3 className="text-xl font-semibold mb-4">Add to Notebook</h3>
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Select Notebook
-              </label>
-              <select
-                className="w-full p-2 border border-gray-300 rounded-md"
-                value={selectedNotebook}
-                onChange={(e) => setSelectedNotebook(e.target.value)}
-              >
-                <option value="">Choose a notebook</option>
-                {notebooks.map(notebook => (
-                  <option key={notebook.id} value={notebook.name}>
-                    {notebook.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div className="flex justify-end space-x-3">
-              <button
-                className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-md"
-                onClick={() => setShowTagModal(false)}
-              >
-                Cancel
-              </button>
-              <button
-                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
-                onClick={handleAddToNotebook}
-                disabled={!selectedNotebook}
-              >
-                Add
-              </button>
-            </div>
+      {showTagModal && selectedSummary && (
+        <div
+          style={{
+            position: 'absolute',
+            top: `${modalPosition.top}px`,
+            left: `${modalPosition.left}px`,
+            transform: 'translateX(-50%)',
+            zIndex: 9999,
+            backgroundColor: 'white',
+            border: '1px solid #ccc',
+            borderRadius: '8px',
+            padding: '12px',
+            width: '250px',
+            boxShadow: '0 4px 10px rgba(0, 0, 0, 0.1)',
+          }}
+          onClick={(e) => e.stopPropagation()} // prevent modal click from expanding summary
+        >
+          <h3 style={{ fontSize: '1rem', marginBottom: '8px' }}>Add to Notebook</h3>
+          <select
+            value={selectedNotebook}
+            onChange={(e) => setSelectedNotebook(e.target.value)}
+            style={{
+              width: '100%',
+              padding: '6px 10px',
+              border: '1px solid #ccc',
+              borderRadius: '6px',
+              marginBottom: '12px',
+            }}
+          >
+            <option value="">Choose a notebook</option>
+            {notebooks.map((notebook) => (
+              <option key={notebook.id} value={notebook.name}>
+                {notebook.name}
+              </option>
+            ))}
+          </select>
+
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
+            <button
+              onClick={() => setShowTagModal(false)}
+              style={{
+                padding: '6px 12px',
+                backgroundColor: '#f3f4f6',
+                border: 'none',
+                borderRadius: '4px',
+                color: '#333',
+                cursor: 'pointer',
+              }}
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleAddToNotebook}
+              disabled={!selectedNotebook}
+              style={{
+                padding: '6px 12px',
+                backgroundColor: '#2563eb',
+                color: 'white',
+                border: 'none',
+                borderRadius: '4px',
+                opacity: !selectedNotebook ? 0.5 : 1,
+                cursor: !selectedNotebook ? 'default' : 'pointer',
+              }}
+            >
+              Add
+            </button>
           </div>
         </div>
       )}
+      <style>
+        {`
+          span:hover .remove-button {
+            opacity: 1 !important;
+          }
+        `}
+      </style>
+
     </div>
   );
 };
 
 export default Summaries;
+
