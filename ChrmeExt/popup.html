@@ -2,189 +2,238 @@
 <html>
 
 <head>
-    <title>SummarAIze</title>
+  <title>SummarAIze</title>
 
-    <style>
-        html,
-        body {
-            margin: 0;
-            padding: 0;
-            background: #FFFFFF;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            font-family: Arial, sans-serif;
-        }
+  <style>
+    html,
+    body {
+      margin: 0;
+      padding: 0;
+      background: #FFFFFF;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      font-family: Arial, sans-serif;
+    }
 
-        .main-container {
-            width: 400px;
-            position: relative;
-            padding: 0;
-            border-radius: 15px;
-            background: #FFFFFF;
-        }
+    .main-container {
+      width: 400px;
+      position: relative;
+      padding: 0;
+      border-left: 12px solid #0F2841; /* Book spine */
+      border-bottom: 2px solid #0F2841; /* Bottom line */
+      background: #FFFFFF;
+      box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+      border-radius: 0;
+    }
 
-        .content {
-            position: relative;
-            background: #FFFFFF;
-            padding: 20px;
-            border-radius: 15px;
-            z-index: 1;
-        }
+    .content {
+      position: relative;
+      padding: 20px 20px 20px 10px; /* Top, right, bottom, left */
+      background: transparent;
+      z-index: 1;
+    }
 
-        .container {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
+    .container {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
 
-        .toggle-label {
-            color: #000000;
-            font-size: 14px;
-            margin-bottom: 4px;
-            font-weight: 600;
-        }
+    .toggle-label {
+      color: #000000;
+      font-size: 14px;
+      margin-bottom: 4px;
+      font-weight: 600;
+    }
 
-        .toggle-switch {
-            display: flex;
-            justify-content: space-between;
-            background: #CFD4DA;
-            border-radius: 8px;
-            padding: 4px;
-            margin: 5px 0;
-            border: none;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-        }
+    .toggle-switch {
+      display: flex;
+      justify-content: space-between;
+      background: #CFD4DA;
+      border-radius: 8px;
+      padding: 4px;
+      margin: 5px 0;
+      border: none;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
 
-        .toggle-option {
-            flex: 1;
-            text-align: center;
-            padding: 8px;
-            cursor: pointer;
-            border-radius: 6px;
-            transition: all 0.2s ease;
-            color: #000000;
-            font-weight: 600;
-            background: transparent;
-        }
+    .toggle-option {
+      flex: 1;
+      text-align: center;
+      padding: 8px;
+      cursor: pointer;
+      border-radius: 6px;
+      transition: all 0.2s ease;
+      color: #000000;
+      font-weight: 600;
+      background: transparent;
+    }
 
-        .toggle-option:hover {
-            background: #BABFC4;
-        }
+    .toggle-option:hover {
+      background: #BABFC4;
+    }
 
-        .toggle-option.active {
-            background: #0F2841;
-            color: #FFFFFF;
-            font-weight: 600;
-        }
+    .toggle-option.active {
+      background: #0F2841;
+      color: #FFFFFF;
+      font-weight: 600;
+    }
 
-        .response-box {
-            width: 100%;
-            min-height: 100px;
-            margin: 10px 0;
-            padding: 8px;
-            border: 1px solid #CFD4DA;
-            border-radius: 4px;
-            resize: vertical;
-            background: #FFFFFF;
-            color: #000000;
-            font-family: inherit;
-        }
+    .response-box {
+      width: 100%;
+      min-height: 100px;
+      margin: 10px 0;
+      padding: 8px;
+      border: 1px solid #CFD4DA;
+      border-radius: 4px;
+      resize: vertical;
+      background: #FFFFFF;
+      color: #000000;
+      font-family: inherit;
+    }
 
-        button {
-            background: #0F2841;
-            color: #FFFFFF;
-            border: none;
-            padding: 10px;
-            border-radius: 4px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            font-weight: 600;
-            width: 100%;
-        }
+    button {
+      background: #0F2841;
+      color: #FFFFFF;
+      border: none;
+      padding: 10px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-weight: 600;
+      width: 100%;
+    }
 
-        button:hover {
-            background: rgba(15, 40, 65, 0.9);
-        }
+    button:hover {
+      background: rgba(15, 40, 65, 0.9);
+    }
 
-        .status-message {
-            color: #888;
-            font-size: 12px;
-            margin-top: 5px;
-            text-align: center;
-            font-weight: 500;
-        }
+    .status-message {
+      color: #888;
+      font-size: 12px;
+      margin-top: 5px;
+      text-align: center;
+      font-weight: 500;
+    }
 
-        textarea::placeholder {
-            color: rgba(0, 0, 0, 0.5);
-        }
+    textarea::placeholder {
+      color: rgba(0, 0, 0, 0.5);
+    }
 
-        .auth-status {
-            display: flex;
-            align-items: center;
-            justify-content: flex-end;
-            margin-bottom: 10px;
-        }
+    .auth-status {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
 
-        .auth-indicator {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            margin-right: 5px;
-        }
+    .auth-indicator {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      margin-right: 5px;
+    }
 
-        .logged-in {
-            background-color: #4CAF50;
-        }
+    .logged-in {
+      background-color: #4CAF50;
+    }
 
-        .logged-out {
-            background-color: #F44336;
-        }
+    .logged-out {
+      background-color: #F44336;
+    }
 
-        .auth-text {
-            font-size: 12px;
-            color: #aaa;
-        }
-    </style>
+    .auth-text {
+      font-size: 12px;
+      color: #aaa;
+    }
+
+    .logo {
+      font-size: 12px;
+      color: #0F2841;
+      font-weight: bold;
+      transition: color 0.2s ease;
+    }
+
+    .logo:hover {
+      color: #1e538c;
+    }
+
+    .page-lines {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      position: absolute;
+      bottom: 4px;
+      left: 0px;
+      right: 0px;
+      pointer-events: none;
+    }
+
+    .page-line {
+      height: 2px;
+      background-color: #CFD4DA;
+      border-radius: 2px;
+    }
+
+  </style>
 </head>
 
 <body>
-    <div class="main-container">
-        <div class="content">
-            <div class="auth-status">
-                <div id="auth-indicator" class="auth-indicator logged-out"></div>
-                <div id="auth-text" class="auth-text">Not logged in</div>
-            </div>
+  <div class="main-container">
+    <div class="content">
+      <div class="auth-status">
+        <!-- Left: Logo and name -->
+        <a href="https://summaraize-8487f.web.app/" target="_blank"
+          style="display: flex; align-items: center; gap: 6px; text-decoration: none;">
+          <img src="icons/icon128.png" alt="SummarAIze" style="height: 24px;">
+          <span class="logo">SummarAIze</span>
+        </a>
 
-            <div class="container">
-                <div>
-                    <div class="toggle-label">Tone:</div>
-                    <div class="toggle-switch" id="tone-toggle">
-                        <div class="toggle-option active" data-tone="casual">Casual</div>
-                        <div class="toggle-option" data-tone="advanced">Knowledgeable</div>
-                        <div class="toggle-option" data-tone="expert">Expert</div>
-                    </div>
-                </div>
-
-                <div>
-                    <div class="toggle-label">Length:</div>
-                    <div class="toggle-switch" id="length-toggle">
-                        <div class="toggle-option active" data-length="short">Short</div>
-                        <div class="toggle-option" data-length="medium">Medium</div>
-                        <div class="toggle-option" data-length="long">Long</div>
-                    </div>
-                </div>
-
-                <button id="generate">Generate</button>
-                <textarea class="response-box" id="responseBox" readonly
-                    placeholder="Response will appear here..."></textarea>
-                <button id="apply">Save</button>
-                <div id="status" class="status-message"></div>
-            </div>
+        <!-- Right: Login indicator -->
+        <div style="display: flex; align-items: center; gap: 5px;">
+          <div id="auth-indicator" class="auth-indicator logged-out"></div>
+          <div id="auth-text" class="auth-text">Not logged in</div>
         </div>
+      </div>
+
+      <div class="container">
+        <div>
+          <div class="toggle-label">Tone:</div>
+          <div class="toggle-switch" id="tone-toggle">
+            <div class="toggle-option active" data-tone="casual">Casual</div>
+            <div class="toggle-option" data-tone="advanced">Knowledgeable</div>
+            <div class="toggle-option" data-tone="expert">Expert</div>
+          </div>
+        </div>
+
+        <div>
+          <div class="toggle-label">Length:</div>
+          <div class="toggle-switch" id="length-toggle">
+            <div class="toggle-option active" data-length="short">Short</div>
+            <div class="toggle-option" data-length="medium">Medium</div>
+            <div class="toggle-option" data-length="long">Long</div>
+          </div>
+        </div>
+
+        <button id="generate">Generate</button>
+        <textarea class="response-box" id="responseBox" readonly
+          placeholder="Response will appear here..."></textarea>
+        <button id="apply">Save</button>
+        <div id="status" class="status-message"></div>
+      </div>
     </div>
-    <script src="popup.js"></script>
+
+    <!-- Page lines at the bottom -->
+    <div class="page-lines">
+        <div class="page-line"></div>
+        <div class="page-line"></div>
+        <div class="page-line"></div>
+    </div>
+  </div>
+
+  <script src="popup.js"></script>
 </body>
 
 </html>
