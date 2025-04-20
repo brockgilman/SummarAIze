@@ -5,7 +5,7 @@ import SignupButtons from "../components/SignupButtons";
 import Navbar from "../components/Navbar";
 import { useEffect, useState } from 'react';
 import { onAuthStateChanged } from 'firebase/auth';
-import { auth } from '../components/firebase/firebaseConfig'; // adjust if needed
+import { auth } from '../components/firebase/firebaseConfig';
 
 export default function LandingPage() {
   const [showRememberMeNote, setShowRememberMeNote] = useState(false);
@@ -13,21 +13,29 @@ export default function LandingPage() {
   useEffect(() => {
     document.body.classList.add('landing-page');
 
+    const rememberMe = localStorage.getItem("rememberMe") === "true";
+
     // Optional: Handle ?rememberMe=true in URL
     const params = new URLSearchParams(window.location.search);
     if (params.get("rememberMe") === "true") {
       setShowRememberMeNote(true);
     }
 
-    // Auth check
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (user) {
-        console.log("User is signed in:", user.email);
-        window.location.href = '/summaries';
-      } else {
-        console.log("No user signed in");
-      }
-    });
+    let unsubscribe = () => {};
+
+    // ✅ Only run auth check if rememberMe is true
+    if (rememberMe) {
+      unsubscribe = onAuthStateChanged(auth, (user) => {
+        if (user) {
+          console.log("✅ User is signed in:", user.email);
+          window.location.href = '/summaries';
+        } else {
+          console.log("🔓 No user signed in");
+        }
+      });
+    } else {
+      console.log("🛑 Skipping auth check: rememberMe is false");
+    }
 
     return () => {
       unsubscribe();
