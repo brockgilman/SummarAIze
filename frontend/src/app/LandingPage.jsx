@@ -5,7 +5,7 @@ import SignupButtons from "../components/SignupButtons";
 import Navbar from "../components/Navbar";
 import { useEffect, useState } from 'react';
 import { onAuthStateChanged } from 'firebase/auth';
-import { auth } from '../firebase/firebaseConfig'; // adjust if needed
+import { auth } from '../components/firebase/firebaseConfig'; // adjust if needed
 
 export default function LandingPage() {
   const [showRememberMeNote, setShowRememberMeNote] = useState(false);
@@ -22,10 +22,10 @@ export default function LandingPage() {
     // Auth check
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
-        console.log("✅ User is signed in:", user.email);
+        console.log("User is signed in:", user.email);
         window.location.href = '/summaries';
       } else {
-        console.log("🔓 No user signed in");
+        console.log("No user signed in");
       }
     });
 
