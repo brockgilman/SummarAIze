@@ -4,44 +4,51 @@ import { BookText, Trash2, User, LogOut, SquarePen } from 'lucide-react';
 import './sidebar.css';
 import SidebarLogo from './SidebarLogo';
 import { getUserEmail } from './firebase/firebaseUserEmail';
+import { signOut } from 'firebase/auth';
+import { auth } from './firebase/firebaseConfig'; // Adjust the import path if needed
 
 const Sidebar = () => {
-  const [userEmail, setUserEmail] = useState(null); // State to store user email
-  const [loading, setLoading] = useState(true); // State to track loading status
+  const [userEmail, setUserEmail] = useState(null);
+  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
-  // Fetch user email from Firebase Authentication
   useEffect(() => {
     const unsubscribe = getUserEmail((email) => {
-      setUserEmail(email); // Set user email when user is logged in
-      setLoading(false); // Set loading to false after authentication state is determined
+      setUserEmail(email);
+      setLoading(false);
     });
 
-    // Cleanup the observer on unmount
     return () => unsubscribe();
-  }, []); // Only run once on component mount
+  }, []);
 
-  const handleSignOut = (event) => {
+  const handleSignOut = async (event) => {
     event.preventDefault();
+
+    try {
+      await signOut(auth); // Firebase sign-out
+    } catch (error) {
+      console.error("Error signing out from Firebase:", error);
+    }
+
+    // Clear the persistent cookie and rememberMe flag
     document.cookie = "extension_user_uid=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; SameSite=None; Secure";
-    console.log("Cookie cleared");
+    localStorage.setItem("rememberMe", "false");
 
-    navigate('/'); // Redirect to home page
+    console.log("Signed out, cookie and Remember Me cleared");
+
+    navigate('/');
   };
 
-  // Navigate to specific page based on click
   const handleNavigation = (path) => {
-    navigate(path); // Navigate to the provided path
+    navigate(path);
   };
 
-  // Show a loading message while Firebase is initializing
   if (loading) {
     return <div>Loading...</div>;
   }
 
   return (
     <div className="sidebar-container">
-      {/* Logo section */}
       <div className="sidebar-logo">
         <a href="/summaries" className="logo flex items-center space-x-2">
           <SidebarLogo />
@@ -49,7 +56,6 @@ const Sidebar = () => {
         </a>
       </div>
 
-      {/* Main navigation */}
       <nav className="sidebar-nav">
         <ul className="sidebar-nav-list">
           <li className="sidebar-nav-item" onClick={() => handleNavigation('/summaries')}>
@@ -79,15 +85,13 @@ const Sidebar = () => {
         </ul>
       </nav>
 
-      {/* Footer with sign out */}
       <div className="sidebar-footer">
         <a className="sidebar-footer-link" onClick={handleSignOut}>
           <LogOut />
           <span>Log Out</span>
         </a>
-        {/* Display user email */}
         <div className="sidebar-user-email">
-          {userEmail ? userEmail : "No user logged in"} {/* Display email or message */}
+          {userEmail ? userEmail : "No user logged in"}
         </div>
       </div>
     </div>
