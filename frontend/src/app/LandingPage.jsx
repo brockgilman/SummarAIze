@@ -1,36 +1,36 @@
 'use client';
+
 import './globals.css';
 import SignupButtons from "../components/SignupButtons";
 import Navbar from "../components/Navbar";
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { onAuthStateChanged } from 'firebase/auth';
+import { auth } from '../firebase/firebaseConfig'; // adjust if needed
 
 export default function LandingPage() {
+  const [showRememberMeNote, setShowRememberMeNote] = useState(false);
+
   useEffect(() => {
     document.body.classList.add('landing-page');
 
-    function getCookie(name) {
-      const value = `; ${document.cookie}`;
-      const parts = value.split(`; ${name}=`);
-      if (parts.length === 2) return parts.pop().split(';').shift();
-      return null;
+    // Optional: Handle ?rememberMe=true in URL
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("rememberMe") === "true") {
+      setShowRememberMeNote(true);
     }
 
-    const authCookie = getCookie('extension_user_uid');
-
-    // Check if rememberMe is set to true in localStorage
-    let rememberMe = false;
-    try {
-      const storedUser = JSON.parse(localStorage.getItem('extension_user'));
-      rememberMe = storedUser?.rememberMe === true;
-    } catch (err) {
-      console.warn('Could not parse extension_user from localStorage:', err);
-    }
-
-    if (authCookie && rememberMe) {
-      window.location.href = '/summaries';
-    }
+    // Auth check
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        console.log("✅ User is signed in:", user.email);
+        window.location.href = '/summaries';
+      } else {
+        console.log("🔓 No user signed in");
+      }
+    });
 
     return () => {
+      unsubscribe();
       document.body.classList.remove('landing-page');
     };
   }, []);
@@ -41,6 +41,11 @@ export default function LandingPage() {
       <main className="flex-grow">
         <div className="flex-container">
           <div className="textbox">
+            {showRememberMeNote && (
+              <div className="mb-4 p-4 bg-blue-100 border border-blue-300 rounded text-blue-800 text-sm">
+                Welcome back! Please log in again to sync your session from the extension.
+              </div>
+            )}
             <h1 className="text-6xl md:text-7xl lg:text-8xl font-bold leading-relaxed text-gray-900">
               AI-powered summaries<br />
               that enhance your<br />
