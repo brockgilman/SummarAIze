@@ -15,6 +15,8 @@ const Summaries = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [activeSummary, setActiveSummary] = useState(null);
   const [modalPosition, setModalPosition] = useState({ top: 0, left: 0 });
+  const [newNotebookName, setNewNotebookName] = useState('');
+
 
 
   useEffect(() => {
@@ -188,6 +190,32 @@ const Summaries = () => {
       console.log(`Added summary ${selectedSummary} as summary${nextSummaryNum} to notebook ${selectedNotebook}`);
     } catch (error) {
       console.error("Error adding summary to notebook:", error);
+    }
+  };
+  
+  const handleCreateNotebook = async () => {
+    const trimmedName = newNotebookName.trim();
+    if (!trimmedName || notebooks.find(nb => nb.name === trimmedName)) return;
+  
+    try {
+      const notebookRef = doc(db, `users/${userId}/notebooks/${trimmedName}`);
+      await updateDoc(notebookRef, {
+        total: 0
+      });
+  
+      const newNotebook = {
+        id: trimmedName,
+        name: trimmedName,
+        total: 0,
+        summaries: []
+      };
+  
+      setNotebooks([...notebooks, newNotebook]);
+      setSelectedNotebook(trimmedName);
+      setNewNotebookName('');
+      console.log(`Notebook "${trimmedName}" created.`);
+    } catch (error) {
+      console.error("Error creating notebook:", error);
     }
   };
   
@@ -486,6 +514,38 @@ const Summaries = () => {
               </option>
             ))}
           </select>
+          <h4 style={{ textAlign: 'center', marginBottom: '8px' }}>or</h4>
+            <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
+              <input
+                type="text"
+                placeholder="New notebook name"
+                value={newNotebookName}
+                onChange={(e) => setNewNotebookName(e.target.value)}
+                style={{
+                  flex: 1,
+                  padding: '6px 10px',
+                  border: '1px solid #ccc',
+                  borderRadius: '6px',
+                }}
+              />
+              <button
+                onClick={handleCreateNotebook}
+                disabled={!newNotebookName.trim() || notebooks.some(nb => nb.name === newNotebookName.trim())}
+                style={{
+                  padding: '6px 10px',
+                  backgroundColor: '#10b981', // green
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '6px',
+                  cursor: newNotebookName.trim() ? 'pointer' : 'default',
+                  opacity: newNotebookName.trim() ? 1 : 0.5,
+                }}
+                title="Create new notebook"
+              >
+                +
+              </button>
+            </div>
+
 
           <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
             <button
