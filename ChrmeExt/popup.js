@@ -24,7 +24,7 @@ function updateSaveButtonText() {
     saveButton.textContent = 'Save';
     authIndicator.classList.remove('logged-out');
     authIndicator.classList.add('logged-in');
-    authText.textContent = 'Logged in';
+    authText.textContent = `Logged in as ${userUID}`;
   } else {
     // User is not logged in
     saveButton.textContent = 'Login to Save';
