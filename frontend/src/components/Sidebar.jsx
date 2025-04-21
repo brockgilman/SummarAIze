@@ -8,11 +8,13 @@ import { signOut } from 'firebase/auth';
 import { auth } from './firebase/firebaseConfig';
 
 const Sidebar = () => {
+  // Store authenticated user's email
   const [userEmail, setUserEmail] = useState(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
+    // Fetch user email
     const unsubscribe = getUserEmail((email) => {
       setUserEmail(email);
       setLoading(false);
@@ -21,6 +23,7 @@ const Sidebar = () => {
     return () => unsubscribe();
   }, []);
 
+  // Handles user sign-out
   const handleSignOut = async (event) => {
     event.preventDefault();
 
@@ -30,6 +33,7 @@ const Sidebar = () => {
       console.error("Error signing out from Firebase:", error);
     }
 
+    // Clear auth-related cookie and rememberMe preference
     document.cookie = "extension_user_uid=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; SameSite=None; Secure";
     localStorage.setItem("rememberMe", "false");
 
@@ -38,12 +42,14 @@ const Sidebar = () => {
     navigate('/');
   };
 
+  // Handles navigation from sidebar items
   const handleNavigation = (path) => {
     navigate(path);
   };
 
   return (
     <div className="sidebar-container">
+      {/* Sidebar logo linking to home */}
       <div className="sidebar-logo">
         <a href="/summaries" className="logo flex items-center space-x-2">
           <SidebarLogo />
@@ -51,6 +57,7 @@ const Sidebar = () => {
         </a>
       </div>
 
+      {/* Navigation links */}
       <nav className="sidebar-nav">
         <ul className="sidebar-nav-list">
           <li className="sidebar-nav-item" onClick={() => handleNavigation('/summaries')}>
@@ -80,11 +87,13 @@ const Sidebar = () => {
         </ul>
       </nav>
 
+      {/* Footer section: log out and show user email */}
       <div className="sidebar-footer">
         <a className="sidebar-footer-link" onClick={handleSignOut}>
           <LogOut />
           <span>Log Out</span>
         </a>
+        {/* Show user email or loading status */}
         <div className="sidebar-user-email">
           {loading ? "Loading..." : userEmail || "No user logged in"}
         </div>

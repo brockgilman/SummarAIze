@@ -3,10 +3,12 @@ import { Typography, Box, Grid, Button, Paper, Container } from "@mui/material"
 import Navbar from "../components/Navbar"
 
 const Features = () => {
+  // Track selected customization options
   const [selectedTone, setSelectedTone] = useState("casual")
   const [selectedLength, setSelectedLength] = useState("short")
   const [selectedOrgFeature, setSelectedOrgFeature] = useState("save")
 
+  // Summary tone options
   const toneFeatures = [
     {
       value: "casual",
@@ -28,6 +30,7 @@ const Features = () => {
     },
   ]
 
+  // Summary length options
   const lengthFeatures = [
     {
       value: "short",
@@ -49,6 +52,7 @@ const Features = () => {
     },
   ]
 
+  // Summary organization features
   const organizationFeatures = [
     {
       value: "save",
@@ -70,6 +74,7 @@ const Features = () => {
     },
   ]
 
+  // Shared button style
   const buttonStyle = {
     width: "100%",
     maxWidth: "300px",
@@ -98,12 +103,14 @@ const Features = () => {
     },
   }
 
+  // Display feature sets
   const renderFeatureSection = (title, description, features, selected, setSelected) => {
     const isFlipped = title === "Control Summary Length";
   
     return (
       <Paper elevation={1} sx={{ mb: 6, overflow: "hidden", borderRadius: "8px" }}>
         <Grid container direction={isFlipped ? "row-reverse" : "row"}>
+          {/* Left panel: description and feature detail */}
           <Grid item xs={12} md={7}>
             <Box sx={{ p: 4 }}>
               <Typography variant="h4" component="h2" sx={{ fontWeight: 600, mb: 2 }}>
@@ -127,6 +134,7 @@ const Features = () => {
               </Box>
             </Box>
           </Grid>
+          {/* Right panel: selection buttons */}
           <Grid item xs={12} md={5} sx={{ bgcolor: "#f5f5f5" }}>
             <Box
               sx={{
@@ -169,6 +177,7 @@ const Features = () => {
     <div className="min-h-screen bg-gray-50">
       <Navbar />
       <Container maxWidth="lg" sx={{ py: 8, pt: 10 }}>
+        {/* Page heading */}
         <Box sx={{ mb: 8, textAlign: "center" }}>
           <h1 className="text-6xl md:text-7xl lg:text-8xl font-bold leading-relaxed text-gray-900 mb-2">
             Features
@@ -178,6 +187,7 @@ const Features = () => {
           </p>
         </Box>
 
+        {/* Render each feature customization section */}
         {renderFeatureSection(
           "Customize Your Summaries",
           "Adjust the tone of your summaries to fit your needs. Whether you're studying academic papers or need quick insights, we've got you covered.",

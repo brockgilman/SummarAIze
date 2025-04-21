@@ -1,29 +1,19 @@
-import {
-  GoogleAuthProvider,
-  signInWithPopup,
-  setPersistence,
-  browserLocalPersistence,
-} from "firebase/auth";
-import {
-  doc,
-  getDoc,
-  setDoc,
-  serverTimestamp,
-} from "firebase/firestore";
+import { GoogleAuthProvider, signInWithPopup, setPersistence, browserLocalPersistence } from "firebase/auth";
+import { doc, getDoc, setDoc, serverTimestamp } from "firebase/firestore";
 import { auth, db } from "./firebaseConfig";
 
 export const handleGoogleSignup = async (navigate) => {
   try {
     const provider = new GoogleAuthProvider();
 
-    // 🔒 Set persistent login session
+    // Set persistent login session
     await setPersistence(auth, browserLocalPersistence);
 
     const result = await signInWithPopup(auth, provider);
     const user = result.user;
     if (!user) return;
 
-    // 🔍 Reference to user document
+    // Reference user document
     const userRef = doc(db, "users", user.uid);
 
     try {
@@ -37,15 +27,15 @@ export const handleGoogleSignup = async (navigate) => {
           provider: "google",
           rememberMe: true,
         });
-        console.log("✅ User added to Firestore");
+        console.log("User added to Firestore");
       } else {
-        console.log("ℹ️ User already exists in Firestore");
+        console.log("User already exists in Firestore");
       }
     } catch (firestoreError) {
-      console.error("❌ Firestore write failed:", firestoreError);
+      console.error("Firestore write failed:", firestoreError);
     }
 
-    // ✅ Store local session info
+    // Store local session info
     localStorage.setItem(
       "extension_user",
       JSON.stringify({
@@ -56,7 +46,7 @@ export const handleGoogleSignup = async (navigate) => {
 
     document.cookie = `extension_user_uid=${user.uid}; path=/; max-age=604800`; // 7 days
 
-    // ✅ Redirect after Firestore write
+    // Redirect after Firestore write
     navigate("/summaries");
 
   } catch (error) {
