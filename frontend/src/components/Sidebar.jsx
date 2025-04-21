@@ -26,21 +26,23 @@ const Sidebar = () => {
   // Handles user sign-out
   const handleSignOut = async (event) => {
     event.preventDefault();
-
+  
     try {
       await signOut(auth);
     } catch (error) {
       console.error("Error signing out from Firebase:", error);
     }
-
-    // Clear auth-related cookie and rememberMe preference
-    document.cookie = "extension_user_uid=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; SameSite=None; Secure";
+  
+    // Clear all session cookies and flags
+    document.cookie = "extension_user_uid=; path=/; max-age=0; SameSite=None; Secure";
+    document.cookie = "rememberMe=false; path=/; max-age=0; SameSite=None; Secure";
     localStorage.setItem("rememberMe", "false");
-
-    console.log("Signed out, cookie and Remember Me cleared");
-
+  
+    console.log("✅ Signed out, cookies and rememberMe cleared");
+  
     navigate('/');
   };
+  
 
   // Handles navigation from sidebar items
   const handleNavigation = (path) => {

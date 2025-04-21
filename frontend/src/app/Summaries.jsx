@@ -17,13 +17,14 @@ const Summaries = () => {
   const [modalPosition, setModalPosition] = useState({ top: 0, left: 0 });
   const [newNotebookName, setNewNotebookName] = useState('');
 
-    useEffect(() => {
+  useEffect(() => {
     const unsubscribe = getUserID((uid) => {
       if (uid) {
         const rememberMe = localStorage.getItem("rememberMe") === "true";
   
         if (rememberMe) {
-          setCookie('extension_user_uid', uid, 30); // Cookie expires in 30 days
+          setCookie('extension_user_uid', uid, 30);
+          setCookie('rememberMe', "true", 30);
           console.log('✅ Cookie set for user:', uid);
         } else {
           console.log("🛑 Remember Me is false — cookie not set.");
@@ -38,11 +39,20 @@ const Summaries = () => {
     });
   
     return () => {
-      if (unsubscribe) {
-        unsubscribe();
-      }
+      if (unsubscribe) unsubscribe();
     };
   }, []);
+  
+  // Helper function to set cookie
+  const setCookie = (name, value, days) => {
+    let expires = '';
+    if (days) {
+      const date = new Date();
+      date.setTime(date.getTime() + (days * 86400 * 1000));
+      expires = '; expires=' + date.toUTCString();
+    }
+    document.cookie = `${name}=${encodeURIComponent(value)}${expires}; path=/; SameSite=None; Secure`;
+  };
   
   
   const handleRemoveFromNotebook = async (notebookName, summaryId) => {
@@ -122,21 +132,6 @@ const Summaries = () => {
       console.error("Error fetching user data:", error);
       setIsLoading(false);
     }
-  };
-
-  // Helper function to set cookie
-  const setCookie = (name, value, days) => {
-    let expires = '';
-    
-    if (days) {
-      const date = new Date();
-      date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
-      expires = '; expires=' + date.toUTCString();
-    }
-    
-    // Set cookie with SameSite=None and Secure flags to make it accessible from extension
-    document.cookie = `${name}=${encodeURIComponent(value)}${expires}; path=/; SameSite=None; Secure`;
-    console.log("Cookie online"); 
   };
 
   const handleSummaryClick = (summaryId) => {

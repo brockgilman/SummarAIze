@@ -1,18 +1,20 @@
 import * as React from "react";
 import { useEffect, useState } from "react";
-import Box from "@mui/material/Box";
-import Button from "@mui/material/Button";
-import Checkbox from "@mui/material/Checkbox";
-import CssBaseline from "@mui/material/CssBaseline";
-import Divider from "@mui/material/Divider";
-import FormControlLabel from "@mui/material/FormControlLabel";
-import FormLabel from "@mui/material/FormLabel";
-import FormControl from "@mui/material/FormControl";
-import Link from "@mui/material/Link";
-import TextField from "@mui/material/TextField";
-import Typography from "@mui/material/Typography";
-import Stack from "@mui/material/Stack";
-import MuiCard from "@mui/material/Card";
+import {
+  Box,
+  Button,
+  Checkbox,
+  CssBaseline,
+  Divider,
+  FormControlLabel,
+  FormLabel,
+  FormControl,
+  Link,
+  TextField,
+  Typography,
+  Stack,
+  Card as MuiCard,
+} from "@mui/material";
 import { styled } from "@mui/material/styles";
 import { GoogleIcon } from "./components/CustomIcons";
 import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
@@ -128,16 +130,13 @@ export default function SignUp() {
   const handleSubmit = async (event) => {
     event.preventDefault();
 
-    if (nameError || emailError || passwordError) {
-      return;
-    }
+    if (nameError || emailError || passwordError) return;
+    if (!validateInputs()) return;
 
     const data = new FormData(event.currentTarget);
     const name = data.get("name");
     const email = data.get("email");
     const password = data.get("password");
-
-    if (!validateInputs()) return;
 
     try {
       const auth = getAuth();
@@ -148,15 +147,14 @@ export default function SignUp() {
       const hashedPassword = bcrypt.hashSync(password, salt);
 
       getUserID(async (uid) => {
-        console.log("Fetched UID:", uid);
         if (uid) {
           try {
             await setDoc(doc(db, "users", uid), {
-              name: name,
-              email: email,
+              name,
+              email,
               password: hashedPassword,
               rememberMe: false,
-              emailUpdates: emailUpdates,
+              emailUpdates,
             });
             console.log("User data stored in Firestore.");
           } catch (error) {
@@ -178,10 +176,19 @@ export default function SignUp() {
       <LogoNavbar />
       <SignUpContainer direction="column" justifyContent="center">
         <Card variant="outlined">
-          <Typography component="h1" variant="h4" sx={{ width: "100%", fontSize: "clamp(2rem, 10vw, 2.15rem)" }}>
+          <Typography
+            component="h1"
+            variant="h4"
+            sx={{ width: "100%", fontSize: "clamp(2rem, 10vw, 2.15rem)" }}
+          >
             Sign up
           </Typography>
-          <Box component="form" onSubmit={handleSubmit} sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+
+          <Box
+            component="form"
+            onSubmit={handleSubmit}
+            sx={{ display: "flex", flexDirection: "column", gap: 2 }}
+          >
             <FormControl>
               <FormLabel htmlFor="name">Full name</FormLabel>
               <WhiteTextField
@@ -196,6 +203,7 @@ export default function SignUp() {
                 color={nameError ? "error" : "primary"}
               />
             </FormControl>
+
             <FormControl>
               <FormLabel htmlFor="email">Email</FormLabel>
               <WhiteTextField
@@ -211,6 +219,7 @@ export default function SignUp() {
                 color={emailError ? "error" : "primary"}
               />
             </FormControl>
+
             <FormControl>
               <FormLabel htmlFor="password">Password</FormLabel>
               <WhiteTextField
@@ -227,6 +236,7 @@ export default function SignUp() {
                 color={passwordError ? "error" : "primary"}
               />
             </FormControl>
+
             <FormControlLabel
               control={
                 <Checkbox
@@ -237,6 +247,7 @@ export default function SignUp() {
               }
               label="I want to receive updates via email."
             />
+
             <Button
               id="submit"
               type="submit"
@@ -247,9 +258,11 @@ export default function SignUp() {
               Sign up
             </Button>
           </Box>
+
           <Divider>
             <Typography sx={{ color: "text.secondary" }}>or</Typography>
           </Divider>
+
           <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
             <Button
               fullWidth
@@ -259,9 +272,14 @@ export default function SignUp() {
             >
               Sign up with Google
             </Button>
+
             <Typography sx={{ textAlign: "center" }}>
               Already have an account?{" "}
-              <Link href="/login" variant="body2" sx={{ color: PRIMARY_COLOR, alignSelf: "center" }}>
+              <Link
+                href="/login"
+                variant="body2"
+                sx={{ color: PRIMARY_COLOR, alignSelf: "center" }}
+              >
                 Log in
               </Link>
             </Typography>

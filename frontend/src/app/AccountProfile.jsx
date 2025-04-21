@@ -1,165 +1,174 @@
-import { useEffect, useState } from "react"
-import { Box, Typography, Button, Select, MenuItem, FormControl, Dialog, DialogTitle, DialogContent, DialogActions, TextField, Checkbox, FormControlLabel } from "@mui/material"
-import { GoogleIcon } from "../app/sign-up/components/CustomIcons"
-import { getUserName } from "../components/firebase/firebaseUserName"
-import { getUserEmail } from "../components/firebase/firebaseUserEmail"
-import { auth, db } from "../components/firebase/firebaseConfig"
-import { updatePassword, EmailAuthProvider, reauthenticateWithCredential, GoogleAuthProvider, linkWithPopup, unlink } from "firebase/auth"
-import { doc, getDoc, updateDoc } from "firebase/firestore"
-import { onAuthStateChanged } from "firebase/auth"
+import { useEffect, useState } from "react";
+import {
+  Box,
+  Typography,
+  Button,
+  Select,
+  MenuItem,
+  FormControl,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField,
+  Checkbox,
+  FormControlLabel,
+} from "@mui/material";
+import { GoogleIcon } from "../app/sign-up/components/CustomIcons";
+import { getUserName } from "../components/firebase/firebaseUserName";
+import { getUserEmail } from "../components/firebase/firebaseUserEmail";
+import { auth, db } from "../components/firebase/firebaseConfig";
+import {
+  updatePassword,
+  EmailAuthProvider,
+  reauthenticateWithCredential,
+  GoogleAuthProvider,
+  linkWithPopup,
+  unlink,
+  onAuthStateChanged,
+} from "firebase/auth";
+import { doc, getDoc, updateDoc } from "firebase/firestore";
 
 const AccountProfile = () => {
-  // User profile state
-  const [name, setName] = useState("")
-  const [email, setEmail] = useState("")
-  const [summaryPurpose, setSummaryPurpose] = useState("School")
-  const [emailUpdates, setEmailUpdates] = useState(false)
-  const [googleLinked, setGoogleLinked] = useState(false)
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [summaryPurpose, setSummaryPurpose] = useState("School");
+  const [emailUpdates, setEmailUpdates] = useState(false);
+  const [googleLinked, setGoogleLinked] = useState(false);
 
-  // UI dialog and input management
-  const [openDialog, setOpenDialog] = useState(null)
-  const [newValue, setNewValue] = useState("")
-  const [currentPassword, setCurrentPassword] = useState("")
+  const [openDialog, setOpenDialog] = useState(null);
+  const [newValue, setNewValue] = useState("");
+  const [currentPassword, setCurrentPassword] = useState("");
 
-  // Fetch user info and preferences on mount
   useEffect(() => {
-    const unsubscribeEmail = getUserEmail(setEmail)
-    const unsubscribeName = getUserName(setName)
-  
+    const unsubscribeEmail = getUserEmail(setEmail);
+    const unsubscribeName = getUserName(setName);
+
     const unsubscribeAuth = onAuthStateChanged(auth, async (user) => {
       if (user) {
-        const userDocRef = doc(db, "users", user.uid)
-        const userSnap = await getDoc(userDocRef)
-  
+        const userDocRef = doc(db, "users", user.uid);
+        const userSnap = await getDoc(userDocRef);
+
         if (userSnap.exists()) {
-          const data = userSnap.data()
-          setEmailUpdates(!!data.emailUpdates)
+          const data = userSnap.data();
+          setEmailUpdates(!!data.emailUpdates);
           if (data.summaryPurpose) {
-            setSummaryPurpose(data.SummaryPurpose)
+            setSummaryPurpose(data.summaryPurpose);
           }
         }
-  
-        // Check if the Google provider is linked
+
         const isGoogleLinked = user.providerData.some(
           (provider) => provider.providerId === "google.com"
-        )
-        setGoogleLinked(isGoogleLinked)
+        );
+        setGoogleLinked(isGoogleLinked);
       }
-    })
+    });
 
-    // Cleanup auth state listener
     return () => {
-      unsubscribeEmail()
-      unsubscribeName()
-      unsubscribeAuth()
-    }
-  }, [])
+      unsubscribeEmail();
+      unsubscribeName();
+      unsubscribeAuth();
+    };
+  }, []);
 
-  // Toggle email update preference
   const handleEmailUpdatesChange = async (value) => {
-    setEmailUpdates(value)
-    const user = auth.currentUser
-    if (!user) return
+    setEmailUpdates(value);
+    const user = auth.currentUser;
+    if (!user) return;
     try {
-      const userDocRef = doc(db, "users", user.uid)
-      await updateDoc(userDocRef, { emailUpdates: value })
+      const userDocRef = doc(db, "users", user.uid);
+      await updateDoc(userDocRef, { emailUpdates: value });
     } catch (err) {
-      console.error("Failed to update email preference:", err)
+      console.error("Failed to update email preference:", err);
     }
-  }
+  };
 
-  // Update summary purpose selection in Firestore
   const handleSummaryPurposeChange = async (value) => {
-    setSummaryPurpose(value)
-    const user = auth.currentUser
-    if (!user) return
+    setSummaryPurpose(value);
+    const user = auth.currentUser;
+    if (!user) return;
     try {
-      const userDocRef = doc(db, "users", user.uid)
-      await updateDoc(userDocRef, { summaryPurpose: value })
+      const userDocRef = doc(db, "users", user.uid);
+      await updateDoc(userDocRef, { summaryPurpose: value });
     } catch (err) {
-      console.error("Failed to update summart purpose:", err)
+      console.error("Failed to update summary purpose:", err);
     }
-  }
+  };
 
-  // Open dialog to edit a specific field
   const handleOpen = (field) => {
-    setOpenDialog(field)
-    setNewValue("")
-    setCurrentPassword("")
-  }
+    setOpenDialog(field);
+    setNewValue("");
+    setCurrentPassword("");
+  };
 
-  // Close dialog and reset inputs
   const handleClose = () => {
-    setOpenDialog(null)
-    setNewValue("")
-    setCurrentPassword("")
-  }
+    setOpenDialog(null);
+    setNewValue("");
+    setCurrentPassword("");
+  };
 
-  // Save updates for name or password
   const handleSave = async () => {
-    const user = auth.currentUser
-    if (!user) return
+    const user = auth.currentUser;
+    if (!user) return;
 
-    const trimmedValue = newValue.trim()
-    const userDocRef = doc(db, "users", user.uid)
+    const trimmedValue = newValue.trim();
+    const userDocRef = doc(db, "users", user.uid);
 
     try {
       if (openDialog === "name") {
         if (!trimmedValue) {
-          alert("Name cannot be empty.")
-          return
+          alert("Name cannot be empty.");
+          return;
         }
-        await updateDoc(userDocRef, { name: trimmedValue })
-        setName(trimmedValue)
+        await updateDoc(userDocRef, { name: trimmedValue });
+        setName(trimmedValue);
       }
 
       if (openDialog === "password") {
         if (!currentPassword || currentPassword.length < 6) {
-          alert("Please enter your current password.")
-          return
+          alert("Please enter your current password.");
+          return;
         }
         if (trimmedValue.length < 6) {
-          alert("New password must be at least 6 characters.")
-          return
+          alert("New password must be at least 6 characters.");
+          return;
         }
 
-        const credential = EmailAuthProvider.credential(user.email, currentPassword)
-        await reauthenticateWithCredential(user, credential)
-        await updatePassword(user, trimmedValue)
-        alert("Password updated successfully.")
+        const credential = EmailAuthProvider.credential(user.email, currentPassword);
+        await reauthenticateWithCredential(user, credential);
+        await updatePassword(user, trimmedValue);
+        alert("Password updated successfully.");
       }
 
-      handleClose()
+      handleClose();
     } catch (error) {
-      console.error("Update failed:", error.message)
-      alert(`Failed to update ${openDialog}: ${error.message}`)
+      console.error("Update failed:", error.message);
+      alert(`Failed to update ${openDialog}: ${error.message}`);
     }
-  }
+  };
 
-  // Link Google account to user
   const handleLinkGoogle = async () => {
-    const provider = new GoogleAuthProvider()
+    const provider = new GoogleAuthProvider();
     try {
-      await linkWithPopup(auth.currentUser, provider)
-      setGoogleLinked(true)
-      alert("Google account linked successfully.")
+      await linkWithPopup(auth.currentUser, provider);
+      setGoogleLinked(true);
+      alert("Google account linked successfully.");
     } catch (error) {
-      console.error("Linking failed:", error.message)
-      alert(`Link failed: ${error.message}`)
+      console.error("Linking failed:", error.message);
+      alert(`Link failed: ${error.message}`);
     }
-  }
+  };
 
-  // Unlink Google account from user
   const handleUnlinkGoogle = async () => {
     try {
-      await unlink(auth.currentUser, "google.com")
-      setGoogleLinked(false)
-      alert("Google account unlinked successfully.")
+      await unlink(auth.currentUser, "google.com");
+      setGoogleLinked(false);
+      alert("Google account unlinked successfully.");
     } catch (error) {
-      console.error("Unlinking failed:", error.message)
-      alert(`Unlink failed: ${error.message}`)
+      console.error("Unlinking failed:", error.message);
+      alert(`Unlink failed: ${error.message}`);
     }
-  }
+  };
 
   return (
     <Box>
@@ -168,19 +177,19 @@ const AccountProfile = () => {
         <Typography variant="h4" fontWeight="bold">Profile</Typography>
       </Box>
 
-      {/* Basic account info */}
+      {/* Account info */}
       <InfoRow label="Name" value={name} onClick={() => handleOpen("name")} />
-      <InfoRow label="Email" value={email} onClick={null} showUpdate={false} />
+      <InfoRow label="Email" value={email} showUpdate={false} />
       <InfoRow label="Password" value="••••••" onClick={() => handleOpen("password")} />
 
-      {/* Google account linking */}
+      {/* Linked account */}
       <Box sx={{ mb: 5 }}>
         <Typography variant="h5" fontWeight="bold" sx={{ mb: 2 }}>Linked Accounts</Typography>
         <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-          <GoogleIcon />
-          <Typography>Google</Typography>
-        </Box>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+            <GoogleIcon />
+            <Typography>Google</Typography>
+          </Box>
           {googleLinked ? (
             <ActionButton label="Unlink" onClick={handleUnlinkGoogle} />
           ) : (
@@ -204,7 +213,7 @@ const AccountProfile = () => {
         </Box>
       </Box>
 
-      {/* Summary purpose selection */}
+      {/* Summary purpose */}
       <Box sx={{ mb: 3 }}>
         <Typography variant="h5" fontWeight="bold" sx={{ mb: 2 }}>About You</Typography>
         <Typography variant="body1" sx={{ mb: 4 }}>
@@ -228,8 +237,8 @@ const AccountProfile = () => {
           </FormControl>
         </Box>
       </Box>
-      
-      {/* Edit dialog for name or password */}
+
+      {/* Edit dialog */}
       <Dialog open={!!openDialog} onClose={handleClose}>
         <DialogTitle>Update {openDialog}</DialogTitle>
         <DialogContent>
@@ -269,32 +278,23 @@ const AccountProfile = () => {
           )}
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 2 }}>
-          <Button
-            onClick={handleClose}
-            sx={{
-              color: "#0F2841",
-            }}
-          >
+          <Button onClick={handleClose} sx={{ color: "#0F2841" }}>
             CANCEL
           </Button>
           <Button
             onClick={handleSave}
             variant="contained"
-            sx={{
-              backgroundColor: "#0F2841",
-              color: "#fff",
-              }
-            }
+            sx={{ backgroundColor: "#0F2841", color: "#fff" }}
           >
             UPDATE
           </Button>
         </DialogActions>
       </Dialog>
     </Box>
-  )
-}
+  );
+};
 
-// Display profile info
+// Profile info row
 const InfoRow = ({ label, value, onClick, showUpdate = true }) => (
   <Box sx={{ mb: 4 }}>
     <Typography variant="body1" color="text.secondary" sx={{ mb: 1 }}>{label}</Typography>
@@ -303,20 +303,24 @@ const InfoRow = ({ label, value, onClick, showUpdate = true }) => (
       {showUpdate && <ActionButton label="Update" onClick={onClick} />}
     </Box>
   </Box>
-)
+);
 
-// Button for update/link/unlink actions
+// Reusable button
 const ActionButton = ({ label, icon, width = 80, onClick }) => (
   <Button
     variant="outlined"
     color="inherit"
     size="small"
     onClick={onClick}
-    sx={{ textTransform: "none", borderRadius: "4px", minWidth: `${width}px` }}
+    sx={{
+      textTransform: "none",
+      borderRadius: "4px",
+      minWidth: `${width}px`,
+    }}
     endIcon={icon}
   >
     {label}
   </Button>
-)
+);
 
-export default AccountProfile
+export default AccountProfile;
