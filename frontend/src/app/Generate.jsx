@@ -4,6 +4,9 @@ import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import TextField from '@mui/material/TextField';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
+import { getUserID } from '../components/firebase/firebaseUserID';
+import { db } from '../components/firebase/firebaseConfig';
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 
 const theme = createTheme({
   palette: {
@@ -77,6 +80,7 @@ const Generate = () => {
   const [inputStats, setInputStats] = useState({ words: 0, sentences: 0 });
   const [outputStats, setOutputStats] = useState({ words: 0, sentences: 0 });
   const textareaRef = useRef(null);
+  const [userId, setUserId] = useState(null);
 
   const API_KEY = "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";
 
@@ -190,17 +194,48 @@ const Generate = () => {
     }
   };
 
-  // save summary for future use
+  useEffect(() => {
+    const unsubscribe = getUserID((uid) => {
+      if (uid) {
+        setUserId(uid);
+      } else {
+        console.log('No user authenticated');
+      }
+    });
+
+    return () => {
+      if (unsubscribe) {
+        unsubscribe();
+      }
+    };
+  }, []);
+
   const saveSummary = async () => {
     if (!responseText) {
       setError('No summary to save');
       return;
     }
     try {
-      // implementation for saving summary
+      if (!userId) {
+        throw new Error('User not authenticated');
+      }
+
+      // Reference to the user's summaries subcollection
+      const summariesRef = collection(db, `users/${userId}/summaries`);
+      
+      // Add a new document to the summaries subcollection
+      await addDoc(summariesRef, {
+        'summary-content': responseText,
+        'summary-length': selectedLength,
+        'summary-tone': selectedTone,
+        createdAt: serverTimestamp() // Use serverTimestamp to match Chrome extension
+      });
+
+      setError('');
       alert('Summary saved successfully!');
-    } catch (err) {
-      setError(`Error saving: ${err.message}`);
+    } catch (error) {
+      setError(`Error: ${error.message}`);
+      console.error('Save Error:', error);
     }
   };
 
@@ -210,7 +245,7 @@ const Generate = () => {
         {/* Fixed sidebar on the left */}
         <Sidebar />
 
-        {/* TODO: still figuring out how to make sidebar dynamic */}
+        
         {/* Main content offset from sidebar */}
         <div
           className="p-10"
