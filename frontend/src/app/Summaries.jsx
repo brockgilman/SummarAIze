@@ -112,6 +112,22 @@ const Summaries = () => {
         ...doc.data()
       }));
       
+      // sort summaries by createdAt timestamp
+      const sortedSummaries = summariesData.sort((a, b) => {
+        
+        const getTimestamp = (doc) => {
+          if (!doc.createdAt) return 0;
+          
+          if (doc.createdAt.seconds) {
+            return doc.createdAt.seconds * 1000;
+          }
+          
+          return doc.createdAt;
+        };
+        
+        return getTimestamp(b) - getTimestamp(a);
+      });
+      
       // Fetch user's notebooks
       const notebooksRef = collection(db, `users/${uid}/notebooks`);
       const notebooksSnapshot = await getDocs(notebooksRef);
@@ -125,7 +141,7 @@ const Summaries = () => {
         };
       });
       
-      setSummaries(summariesData);
+      setSummaries(sortedSummaries);
       setNotebooks(notebooksData);
       setIsLoading(false);
     } catch (error) {
@@ -242,6 +258,28 @@ const Summaries = () => {
   };
   
 
+  // format timestamp
+  const formatTimestamp = (timestamp) => {
+    if (!timestamp) return '';
+    
+    let date;
+    
+    if (timestamp.seconds) {
+      date = new Date(timestamp.seconds * 1000);
+    } else {
+      
+      date = new Date(timestamp);
+    }
+    
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const month = months[date.getMonth()];
+    const day = date.getDate();
+    const hours = date.getHours().toString().padStart(2, '0');
+    const minutes = date.getMinutes().toString().padStart(2, '0');
+    
+    return `${month} ${day} ${hours}:${minutes}`;
+  };
+
   if (isLoading) {
     return (
       <div className="flex h-screen items-center justify-center bg-blue-100">
@@ -348,12 +386,53 @@ const Summaries = () => {
                       }} />
                     </div>
                   </div>
-                  <div style={{ position: 'relative', marginTop: '10px', display: 'flex', marginBottom: '5px'}}>
+                  <div style={{ 
+                    position: 'relative', 
+                    marginTop: '10px', 
+                    display: 'flex', 
+                    marginBottom: '5px',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    paddingRight: '10px'
+                  }}>
+                    {/* Plus Button Circle - Adjusted position */}
+                    <div style={{
+                      position: 'relative',
+                      width: '28px',
+                      height: '28px',
+                      backgroundColor: 'lightgray',
+                      borderRadius: '50%',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      cursor: 'pointer',
+                      boxShadow: '0 2px 5px rgba(0,0,0,0.1)',
+                    }}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleAddTagClick(e, summary.id);
+                      }}
+                      title="Add to notebook"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        stroke="gray"
+                        strokeWidth="2"
+                        viewBox="0 0 24 24"
+                        style={{ width: '14px', height: '14px' }}
+                      >
+                        <line x1="12" y1="5" x2="12" y2="19" />
+                        <line x1="5" y1="12" x2="19" y2="12" />
+                      </svg>
+                    </div>
+
                     <div style={{
                       display: 'flex',
                       flexWrap: 'wrap',
                       justifyContent: 'center',
                       gap: '6px',
+                      flex: '1'
                     }}>
                       {notebooks
                         .filter((nb) => nb.summaries.includes(summary.id))
@@ -409,39 +488,16 @@ const Summaries = () => {
                           </span>
 
                         ))}
+                      
                     </div>
 
-                    {/* Plus Button Circle */}
                     <div style={{
-                      position: 'relative',
-                      marginLeft: '5px',
-                      width: '28px',
-                      height: '28px',
-                      backgroundColor: 'lightgray',
-                      borderRadius: '50%',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      cursor: 'pointer',
-                      boxShadow: '0 2px 5px rgba(0,0,0,0.1)',
-                    }}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleAddTagClick(e, summary.id);
-                      }}
-                      title="Add to notebook"
-                    >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        stroke="gray"
-                        strokeWidth="2"
-                        viewBox="0 0 24 24"
-                        style={{ width: '14px', height: '14px' }}
-                      >
-                        <line x1="12" y1="5" x2="12" y2="19" />
-                        <line x1="5" y1="12" x2="19" y2="12" />
-                      </svg>
+                      fontSize: '0.8rem',
+                      color: '#666',
+                      whiteSpace: 'nowrap',
+                      marginLeft: '10px'
+                    }}>
+                      {formatTimestamp(summary.createdAt)}
                     </div>
                   </div>
                 </div>

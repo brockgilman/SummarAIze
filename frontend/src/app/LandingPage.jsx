@@ -80,9 +80,16 @@ export default function LandingPage() {
 
           <div className="gif-container">
             <img
-              src="/summarizeimportant.gif"
+              src="/summarAIzevideoclip.gif"
               alt="SummarAIze Demo"
-              className="w-full rounded-lg shadow-lg"
+              style={{
+                width: '100%',
+                maxWidth: '600px',
+                height: 'auto',
+                objectFit: 'cover',
+                borderRadius: '10px',
+                boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)'
+              }}
             />
           </div>
         </div>
