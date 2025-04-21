@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { getUserID } from "../components/firebase/firebaseUserID";
 import Sidebar from "../components/Sidebar";
-import { collection, getDocs, doc, updateDoc, arrayUnion, deleteField } from 'firebase/firestore';
+import { collection, getDocs, doc, updateDoc, arrayUnion, deleteField, setDoc } from 'firebase/firestore';
 import { db } from '../components/firebase/firebaseConfig';
 
 const Summaries = () => {
@@ -17,19 +17,15 @@ const Summaries = () => {
   const [modalPosition, setModalPosition] = useState({ top: 0, left: 0 });
   const [newNotebookName, setNewNotebookName] = useState('');
 
+
+
   useEffect(() => {
+    // Set up cookie creation when component mounts
     const unsubscribe = getUserID((uid) => {
       if (uid) {
-        const rememberMe = localStorage.getItem("rememberMe") === "true";
-  
-        if (rememberMe) {
-          setCookie('extension_user_uid', uid, 30);
-          setCookie('rememberMe', "true", 30);
-          console.log('✅ Cookie set for user:', uid);
-        } else {
-          console.log("🛑 Remember Me is false — cookie not set.");
-        }
-  
+        // Create cookie with the user's UID
+        setCookie('extension_user_uid', uid, 30); // Cookie expires in 30 days
+        console.log('User ID cookie created:', uid);
         setUserId(uid);
         fetchUserData(uid);
       } else {
@@ -37,23 +33,14 @@ const Summaries = () => {
         setIsLoading(false);
       }
     });
-  
+
+    // Clean up the auth listener when component unmounts
     return () => {
-      if (unsubscribe) unsubscribe();
+      if (unsubscribe) {
+        unsubscribe();
+      }
     };
-  }, []);
-  
-  // Helper function to set cookie
-  const setCookie = (name, value, days) => {
-    let expires = '';
-    if (days) {
-      const date = new Date();
-      date.setTime(date.getTime() + (days * 86400 * 1000));
-      expires = '; expires=' + date.toUTCString();
-    }
-    document.cookie = `${name}=${encodeURIComponent(value)}${expires}; path=/; SameSite=None; Secure`;
-  };
-  
+  }, []); // Empty dependency array ensures this runs once on component mount
   
   const handleRemoveFromNotebook = async (notebookName, summaryId) => {
     try {
@@ -112,22 +99,6 @@ const Summaries = () => {
         ...doc.data()
       }));
       
-      // sort summaries by createdAt timestamp
-      const sortedSummaries = summariesData.sort((a, b) => {
-        
-        const getTimestamp = (doc) => {
-          if (!doc.createdAt) return 0;
-          
-          if (doc.createdAt.seconds) {
-            return doc.createdAt.seconds * 1000;
-          }
-          
-          return doc.createdAt;
-        };
-        
-        return getTimestamp(b) - getTimestamp(a);
-      });
-      
       // Fetch user's notebooks
       const notebooksRef = collection(db, `users/${uid}/notebooks`);
       const notebooksSnapshot = await getDocs(notebooksRef);
@@ -141,13 +112,28 @@ const Summaries = () => {
         };
       });
       
-      setSummaries(sortedSummaries);
+      setSummaries(summariesData);
       setNotebooks(notebooksData);
       setIsLoading(false);
     } catch (error) {
       console.error("Error fetching user data:", error);
       setIsLoading(false);
     }
+  };
+
+  // Helper function to set cookie
+  const setCookie = (name, value, days) => {
+    let expires = '';
+    
+    if (days) {
+      const date = new Date();
+      date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+      expires = '; expires=' + date.toUTCString();
+    }
+    
+    // Set cookie with SameSite=None and Secure flags to make it accessible from extension
+    document.cookie = `${name}=${encodeURIComponent(value)}${expires}; path=/; SameSite=None; Secure`;
+    console.log("Cookie online"); 
   };
 
   const handleSummaryClick = (summaryId) => {
@@ -170,7 +156,6 @@ const Summaries = () => {
       return;
     }
 
-  
     try {
       const targetNotebook = notebooks.find(nb => nb.name === selectedNotebook);
       const currentTotal = targetNotebook?.total || 0;
@@ -213,7 +198,7 @@ const Summaries = () => {
   
     try {
       const notebookRef = doc(db, `users/${userId}/notebooks/${trimmedName}`);
-      await updateDoc(notebookRef, {
+      await setDoc(notebookRef, {
         total: 0
       });
   
@@ -257,28 +242,6 @@ const Summaries = () => {
     });
   };
   
-
-  // format timestamp
-  const formatTimestamp = (timestamp) => {
-    if (!timestamp) return '';
-    
-    let date;
-    
-    if (timestamp.seconds) {
-      date = new Date(timestamp.seconds * 1000);
-    } else {
-      
-      date = new Date(timestamp);
-    }
-    
-    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    const month = months[date.getMonth()];
-    const day = date.getDate();
-    const hours = date.getHours().toString().padStart(2, '0');
-    const minutes = date.getMinutes().toString().padStart(2, '0');
-    
-    return `${month} ${day} ${hours}:${minutes}`;
-  };
 
   if (isLoading) {
     return (
@@ -386,53 +349,12 @@ const Summaries = () => {
                       }} />
                     </div>
                   </div>
-                  <div style={{ 
-                    position: 'relative', 
-                    marginTop: '10px', 
-                    display: 'flex', 
-                    marginBottom: '5px',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    paddingRight: '10px'
-                  }}>
-                    {/* Plus Button Circle - Adjusted position */}
-                    <div style={{
-                      position: 'relative',
-                      width: '28px',
-                      height: '28px',
-                      backgroundColor: 'lightgray',
-                      borderRadius: '50%',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      cursor: 'pointer',
-                      boxShadow: '0 2px 5px rgba(0,0,0,0.1)',
-                    }}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleAddTagClick(e, summary.id);
-                      }}
-                      title="Add to notebook"
-                    >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        stroke="gray"
-                        strokeWidth="2"
-                        viewBox="0 0 24 24"
-                        style={{ width: '14px', height: '14px' }}
-                      >
-                        <line x1="12" y1="5" x2="12" y2="19" />
-                        <line x1="5" y1="12" x2="19" y2="12" />
-                      </svg>
-                    </div>
-
+                  <div style={{ position: 'relative', marginTop: '10px', display: 'flex', marginBottom: '5px'}}>
                     <div style={{
                       display: 'flex',
                       flexWrap: 'wrap',
                       justifyContent: 'center',
                       gap: '6px',
-                      flex: '1'
                     }}>
                       {notebooks
                         .filter((nb) => nb.summaries.includes(summary.id))
@@ -488,16 +410,39 @@ const Summaries = () => {
                           </span>
 
                         ))}
-                      
                     </div>
 
+                    {/* Plus Button Circle */}
                     <div style={{
-                      fontSize: '0.8rem',
-                      color: '#666',
-                      whiteSpace: 'nowrap',
-                      marginLeft: '10px'
-                    }}>
-                      {formatTimestamp(summary.createdAt)}
+                      position: 'relative',
+                      marginLeft: '5px',
+                      width: '28px',
+                      height: '28px',
+                      backgroundColor: 'lightgray',
+                      borderRadius: '50%',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      cursor: 'pointer',
+                      boxShadow: '0 2px 5px rgba(0,0,0,0.1)',
+                    }}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleAddTagClick(e, summary.id);
+                      }}
+                      title="Add to notebook"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        stroke="gray"
+                        strokeWidth="2"
+                        viewBox="0 0 24 24"
+                        style={{ width: '14px', height: '14px' }}
+                      >
+                        <line x1="12" y1="5" x2="12" y2="19" />
+                        <line x1="5" y1="12" x2="19" y2="12" />
+                      </svg>
                     </div>
                   </div>
                 </div>
