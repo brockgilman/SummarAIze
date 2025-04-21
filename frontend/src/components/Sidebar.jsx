@@ -5,7 +5,7 @@ import './sidebar.css';
 import SidebarLogo from './SidebarLogo';
 import { getUserEmail } from './firebase/firebaseUserEmail';
 import { signOut } from 'firebase/auth';
-import { auth } from './firebase/firebaseConfig'; // Adjust the import path if needed
+import { auth } from './firebase/firebaseConfig';
 
 const Sidebar = () => {
   const [userEmail, setUserEmail] = useState(null);
@@ -25,12 +25,11 @@ const Sidebar = () => {
     event.preventDefault();
 
     try {
-      await signOut(auth); // Firebase sign-out
+      await signOut(auth);
     } catch (error) {
       console.error("Error signing out from Firebase:", error);
     }
 
-    // Clear the persistent cookie and rememberMe flag
     document.cookie = "extension_user_uid=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; SameSite=None; Secure";
     localStorage.setItem("rememberMe", "false");
 
@@ -42,10 +41,6 @@ const Sidebar = () => {
   const handleNavigation = (path) => {
     navigate(path);
   };
-
-  if (loading) {
-    return <div>Loading...</div>;
-  }
 
   return (
     <div className="sidebar-container">
@@ -91,7 +86,7 @@ const Sidebar = () => {
           <span>Log Out</span>
         </a>
         <div className="sidebar-user-email">
-          {userEmail ? userEmail : "No user logged in"}
+          {loading ? "Loading..." : userEmail || "No user logged in"}
         </div>
       </div>
     </div>
