@@ -1,7 +1,18 @@
 import React, { useEffect, useState } from 'react';
 import {
-  Box, Button, Checkbox, CssBaseline, FormControlLabel, Divider, FormLabel,
-  FormControl, Link, TextField, Typography, Stack, Card as MuiCard
+  Box,
+  Button,
+  Checkbox,
+  CssBaseline,
+  FormControlLabel,
+  Divider,
+  FormLabel,
+  FormControl,
+  Link,
+  TextField,
+  Typography,
+  Stack,
+  Card as MuiCard
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import ForgotPassword from './components/ForgotPassword';
@@ -15,7 +26,6 @@ import LogoNavbar from "../../components/LogoNavbar";
 import bcrypt from 'bcryptjs';
 
 const COOKIE_AGE_DAYS = 7;
-
 const PRIMARY_COLOR = "#0F2841";
 
 const Card = styled(MuiCard)(({ theme }) => ({
@@ -85,13 +95,17 @@ export default function LogIn() {
         if (isPasswordValid) {
           localStorage.setItem('extension_user', JSON.stringify({
             uid: user.uid,
-            rememberMe: rememberMe
+            rememberMe: rememberMe,
           }));
+
+          localStorage.setItem("rememberMe", rememberMe ? "true" : "false");
 
           if (rememberMe) {
             document.cookie = `extension_user_uid=${user.uid}; path=/; max-age=${COOKIE_AGE_DAYS * 86400}; SameSite=None; Secure`;
+            document.cookie = `rememberMe=true; path=/; max-age=${COOKIE_AGE_DAYS * 86400}; SameSite=None; Secure`;
           } else {
-            document.cookie = `extension_user_uid=; path=/; max-age=0`;
+            document.cookie = `extension_user_uid=; path=/; max-age=0; SameSite=None; Secure`;
+            document.cookie = `rememberMe=false; path=/; max-age=0; SameSite=None; Secure`;
           }
 
           navigate("/summaries");
@@ -105,7 +119,6 @@ export default function LogIn() {
       console.error("Login Error:", error);
 
       let errorMessage = "Something went wrong. Please try again later.";
-
       if (error.code === "auth/invalid-credential" || error.code === "auth/wrong-password") {
         errorMessage = "The email or password you entered is incorrect.";
       } else if (error.code === "auth/user-not-found") {
@@ -150,67 +163,86 @@ export default function LogIn() {
       <LogoNavbar />
       <SignInContainer direction="column">
         <Card variant="outlined">
-          <Typography component="h1" variant="h4" sx={{ width: '100%', fontSize: 'clamp(2rem, 10vw, 2.15rem)' }}>
+          <Typography
+            component="h1"
+            variant="h4"
+            sx={{ width: '100%', fontSize: 'clamp(2rem, 10vw, 2.15rem)' }}
+          >
             Log in
           </Typography>
-          <Box component="form" onSubmit={handleSubmit} noValidate sx={{ display: 'flex', flexDirection: 'column', width: '100%', gap: 2 }}>
-          <FormControl>
-            <FormLabel htmlFor="email">Email</FormLabel>
-            <TextField
-              error={emailError}
-              helperText={emailErrorMessage}
-              id="email"
-              type="email"
-              name="email"
-              placeholder="your@email.com"
-              autoComplete="email"
-              autoFocus
-              required
-              fullWidth
-              variant="outlined"
-              color={emailError ? 'error' : 'primary'}
-              sx={{
-                "& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                  borderColor: PRIMARY_COLOR,
-                },
-                "& .MuiInputLabel-root.Mui-focused": {
-                  color: PRIMARY_COLOR,
-                },
-              }}
-            />
-          </FormControl>
-          <FormControl>
-            <FormLabel htmlFor="password">Password</FormLabel>
-            <TextField
-              error={passwordError}
-              helperText={passwordErrorMessage}
-              name="password"
-              placeholder="••••••"
-              type="password"
-              id="password"
-              autoComplete="current-password"
-              required
-              fullWidth
-              variant="outlined"
-              color={passwordError ? 'error' : 'primary'}
-              sx={{
-                "& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                  borderColor: PRIMARY_COLOR,
-                },
-                "& .MuiInputLabel-root.Mui-focused": {
-                  color: PRIMARY_COLOR,
-                },
-              }}
-            />
-          </FormControl>
+
+          <Box
+            component="form"
+            onSubmit={handleSubmit}
+            noValidate
+            sx={{ display: 'flex', flexDirection: 'column', width: '100%', gap: 2 }}
+          >
+            <FormControl>
+              <FormLabel htmlFor="email">Email</FormLabel>
+              <TextField
+                error={emailError}
+                helperText={emailErrorMessage}
+                id="email"
+                type="email"
+                name="email"
+                placeholder="your@email.com"
+                autoComplete="email"
+                autoFocus
+                required
+                fullWidth
+                variant="outlined"
+                color={emailError ? 'error' : 'primary'}
+                sx={{
+                  "& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                    borderColor: PRIMARY_COLOR,
+                  },
+                  "& .MuiInputLabel-root.Mui-focused": {
+                    color: PRIMARY_COLOR,
+                  },
+                }}
+              />
+            </FormControl>
+
+            <FormControl>
+              <FormLabel htmlFor="password">Password</FormLabel>
+              <TextField
+                error={passwordError}
+                helperText={passwordErrorMessage}
+                name="password"
+                placeholder="••••••"
+                type="password"
+                id="password"
+                autoComplete="current-password"
+                required
+                fullWidth
+                variant="outlined"
+                color={passwordError ? 'error' : 'primary'}
+                sx={{
+                  "& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                    borderColor: PRIMARY_COLOR,
+                  },
+                  "& .MuiInputLabel-root.Mui-focused": {
+                    color: PRIMARY_COLOR,
+                  },
+                }}
+              />
+            </FormControl>
 
             <FormControl>
               <FormControlLabel
-                control={<Checkbox checked={rememberMe} onChange={(e) => setRememberMe(e.target.checked)} color="primary" />}
+                control={
+                  <Checkbox
+                    checked={rememberMe}
+                    onChange={(e) => setRememberMe(e.target.checked)}
+                    color="primary"
+                  />
+                }
                 label="Remember me"
               />
             </FormControl>
+
             <ForgotPassword open={open} handleClose={handleClose} />
+
             <Button
               type="submit"
               fullWidth
@@ -220,6 +252,7 @@ export default function LogIn() {
             >
               Log in
             </Button>
+
             <Link
               component="button"
               type="button"
@@ -230,7 +263,9 @@ export default function LogIn() {
               Forgot your password?
             </Link>
           </Box>
+
           <Divider>or</Divider>
+
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
             <Button
               fullWidth
@@ -240,6 +275,7 @@ export default function LogIn() {
             >
               Sign in with Google
             </Button>
+
             <Typography sx={{ textAlign: 'center' }}>
               Don&apos;t have an account?{' '}
               <Link href="/signup" variant="body2" sx={{ color: PRIMARY_COLOR }}>
