@@ -1,35 +1,27 @@
-"use client"
-
 import { useEffect, useState } from "react"
-import {
-  Box, Typography, Button, Select, MenuItem, FormControl, Dialog, DialogTitle, DialogContent,
-  DialogActions, TextField, Checkbox, FormControlLabel
-} from "@mui/material"
+import { Box, Typography, Button, Select, MenuItem, FormControl, Dialog, DialogTitle, DialogContent, DialogActions, TextField, Checkbox, FormControlLabel } from "@mui/material"
 import { GoogleIcon } from "../app/sign-up/components/CustomIcons"
 import { getUserName } from "../components/firebase/firebaseUserName"
 import { getUserEmail } from "../components/firebase/firebaseUserEmail"
 import { auth, db } from "../components/firebase/firebaseConfig"
-import {
-  updatePassword,
-  EmailAuthProvider,
-  reauthenticateWithCredential,
-  GoogleAuthProvider,
-  linkWithPopup,
-  unlink
-} from "firebase/auth"
+import { updatePassword, EmailAuthProvider, reauthenticateWithCredential, GoogleAuthProvider, linkWithPopup, unlink } from "firebase/auth"
 import { doc, getDoc, updateDoc } from "firebase/firestore"
 import { onAuthStateChanged } from "firebase/auth"
 
 const AccountProfile = () => {
+  // User profile state
   const [name, setName] = useState("")
   const [email, setEmail] = useState("")
-  const [writingPurpose, setWritingPurpose] = useState("School")
+  const [summaryPurpose, setSummaryPurpose] = useState("School")
   const [emailUpdates, setEmailUpdates] = useState(false)
   const [googleLinked, setGoogleLinked] = useState(false)
+
+  // UI dialog and input management
   const [openDialog, setOpenDialog] = useState(null)
   const [newValue, setNewValue] = useState("")
   const [currentPassword, setCurrentPassword] = useState("")
 
+  // Fetch user info and preferences on mount
   useEffect(() => {
     const unsubscribeEmail = getUserEmail(setEmail)
     const unsubscribeName = getUserName(setName)
@@ -42,19 +34,20 @@ const AccountProfile = () => {
         if (userSnap.exists()) {
           const data = userSnap.data()
           setEmailUpdates(!!data.emailUpdates)
-          if (data.writingPurpose) {
-            setWritingPurpose(data.writingPurpose)
+          if (data.summaryPurpose) {
+            setSummaryPurpose(data.SummaryPurpose)
           }
         }
   
-        // Check Google linked status after full auth state is ready
+        // Check if the Google provider is linked
         const isGoogleLinked = user.providerData.some(
           (provider) => provider.providerId === "google.com"
         )
         setGoogleLinked(isGoogleLinked)
       }
     })
-  
+
+    // Cleanup auth state listener
     return () => {
       unsubscribeEmail()
       unsubscribeName()
@@ -62,6 +55,7 @@ const AccountProfile = () => {
     }
   }, [])
 
+  // Toggle email update preference
   const handleEmailUpdatesChange = async (value) => {
     setEmailUpdates(value)
     const user = auth.currentUser
@@ -74,30 +68,34 @@ const AccountProfile = () => {
     }
   }
 
-  const handleWritingPurposeChange = async (value) => {
-    setWritingPurpose(value)
+  // Update summary purpose selection in Firestore
+  const handleSummaryPurposeChange = async (value) => {
+    setSummaryPurpose(value)
     const user = auth.currentUser
     if (!user) return
     try {
       const userDocRef = doc(db, "users", user.uid)
-      await updateDoc(userDocRef, { writingPurpose: value })
+      await updateDoc(userDocRef, { summaryPurpose: value })
     } catch (err) {
-      console.error("Failed to update writing purpose:", err)
+      console.error("Failed to update summart purpose:", err)
     }
   }
 
+  // Open dialog to edit a specific field
   const handleOpen = (field) => {
     setOpenDialog(field)
     setNewValue("")
     setCurrentPassword("")
   }
 
+  // Close dialog and reset inputs
   const handleClose = () => {
     setOpenDialog(null)
     setNewValue("")
     setCurrentPassword("")
   }
 
+  // Save updates for name or password
   const handleSave = async () => {
     const user = auth.currentUser
     if (!user) return
@@ -138,6 +136,7 @@ const AccountProfile = () => {
     }
   }
 
+  // Link Google account to user
   const handleLinkGoogle = async () => {
     const provider = new GoogleAuthProvider()
     try {
@@ -150,6 +149,7 @@ const AccountProfile = () => {
     }
   }
 
+  // Unlink Google account from user
   const handleUnlinkGoogle = async () => {
     try {
       await unlink(auth.currentUser, "google.com")
@@ -163,14 +163,17 @@ const AccountProfile = () => {
 
   return (
     <Box>
+      {/* Header */}
       <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 4 }}>
         <Typography variant="h4" fontWeight="bold">Profile</Typography>
       </Box>
 
+      {/* Basic account info */}
       <InfoRow label="Name" value={name} onClick={() => handleOpen("name")} />
       <InfoRow label="Email" value={email} onClick={null} showUpdate={false} />
       <InfoRow label="Password" value="••••••" onClick={() => handleOpen("password")} />
 
+      {/* Google account linking */}
       <Box sx={{ mb: 5 }}>
         <Typography variant="h5" fontWeight="bold" sx={{ mb: 2 }}>Linked Accounts</Typography>
         <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
@@ -186,6 +189,7 @@ const AccountProfile = () => {
         </Box>
       </Box>
 
+      {/* Email preferences */}
       <Box sx={{ mb: 5 }}>
         <Typography variant="h5" fontWeight="bold" sx={{ mb: 2 }}>Email Preferences</Typography>
         <Box sx={{ display: "flex", gap: 2 }}>
@@ -200,6 +204,7 @@ const AccountProfile = () => {
         </Box>
       </Box>
 
+      {/* Summary purpose selection */}
       <Box sx={{ mb: 3 }}>
         <Typography variant="h5" fontWeight="bold" sx={{ mb: 2 }}>About You</Typography>
         <Typography variant="body1" sx={{ mb: 4 }}>
@@ -209,8 +214,8 @@ const AccountProfile = () => {
           <Typography variant="body1">Most of my summarizing is for:</Typography>
           <FormControl sx={{ minWidth: 200 }}>
             <Select
-              value={writingPurpose}
-              onChange={(e) => handleWritingPurposeChange(e.target.value)}
+              value={summaryPurpose}
+              onChange={(e) => handleSummaryPurposeChange(e.target.value)}
               size="small"
             >
               <MenuItem value="School">School</MenuItem>
@@ -223,7 +228,8 @@ const AccountProfile = () => {
           </FormControl>
         </Box>
       </Box>
-
+      
+      {/* Edit dialog for name or password */}
       <Dialog open={!!openDialog} onClose={handleClose}>
         <DialogTitle>Update {openDialog}</DialogTitle>
         <DialogContent>
@@ -288,6 +294,7 @@ const AccountProfile = () => {
   )
 }
 
+// Display profile info
 const InfoRow = ({ label, value, onClick, showUpdate = true }) => (
   <Box sx={{ mb: 4 }}>
     <Typography variant="body1" color="text.secondary" sx={{ mb: 1 }}>{label}</Typography>
@@ -298,6 +305,7 @@ const InfoRow = ({ label, value, onClick, showUpdate = true }) => (
   </Box>
 )
 
+// Button for update/link/unlink actions
 const ActionButton = ({ label, icon, width = 80, onClick }) => (
   <Button
     variant="outlined"

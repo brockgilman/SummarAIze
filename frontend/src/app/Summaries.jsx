@@ -17,15 +17,18 @@ const Summaries = () => {
   const [modalPosition, setModalPosition] = useState({ top: 0, left: 0 });
   const [newNotebookName, setNewNotebookName] = useState('');
 
-
-
-  useEffect(() => {
-    // Set up cookie creation when component mounts
+    useEffect(() => {
     const unsubscribe = getUserID((uid) => {
       if (uid) {
-        // Create cookie with the user's UID
-        setCookie('extension_user_uid', uid, 30); // Cookie expires in 30 days
-        console.log('User ID cookie created:', uid);
+        const rememberMe = localStorage.getItem("rememberMe") === "true";
+  
+        if (rememberMe) {
+          setCookie('extension_user_uid', uid, 30); // Cookie expires in 30 days
+          console.log('✅ Cookie set for user:', uid);
+        } else {
+          console.log("🛑 Remember Me is false — cookie not set.");
+        }
+  
         setUserId(uid);
         fetchUserData(uid);
       } else {
@@ -33,14 +36,14 @@ const Summaries = () => {
         setIsLoading(false);
       }
     });
-
-    // Clean up the auth listener when component unmounts
+  
     return () => {
       if (unsubscribe) {
         unsubscribe();
       }
     };
-  }, []); // Empty dependency array ensures this runs once on component mount
+  }, []);
+  
   
   const handleRemoveFromNotebook = async (notebookName, summaryId) => {
     try {
