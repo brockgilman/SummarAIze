@@ -5,6 +5,7 @@ import { collection, getDocs, doc, updateDoc, arrayUnion, deleteField, setDoc } 
 import { db } from '../components/firebase/firebaseConfig';
 
 const Summaries = () => {
+  // State variables to store summaries, notebooks, user ID, and various modal states
   const [summaries, setSummaries] = useState([]);
   const [notebooks, setNotebooks] = useState([]);
   const [userId, setUserId] = useState(null);
@@ -42,11 +43,13 @@ const Summaries = () => {
     };
   }, []); // Empty dependency array ensures this runs once on component mount
   
+  // Function to remove a summary from a specific notebook
   const handleRemoveFromNotebook = async (notebookName, summaryId) => {
     try {
       const notebook = notebooks.find(nb => nb.name === notebookName);
       if (!notebook) return;
   
+      // Find the key corresponding to the summary in the notebook
       const summaryKey = Object.keys(notebook).find(
         (key) => notebook[key] === summaryId && key.startsWith('summary')
       );
@@ -86,9 +89,7 @@ const Summaries = () => {
     }
   };
   
-  
-  
-  
+  // Function to fetch user data from Firestore
   const fetchUserData = async (uid) => {
     try {
       // Fetch user's summaries
@@ -136,6 +137,7 @@ const Summaries = () => {
     console.log("Cookie online"); 
   };
 
+  // Function to handle click on a summary to toggle expanded view
   const handleSummaryClick = (summaryId) => {
     if (expandedSummary === summaryId) {
       setExpandedSummary(null);
@@ -144,10 +146,11 @@ const Summaries = () => {
     }
   };
 
+  // Function to add a summary to a selected notebook
   const handleAddToNotebook = async () => {
     if (!selectedSummary || !selectedNotebook) return;
 
-    // Prevent duplicates
+    // Prevent duplicates by checking if the summary already exists in the selected notebook
     const targetNotebook = notebooks.find(nb => nb.name === selectedNotebook);
     if (targetNotebook?.summaries?.includes(selectedSummary)) {
       console.log("Summary already exists in this notebook.");
@@ -170,7 +173,7 @@ const Summaries = () => {
         total: nextSummaryNum,
       });
   
-      // Update local state
+      // Update local state with the new notebook state
       const updatedNotebooks = notebooks.map(notebook => {
         if (notebook.name === selectedNotebook) {
           return {
@@ -192,6 +195,7 @@ const Summaries = () => {
     }
   };
   
+  // Function to create a new notebook with a specified name
   const handleCreateNotebook = async () => {
     const trimmedName = newNotebookName.trim();
     if (!trimmedName || notebooks.find(nb => nb.name === trimmedName)) return;
@@ -213,11 +217,22 @@ const Summaries = () => {
       setSelectedNotebook(trimmedName);
       setNewNotebookName('');
       console.log(`Notebook "${trimmedName}" created.`);
-    } catch (error) {
-      console.error("Error creating notebook:", error);
+
+    // Check if the created notebook is named "LeBron"
+    if (trimmedName.toLowerCase() === 'lebron') {
+      playTacoTuesday();  // Play Taco Tuesday MP3 if the notebook is named "LeBron"
     }
-  };
+  } catch (error) {
+    console.error("Error creating notebook:", error);
+  }
+};
   
+  // Helper function to play Taco Tuesday audio
+  const playTacoTuesday = () => {
+    const audio = new Audio('/TacoTuesday.mp3');
+    audio.play();
+    console.log('Taco Tuesday MP3 is playing!');
+  };
 
   const formatDate = (timestamp) => {
     if (!timestamp) return 'Unknown date';
