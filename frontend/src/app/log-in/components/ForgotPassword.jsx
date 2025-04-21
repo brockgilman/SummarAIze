@@ -1,3 +1,4 @@
+// Import necessary dependencies and UI components
 import * as React from 'react';
 import { useState } from 'react';
 import PropTypes from 'prop-types';
@@ -13,30 +14,38 @@ import { auth } from "../../../components/firebase/firebaseConfig";
 import Snackbar from '@mui/material/Snackbar';
 import Alert from '@mui/material/Alert';
 
+// ForgotPassword component handles password reset dialog logic
 function ForgotPassword({ open, handleClose }) {
+  // State to store user's email input
   const [email, setEmail] = useState('');
+  // State to track loading status while submitting
   const [isLoading, setIsLoading] = useState(false);
+  // Snackbar state for displaying success/error feedback to the user
   const [snackbar, setSnackbar] = useState({
     open: false,
     message: '',
     severity: 'success'
   });
 
+  // Handle changes in the email input field
   const handleEmailChange = (event) => {
     setEmail(event.target.value);
   };
 
+  // Close the Snackbar notification
   const handleSnackbarClose = () => {
     setSnackbar({ ...snackbar, open: false });
   };
 
+  // Submit handler to send a password reset email via Firebase
   const handleSubmit = async (event) => {
     event.preventDefault();
     setIsLoading(true);
     
     try {
-      // Send password reset email provided by Firebase
+      // Attempt to send password reset email
       await sendPasswordResetEmail(auth, email);
+      // If successful, show success message and close dialog
       setSnackbar({
         open: true,
         message: 'Password reset email sent! Please check your inbox.',
@@ -45,6 +54,7 @@ function ForgotPassword({ open, handleClose }) {
       setIsLoading(false);
       handleClose();
     } catch (error) {
+      // If error occurs, show error message
       setSnackbar({
         open: true,
         message: error.message || 'Failed to send reset email. Please try again.',
@@ -56,6 +66,7 @@ function ForgotPassword({ open, handleClose }) {
 
   return (
     <>
+      {/* Password reset dialog */}
       <Dialog
         open={open}
         onClose={handleClose}
@@ -75,6 +86,7 @@ function ForgotPassword({ open, handleClose }) {
             Enter your account&apos;s email address, and we&apos;ll send you a link to
             reset your password.
           </DialogContentText>
+          {/* Input field for email address */}
           <OutlinedInput
             autoFocus
             required
@@ -90,7 +102,9 @@ function ForgotPassword({ open, handleClose }) {
           />
         </DialogContent>
         <DialogActions sx={{ pb: 3, px: 3 }}>
+          {/* Cancel button to close dialog */}
           <Button onClick={handleClose} disabled={isLoading} sx={{ color: '#0F2841' }}>Cancel</Button>
+          {/* Submit button to trigger password reset */}
           <Button 
             variant="contained" 
             type="submit"
@@ -102,6 +116,7 @@ function ForgotPassword({ open, handleClose }) {
         </DialogActions>
       </Dialog>
 
+      {/* Snackbar for success or error feedback */}
       <Snackbar 
         open={snackbar.open} 
         autoHideDuration={6000} 
@@ -119,9 +134,11 @@ function ForgotPassword({ open, handleClose }) {
   );
 }
 
+// Prop type validation for the component props
 ForgotPassword.propTypes = {
   handleClose: PropTypes.func.isRequired,
   open: PropTypes.bool.isRequired,
 };
 
+// Export the component for external use
 export default ForgotPassword;

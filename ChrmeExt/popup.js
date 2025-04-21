@@ -229,30 +229,36 @@ document.getElementById('generate').addEventListener('click', async () => {
     
     // Construct the prompt for the AI model
     const prompt = `
-    Please summarize this scientific article in a ${selectedTone} tone and ${selectedLength} length.
     
+    You are a summarization engine.
+
+    TASK: Summarize the content below with a ${selectedTone} tone and ${selectedLength} length.
+        
     Article Title: ${content.title}
     
     Abstract: ${content.abstract}
     
     Article Content: ${content.bodyContent.substring(0, 10000)}...
     
-    Please provide a summary that captures the main findings, methodology, and implications of the research.
-    
+    RULES (follow strictly):
+        - Output ONLY the summary — no preamble, no notes, no labels, no quotes, no formatting.
+        - DO NOT include any text before or after the summary.
+        - DO NOT write "Summary:", "Here is...", "Here's..." or anything similar.
+        - Output must start immediately with the first word of the summary.
+        - If you break any of these rules, the output is invalid.
+
     TONE GUIDELINES:
-    - If casual: use conversational language, explain concepts in an accessible way
-    - If knowledgeable: use more technical language with proper terminology
-    - If expert: use specialized terminology, maintain academic style
+    - If casual: use natural, conversational language, explain concepts in an accessible way
+    - If knowledgeable: use more technical language with proper terminology and structure
+    - If expert: use specialized terminology, maintain academic style, use advance vocabulary
 
     LENGTH GUIDELINES:
-    - If short: 1-2 paragraphs (about 150 words)
-    - If medium: 3-4 paragraphs (about 300 words)
-    - If long: 5-6 paragraphs (about 500 words)
+    - If short: 1-2 paragraphs (~150 words)
+    - If medium: 3-4 paragraphs (~300 words)
+    - If long: 5-6 paragraphs (~500 words)
 
-    DO NOT include any before/after text in the summary, just the summary itself.
-
-    Please make sure the summary is accurate and relevant to the content.
-    `;
+    Ensure the summary is accurate and relevant to the content.
+  `;
 
     const response = await makeApiRequest(prompt);
 

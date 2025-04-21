@@ -26,8 +26,10 @@ import { setDoc, doc } from "firebase/firestore";
 import LogoNavbar from "../../components/LogoNavbar";
 import bcrypt from "bcryptjs";
 
+// Define primary color constant
 const PRIMARY_COLOR = "#0F2841";
 
+// Styled Card component with responsive width and custom box shadow
 const Card = styled(MuiCard)(({ theme }) => ({
   display: "flex",
   flexDirection: "column",
@@ -44,6 +46,7 @@ const Card = styled(MuiCard)(({ theme }) => ({
   },
 }));
 
+// Container for the whole SignUp section
 const SignUpContainer = styled(Stack)(({ theme }) => ({
   minHeight: "90vh",
   width: "100vw",
@@ -54,6 +57,7 @@ const SignUpContainer = styled(Stack)(({ theme }) => ({
   backgroundColor: "#f0f0f0",
 }));
 
+// Custom styled TextField with white background and custom focus color
 const WhiteTextField = styled(TextField)({
   "& .MuiOutlinedInput-root": {
     backgroundColor: "#ffffff",
@@ -73,6 +77,7 @@ const WhiteTextField = styled(TextField)({
 });
 
 export default function SignUp() {
+  // State for handling validation errors and checkbox
   const [emailError, setEmailError] = useState(false);
   const [emailErrorMessage, setEmailErrorMessage] = useState("");
   const [passwordError, setPasswordError] = useState(false);
@@ -83,6 +88,7 @@ export default function SignUp() {
 
   const navigate = useNavigate();
 
+  // Apply a CSS class to the body while this component is mounted
   useEffect(() => {
     document.body.classList.add("signup-page");
     return () => {
@@ -90,6 +96,7 @@ export default function SignUp() {
     };
   }, []);
 
+  // Validates user inputs before submitting form
   const validateInputs = () => {
     const email = document.getElementById("email");
     const password = document.getElementById("password");
@@ -97,6 +104,7 @@ export default function SignUp() {
 
     let isValid = true;
 
+    // Email validation
     if (!email.value || !/\S+@\S+\.\S+/.test(email.value)) {
       setEmailError(true);
       setEmailErrorMessage("Please enter a valid email address.");
@@ -106,6 +114,7 @@ export default function SignUp() {
       setEmailErrorMessage("");
     }
 
+    // Password validation
     if (!password.value || password.value.length < 6) {
       setPasswordError(true);
       setPasswordErrorMessage("Password must be at least 6 characters long.");
@@ -115,6 +124,7 @@ export default function SignUp() {
       setPasswordErrorMessage("");
     }
 
+    // Name validation
     if (!name.value || name.value.length < 1) {
       setNameError(true);
       setNameErrorMessage("Name is required.");
@@ -127,25 +137,31 @@ export default function SignUp() {
     return isValid;
   };
 
+  // Handles form submission
   const handleSubmit = async (event) => {
     event.preventDefault();
 
+    // Do not proceed if there are validation errors
     if (nameError || emailError || passwordError) return;
     if (!validateInputs()) return;
 
+    // Extract form data
     const data = new FormData(event.currentTarget);
     const name = data.get("name");
     const email = data.get("email");
     const password = data.get("password");
 
     try {
+      // Create user with Firebase authentication
       const auth = getAuth();
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       console.log("User created:", userCredential.user);
 
+      // Hash password using bcrypt
       const salt = bcrypt.genSaltSync(10);
       const hashedPassword = bcrypt.hashSync(password, salt);
 
+      // Get unique user ID and store user data in Firestore
       getUserID(async (uid) => {
         if (uid) {
           try {
@@ -163,6 +179,7 @@ export default function SignUp() {
         }
       });
 
+      // Navigate to summaries page upon success
       navigate("/summaries");
     } catch (error) {
       console.error("Error:", error.message);
@@ -170,6 +187,7 @@ export default function SignUp() {
     }
   };
 
+  // Component JSX rendering
   return (
     <>
       <CssBaseline enableColorScheme />
@@ -184,11 +202,13 @@ export default function SignUp() {
             Sign up
           </Typography>
 
+          {/* Form begins */}
           <Box
             component="form"
             onSubmit={handleSubmit}
             sx={{ display: "flex", flexDirection: "column", gap: 2 }}
           >
+            {/* Name field */}
             <FormControl>
               <FormLabel htmlFor="name">Full name</FormLabel>
               <WhiteTextField
@@ -204,6 +224,7 @@ export default function SignUp() {
               />
             </FormControl>
 
+            {/* Email field */}
             <FormControl>
               <FormLabel htmlFor="email">Email</FormLabel>
               <WhiteTextField
@@ -220,6 +241,7 @@ export default function SignUp() {
               />
             </FormControl>
 
+            {/* Password field */}
             <FormControl>
               <FormLabel htmlFor="password">Password</FormLabel>
               <WhiteTextField
@@ -237,6 +259,7 @@ export default function SignUp() {
               />
             </FormControl>
 
+            {/* Checkbox for email updates */}
             <FormControlLabel
               control={
                 <Checkbox
@@ -248,6 +271,7 @@ export default function SignUp() {
               label="I want to receive updates via email."
             />
 
+            {/* Submit button */}
             <Button
               id="submit"
               type="submit"
@@ -259,10 +283,12 @@ export default function SignUp() {
             </Button>
           </Box>
 
+          {/* Divider with "or" */}
           <Divider>
             <Typography sx={{ color: "text.secondary" }}>or</Typography>
           </Divider>
 
+          {/* Google signup and login link */}
           <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
             <Button
               fullWidth

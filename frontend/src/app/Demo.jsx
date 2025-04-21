@@ -1,4 +1,7 @@
+// React core imports
 import React, { useState, useEffect, useRef } from 'react';
+
+// Material UI components for toggle buttons and inputs
 import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import TextField from '@mui/material/TextField';
@@ -6,6 +9,7 @@ import { createTheme, ThemeProvider } from '@mui/material/styles';
 import Navbar from '../components/Navbar';
 import Button from '@mui/material/Button';
 
+// Create a custom Material UI theme for consistent styling
 const theme = createTheme({
   palette: {
     mode: 'light',
@@ -17,6 +21,7 @@ const theme = createTheme({
     },
   },
   components: {
+    // Override ToggleButton styles
     MuiToggleButton: {
       styleOverrides: {
         root: {
@@ -67,13 +72,22 @@ const theme = createTheme({
   },
 });
 
+// Main component
 const Demo = () => {
+  // State for tone and length toggle selections
   const [selectedTone, setSelectedTone] = useState('casual');
   const [selectedLength, setSelectedLength] = useState('short');
+
+  // State to manage the user's text input
   const [textInput, setTextInput] = useState('');
+
+  // State to store word and sentence counts
   const [inputStats, setInputStats] = useState({ words: 0, sentences: 0 });
+
+  // Ref for the text area input
   const textareaRef = useRef(null);
 
+  // Function to calculate word and sentence count from text
   const countWordsAndSentences = (text) => {
     if (!text) return { words: 0, sentences: 0 };
     const words = text.trim().split(/\s+/).filter((word) => word.length > 0).length;
@@ -81,22 +95,26 @@ const Demo = () => {
     return { words, sentences };
   };
 
+  // Effect to update stats every time the input changes
   useEffect(() => {
     setInputStats(countWordsAndSentences(textInput));
   }, [textInput]);
 
+  // Handle toggle button changes for tone
   const handleToneChange = (event, newTone) => {
     if (newTone !== null) {
       setSelectedTone(newTone);
     }
   };
 
+  // Handle toggle button changes for length
   const handleLengthChange = (event, newLength) => {
     if (newLength !== null) {
       setSelectedLength(newLength);
     }
   };
 
+  // Handle changes in the textarea
   const handleTextChange = (e) => {
     setTextInput(e.target.value);
   };

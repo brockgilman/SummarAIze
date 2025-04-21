@@ -8,6 +8,7 @@ import { getUserID } from '../components/firebase/firebaseUserID';
 import { db } from '../components/firebase/firebaseConfig';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 
+// Custom MUI theme styling
 const theme = createTheme({
   palette: {
     mode: 'light',
@@ -71,6 +72,7 @@ const theme = createTheme({
 
 // var delcarations
 const Generate = () => {
+  // UI state
   const [selectedTone, setSelectedTone] = useState('casual');
   const [selectedLength, setSelectedLength] = useState('short');
   const [textInput, setTextInput] = useState('');
@@ -82,9 +84,10 @@ const Generate = () => {
   const textareaRef = useRef(null);
   const [userId, setUserId] = useState(null);
 
+  // Groq API Key
   const API_KEY = "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";
 
-  // count words and sentences
+  // Helper function to count words and sentences
   const countWordsAndSentences = (text) => {
     if (!text) return { words: 0, sentences: 0 };
     const words = text.trim().split(/\s+/).filter((word) => word.length > 0).length;
@@ -92,43 +95,43 @@ const Generate = () => {
     return { words, sentences };
   };
 
-  // update stats when input changes
+  // Recalculate input stats when user types
   useEffect(() => {
     setInputStats(countWordsAndSentences(textInput));
   }, [textInput]);
 
-  // Update stats when output changes
+  // Recalculate output stats when response changes
   useEffect(() => {
     setOutputStats(countWordsAndSentences(responseText));
   }, [responseText]);
 
-  // tone toggle
+  // Tone toggle change handler
   const handleToneChange = (event, newTone) => {
     if (newTone !== null) {
       setSelectedTone(newTone);
     }
   };
 
-  // length toggle
+  // Length toggle change handler
   const handleLengthChange = (event, newLength) => {
     if (newLength !== null) {
       setSelectedLength(newLength);
     }
   };
 
-  // input text change
+  // Input change handler
   const handleTextChange = (e) => {
     setTextInput(e.target.value);
   };
 
-  // paste from clipboard
+  // Paste text from clipboard
   const pasteFromClipboard = () => {
     navigator.clipboard.readText()
       .then((text) => setTextInput(text))
       .catch((err) => console.error('Failed to read clipboard contents:', err));
   };
 
-  // generate summary
+  // Generate summary with Groq API
   const generateSummary = async () => {
     if (!textInput) {
       setError('Please paste text to summarize');
@@ -138,28 +141,36 @@ const Generate = () => {
     setError('');
 
     try {
-      // ai prompt
-      const prompt = `
-        Please summarize this content in a ${selectedTone} tone and ${selectedLength} length.
+      // Prompt
+      const prompt = 
+      `
+        You are a summarization engine.
+
+        TASK: Summarize the content below with a ${selectedTone} tone and ${selectedLength} length.
         
-        Content: ${textInput}
+        RULES (follow strictly):
+        - Output ONLY the summary — no preamble, no notes, no labels, no quotes, no formatting.
+        - DO NOT include any text before or after the summary.
+        - DO NOT write "Summary:", "Here is...", "Here's..." or anything similar.
+        - Output must start immediately with the first word of the summary.
+        - If you break any of these rules, the output is invalid.
+
+        CONTENT: ${textInput}
 
         TONE GUIDELINES:
-        - If casual: use conversational language, explain concepts in an accessible way
-        - If knowledgeable: use more technical language with proper terminology
-        - If expert: use specialized terminology, maintain academic style
+        - If casual: use natural, conversational language, explain concepts in an accessible way
+        - If knowledgeable: use more technical language with proper terminology and structure
+        - If expert: use specialized terminology, maintain academic style, use advance vocabulary
 
         LENGTH GUIDELINES:
-        - If short: 1-2 paragraphs (about 150 words)
-        - If medium: 3-4 paragraphs (about 300 words)
-        - If long: 5-6 paragraphs (about 500 words)
+        - If short: 1-2 paragraphs (~150 words)
+        - If medium: 3-4 paragraphs (~300 words)
+        - If long: 5-6 paragraphs (~500 words)
 
-        DO NOT include any before/after text in the summary, just the summary itself.
-
-        Please make sure the summary is accurate and relevant to the content.
+        Ensure the summary is accurate and relevant to the content.
       `;
 
-      // api call
+      // API call
       const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
         method: 'POST',
         headers: {
@@ -174,13 +185,16 @@ const Generate = () => {
         }),
       });
 
+      // If the response status is not OK, throw an error
       if (!response.ok) {
         throw new Error(`API error code: ${response.status}`);
       }
 
+      // Parse the response into JSON format
       const data = await response.json();
       console.log('Groq API response:', data); // api error state for debugging
 
+      // Check if the response contains valid content, then set it
       if (data.choices && data.choices[0]?.message?.content) {
         setResponseText(data.choices[0].message.content);
       } else {
@@ -194,6 +208,7 @@ const Generate = () => {
     }
   };
 
+  // useEffect to fetch and store the user ID when component mounts
   useEffect(() => {
     const unsubscribe = getUserID((uid) => {
       if (uid) {
@@ -210,6 +225,7 @@ const Generate = () => {
     };
   }, []);
 
+  // Function to save the generated summary to Firestore
   const saveSummary = async () => {
     if (!responseText) {
       setError('No summary to save');
