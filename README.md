@@ -72,6 +72,7 @@ cd ChromeExt
 2. **Install extension dependencies**
 ```bash
 npm install
+npm install @mui/material @mui/icons-material @emotion/react @emotion/styled bcrypt bcryptjs
 ```
 
 3. **Build the extension**
