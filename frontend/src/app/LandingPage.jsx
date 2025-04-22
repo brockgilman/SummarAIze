@@ -3,6 +3,7 @@
 import './globals.css';
 import SignupButtons from "../components/SignupButtons";
 import Navbar from "../components/Navbar";
+import Footer from "../components/Footer";
 import { useEffect, useState } from 'react';
 import { onAuthStateChanged } from 'firebase/auth';
 import { auth } from '../components/firebase/firebaseConfig';
@@ -58,9 +59,13 @@ export default function LandingPage() {
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
-
-      <main className="flex-grow">
-        <div className="flex-container">
+      <main className="flex-1" style={{ paddingTop: '80px', paddingBottom: '60px' }}>
+        <div className="flex-container" style={{ 
+          margin: '0 auto', 
+          padding: '0 5%', 
+          width: '100%',
+          maxWidth: '100%'
+        }}>
           <div className="textbox">
             {showRememberMeNote && (
               <div className="mb-4 p-4 bg-blue-100 border border-blue-300 rounded text-blue-800 text-sm">
@@ -68,14 +73,14 @@ export default function LandingPage() {
               </div>
             )}
 
-            <h1 className="text-6xl md:text-7xl lg:text-8xl font-bold leading-relaxed text-gray-900">
+            <h1 className="text-6xl md:text-7xl lg:text-8xl font-bold leading-normal text-gray-900">
               AI-powered summaries<br />
               that enhance your<br />
               understanding and<br />
               accelerate your learning.
             </h1>
 
-            <p className="text-2xl md:text-3xl text-gray-700 leading-relaxed">
+            <p className="text-2xl md:text-3xl text-gray-700 leading-relaxed mt-6">
               Work with an AI partner that helps you extract key insights⁠—⁠to simplify long articles, clarify challenging content, and keep your reading efficient.
             </p>
 
@@ -84,7 +89,7 @@ export default function LandingPage() {
             </div>
           </div>
 
-          <div className="gif-container">
+          <div className="gif-container" style={{ marginTop: '65px' }}>
             <img
               src="/summarAIzevideoclip.gif"
               alt="SummarAIze Demo"
@@ -100,10 +105,7 @@ export default function LandingPage() {
           </div>
         </div>
       </main>
-
-      <footer className="text-2xl md:text-3xl text-gray-700 leading-relaxed">
-        Trusted by UF students and researchers
-      </footer>
+      <Footer isFixed={true} />
     </div>
   );
 }

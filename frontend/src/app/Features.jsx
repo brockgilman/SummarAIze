@@ -8,6 +8,7 @@ import {
   Container,
 } from "@mui/material";
 import Navbar from "../components/Navbar";
+import Footer from '../components/Footer';
 
 // Main Features component
 const Features = () => {
@@ -187,42 +188,45 @@ const Features = () => {
 
   // Component rendering
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen flex flex-col">
       <Navbar />
-      <Container maxWidth="lg" sx={{ py: 8, pt: 10 }}>
-        <Box sx={{ mb: 8, textAlign: "center" }}>
-          <h1 className="text-6xl md:text-7xl lg:text-8xl font-bold leading-relaxed text-gray-900 mb-2">
-            Features
-          </h1>
-          <p className="text-2xl md:text-3xl text-gray-700 leading-relaxed max-w-[800px] mx-auto">
-            SummarAIze offers powerful customization options to make your reading and learning experience truly personalized.
-          </p>
-        </Box>
+      <main className="flex-grow">
+        <Container maxWidth="lg" sx={{ py: 8, pt: 10 }}>
+          <Box sx={{ mb: 8, textAlign: "center" }}>
+            <h1 className="text-6xl md:text-7xl lg:text-8xl font-bold leading-relaxed text-gray-900 mb-2">
+              Features
+            </h1>
+            <p className="text-2xl md:text-3xl text-gray-700 leading-relaxed max-w-[800px] mx-auto">
+              SummarAIze offers powerful customization options to make your reading and learning experience truly personalized.
+            </p>
+          </Box>
 
-        {renderFeatureSection(
-          "Customize Your Summaries",
-          "Adjust the tone of your summaries to fit your needs. Whether you're studying academic papers or need quick insights, we've got you covered.",
-          toneFeatures,
-          selectedTone,
-          setSelectedTone
-        )}
+          {renderFeatureSection(
+            "Customize Your Summaries",
+            "Adjust the tone of your summaries to fit your needs. Whether you're studying academic papers or need quick insights, we've got you covered.",
+            toneFeatures,
+            selectedTone,
+            setSelectedTone
+          )}
 
-        {renderFeatureSection(
-          "Control Summary Length",
-          "Choose how detailed you want your summaries to be. From comprehensive breakdowns to quick highlights, you're in control.",
-          lengthFeatures,
-          selectedLength,
-          setSelectedLength
-        )}
+          {renderFeatureSection(
+            "Control Summary Length",
+            "Choose how detailed you want your summaries to be. From comprehensive breakdowns to quick highlights, you're in control.",
+            lengthFeatures,
+            selectedLength,
+            setSelectedLength
+          )}
 
-        {renderFeatureSection(
-          "Organize Your Summaries",
-          "Keep your summaries organized and accessible with our powerful management tools. Save, categorize, and manage your content with ease.",
-          organizationFeatures,
-          selectedOrgFeature,
-          setSelectedOrgFeature
-        )}
-      </Container>
+          {renderFeatureSection(
+            "Organize Your Summaries",
+            "Keep your summaries organized and accessible with our powerful management tools. Save, categorize, and manage your content with ease.",
+            organizationFeatures,
+            selectedOrgFeature,
+            setSelectedOrgFeature
+          )}
+        </Container>
+      </main>
+      <Footer isFixed={false} />
     </div>
   );
 };

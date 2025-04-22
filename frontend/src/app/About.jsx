@@ -3,6 +3,8 @@ import React from 'react';
 import { Typography, Box, Grid, Container, Paper, Avatar, Accordion, AccordionSummary, AccordionDetails } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import Navbar from '../components/Navbar';
+import Footer from '../components/Footer';
+import { Link } from 'react-router-dom';
 
 // Developer team members' data
 const teamMembers = [
@@ -51,21 +53,14 @@ const faqItems = [
 
 const AboutUs = () => {
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-[#1a1a1a] text-white flex flex-col">
       <Navbar />
-      
-      {/* Main Content */}
-      <Container maxWidth="lg" sx={{ py: 8, pt: 10 }}>
+      <Container maxWidth="lg" sx={{ py: 8, pt: 10, flex: 1 }}>
         {/* About Us Section */}
-        <Box sx={{ mb: 8, textAlign: "center" }}>
-          <Typography variant="h2" component="h1" 
-            sx={{ 
-              fontWeight: 700, 
-              mb: 4,
-              fontSize: { xs: '2.5rem', md: '3.5rem' }
-            }}>
+        <Box sx={{ mb: 8, textAlign: "center", mt: 4 }}>
+          <h1 className="text-6xl md:text-7xl lg:text-8xl font-bold leading-relaxed text-white mb-2">
             About Us
-          </Typography>
+          </h1>
           <Typography variant="h6" 
             sx={{ 
               maxWidth: '800px', 
@@ -239,66 +234,8 @@ const AboutUs = () => {
             ))}
           </Box>
         </Box>
-        <Box sx={{ maxWidth: '800px', mx: 'auto', lineHeight: 1.7}}>
-          <Typography variant="h3" component="h2" 
-            sx={{ 
-              fontWeight: 700, 
-              mb: 6, 
-              textAlign: "center",
-              fontSize: { xs: '2rem', md: '2.75rem' }
-            }}>
-            Privacy Policy
-          </Typography>
-          <Typography variant="body1" paragraph>
-            <strong>Effective Date:</strong> April 21, 2025
-          </Typography>
-
-          <Typography variant="body1" paragraph>
-            At <strong>SummarAIze</strong>, your privacy is important to us. This Privacy Policy outlines the types of
-            information we collect, how we use it, and your rights regarding your data.
-          </Typography>
-
-          <Typography variant="h6" sx={{ fontWeight: 600, mt: 4 }}>1. Information We Collect</Typography>
-          <ul style={{ paddingLeft: '1.5rem' }}>
-            <li><strong>Email Address and Password:</strong> Collected to authenticate users and manage accounts.</li>
-            <li><strong>Cookies:</strong> Functional cookies are used to maintain user sessions and enable saving summaries from our Chrome extension.</li>
-            <li><strong>User-Generated Content:</strong> Summaries saved by users are stored in our secure Firebase database.</li>
-          </ul>
-
-          <Typography variant="h6" sx={{ fontWeight: 600, mt: 4 }}>2. How We Use Your Information</Typography>
-          <ul style={{ paddingLeft: '1.5rem' }}>
-            <li>To authenticate and manage user accounts.</li>
-            <li>To allow users to save and access their summaries across devices.</li>
-            <li>To support essential functionality through the use of cookies.</li>
-          </ul>
-
-          <Typography variant="h6" sx={{ fontWeight: 600, mt: 4 }}>3. Data Security</Typography>
-          <Typography variant="body1" paragraph>
-            All data is securely stored using Google Firebase services. We implement appropriate safeguards to protect your data from unauthorized access, disclosure, or misuse.
-          </Typography>
-
-          <Typography variant="h6" sx={{ fontWeight: 600, mt: 4 }}>4. No Data Selling</Typography>
-          <Typography variant="body1" paragraph>
-            We do <strong>not</strong> sell, trade, or share your personal data with third parties for commercial purposes.
-          </Typography>
-
-          <Typography variant="h6" sx={{ fontWeight: 600, mt: 4 }}>5. Consent</Typography>
-          <Typography variant="body1" paragraph>
-            By logging in and using SummarAIze (including our Chrome extension), you consent to the collection and use of your information
-            as described in this policy. You also agree to the use of cookies for session management and functionality.
-          </Typography>
-
-          <Typography variant="h6" sx={{ fontWeight: 600, mt: 4 }}>6. Updates</Typography>
-          <Typography variant="body1" paragraph>
-            This Privacy Policy may be updated periodically. Any changes will be posted on this page with an updated effective date.
-          </Typography>
-
-          <Typography variant="body1" paragraph>
-            If you have any questions or concerns, feel free to contact us at <a href="mailto:support@summaraize.com">support@summaraize.com</a>.
-          </Typography>
-        </Box>
-
       </Container>
+      <Footer />
     </div>
   );
 };
