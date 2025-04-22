@@ -21,8 +21,10 @@
       width: 400px;
       position: relative;
       padding: 0;
-      border-left: 12px solid #0F2841; /* Book spine */
-      border-bottom: 2px solid #0F2841; /* Bottom line */
+      border-left: 12px solid #0F2841;
+      /* Book spine */
+      border-bottom: 2px solid #0F2841;
+      /* Bottom line */
       background: #FFFFFF;
       box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
       border-radius: 0;
@@ -30,7 +32,8 @@
 
     .content {
       position: relative;
-      padding: 20px 20px 20px 10px; /* Top, right, bottom, left */
+      padding: 20px 20px 20px 10px;
+      /* Top, right, bottom, left */
       background: transparent;
       z-index: 1;
     }
@@ -116,6 +119,10 @@
       margin-top: 5px;
       text-align: center;
       font-weight: 500;
+      height: 14px;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
     }
 
     textarea::placeholder {
@@ -133,7 +140,8 @@
       width: 8px;
       height: 8px;
       border-radius: 50%;
-      margin-right: 5px;
+      margin-left: 25px;
+      margin-right: 10px;
     }
 
     .logged-in {
@@ -176,7 +184,6 @@
       background-color: #CFD4DA;
       border-radius: 2px;
     }
-
   </style>
 </head>
 
@@ -186,10 +193,10 @@
       <div class="auth-status">
         <!-- Left: Logo and name -->
         <a href="https://summaraize-8487f.web.app/?fromExtension=true" target="_blank"
-            style="display: flex; align-items: center; gap: 6px; text-decoration: none;">
-            <img src="icons/icon128.png" alt="SummarAIze" style="height: 24px;">
-             <span class="logo">SummarAIze</span>
-            </a>
+          style="display: flex; align-items: center; gap: 6px; text-decoration: none;">
+          <img src="icons/icon128.png" alt="SummarAIze" style="height: 24px;">
+          <span class="logo">SummarAIze</span>
+        </a>
         <!-- Right: Login indicator -->
         <div style="display: flex; align-items: center; gap: 5px;">
           <div id="auth-indicator" class="auth-indicator logged-out"></div>
@@ -217,8 +224,7 @@
         </div>
 
         <button id="generate">Generate</button>
-        <textarea class="response-box" id="responseBox" readonly
-          placeholder="Response will appear here..."></textarea>
+        <textarea class="response-box" id="responseBox" readonly placeholder="Response will appear here..."></textarea>
         <button id="apply">Save</button>
         <div id="status" class="status-message"></div>
       </div>
@@ -226,9 +232,9 @@
 
     <!-- Page lines at the bottom -->
     <div class="page-lines">
-        <div class="page-line"></div>
-        <div class="page-line"></div>
-        <div class="page-line"></div>
+      <div class="page-line"></div>
+      <div class="page-line"></div>
+      <div class="page-line"></div>
     </div>
   </div>
 
