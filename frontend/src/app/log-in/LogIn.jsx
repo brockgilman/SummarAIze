@@ -24,6 +24,8 @@ import { db } from "../../components/firebase/firebaseConfig";
 import { doc, getDoc } from "firebase/firestore";
 import LogoNavbar from "../../components/LogoNavbar";
 import bcrypt from 'bcryptjs';
+import Navbar from '../../components/Navbar';
+import Footer from '../../components/Footer';
 
 const COOKIE_AGE_DAYS = 7;
 const PRIMARY_COLOR = "#0F2841";
@@ -46,7 +48,7 @@ const Card = styled(MuiCard)(({ theme }) => ({
 const SignInContainer = styled(Stack)(({ theme }) => ({
   minHeight: "90vh",
   width: "100vw",
-  marginTop: '80px',
+  marginTop: '22px',
   display: "flex",
   flexDirection: "column",
   alignItems: "center",
@@ -158,133 +160,137 @@ export default function LogIn() {
   };
 
   return (
-    <div>
-      <CssBaseline enableColorScheme />
-      <LogoNavbar />
-      <SignInContainer direction="column">
-        <Card variant="outlined">
-          <Typography
-            component="h1"
-            variant="h4"
-            sx={{ width: '100%', fontSize: 'clamp(2rem, 10vw, 2.15rem)' }}
-          >
-            Log in
-          </Typography>
-
-          <Box
-            component="form"
-            onSubmit={handleSubmit}
-            noValidate
-            sx={{ display: 'flex', flexDirection: 'column', width: '100%', gap: 2 }}
-          >
-            <FormControl>
-              <FormLabel htmlFor="email">Email</FormLabel>
-              <TextField
-                error={emailError}
-                helperText={emailErrorMessage}
-                id="email"
-                type="email"
-                name="email"
-                placeholder="your@email.com"
-                autoComplete="email"
-                autoFocus
-                required
-                fullWidth
-                variant="outlined"
-                color={emailError ? 'error' : 'primary'}
-                sx={{
-                  "& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                    borderColor: PRIMARY_COLOR,
-                  },
-                  "& .MuiInputLabel-root.Mui-focused": {
-                    color: PRIMARY_COLOR,
-                  },
-                }}
-              />
-            </FormControl>
-
-            <FormControl>
-              <FormLabel htmlFor="password">Password</FormLabel>
-              <TextField
-                error={passwordError}
-                helperText={passwordErrorMessage}
-                name="password"
-                placeholder="••••••"
-                type="password"
-                id="password"
-                autoComplete="current-password"
-                required
-                fullWidth
-                variant="outlined"
-                color={passwordError ? 'error' : 'primary'}
-                sx={{
-                  "& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                    borderColor: PRIMARY_COLOR,
-                  },
-                  "& .MuiInputLabel-root.Mui-focused": {
-                    color: PRIMARY_COLOR,
-                  },
-                }}
-              />
-            </FormControl>
-
-            <FormControl>
-              <FormControlLabel
-                control={
-                  <Checkbox
-                    checked={rememberMe}
-                    onChange={(e) => setRememberMe(e.target.checked)}
-                    color="primary"
-                  />
-                }
-                label="Remember me"
-              />
-            </FormControl>
-
-            <ForgotPassword open={open} handleClose={handleClose} />
-
-            <Button
-              type="submit"
-              fullWidth
-              variant="contained"
-              onClick={validateInputs}
-              sx={{ backgroundColor: PRIMARY_COLOR, color: '#ffffff' }}
+    <div className="min-h-screen flex flex-col">
+      <Navbar />
+      <main className="flex-grow">
+        <CssBaseline enableColorScheme />
+        <LogoNavbar />
+        <SignInContainer direction="column">
+          <Card variant="outlined">
+            <Typography
+              component="h1"
+              variant="h4"
+              sx={{ width: '100%', fontSize: 'clamp(2rem, 10vw, 2.15rem)' }}
             >
               Log in
-            </Button>
-
-            <Link
-              component="button"
-              type="button"
-              onClick={handleClickOpen}
-              variant="body2"
-              sx={{ color: PRIMARY_COLOR, alignSelf: 'center' }}
-            >
-              Forgot your password?
-            </Link>
-          </Box>
-
-          <Divider>or</Divider>
-
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-            <Button
-              fullWidth
-              variant="outlined"
-              onClick={() => handleGoogleSignup(navigate)}
-              startIcon={<GoogleIcon />}
-            >
-              Sign in with Google
-            </Button>
-
-            <Typography sx={{ textAlign: 'center' }}>
-              Don&apos;t have an account?{' '}
-              <Link href="/signup" variant="body2" sx={{ color: PRIMARY_COLOR }}>
-                Sign up
-              </Link>
             </Typography>
-          </Box>
-        </Card>
-      </SignInContainer>
+
+            <Box
+              component="form"
+              onSubmit={handleSubmit}
+              noValidate
+              sx={{ display: 'flex', flexDirection: 'column', width: '100%', gap: 2 }}
+            >
+              <FormControl>
+                <FormLabel htmlFor="email">Email</FormLabel>
+                <TextField
+                  error={emailError}
+                  helperText={emailErrorMessage}
+                  id="email"
+                  type="email"
+                  name="email"
+                  placeholder="your@email.com"
+                  autoComplete="email"
+                  autoFocus
+                  required
+                  fullWidth
+                  variant="outlined"
+                  color={emailError ? 'error' : 'primary'}
+                  sx={{
+                    "& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                      borderColor: PRIMARY_COLOR,
+                    },
+                    "& .MuiInputLabel-root.Mui-focused": {
+                      color: PRIMARY_COLOR,
+                    },
+                  }}
+                />
+              </FormControl>
+
+              <FormControl>
+                <FormLabel htmlFor="password">Password</FormLabel>
+                <TextField
+                  error={passwordError}
+                  helperText={passwordErrorMessage}
+                  name="password"
+                  placeholder="••••••"
+                  type="password"
+                  id="password"
+                  autoComplete="current-password"
+                  required
+                  fullWidth
+                  variant="outlined"
+                  color={passwordError ? 'error' : 'primary'}
+                  sx={{
+                    "& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                      borderColor: PRIMARY_COLOR,
+                    },
+                    "& .MuiInputLabel-root.Mui-focused": {
+                      color: PRIMARY_COLOR,
+                    },
+                  }}
+                />
+              </FormControl>
+
+              <FormControl>
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      checked={rememberMe}
+                      onChange={(e) => setRememberMe(e.target.checked)}
+                      color="primary"
+                    />
+                  }
+                  label="Remember me"
+                />
+              </FormControl>
+
+              <ForgotPassword open={open} handleClose={handleClose} />
+
+              <Button
+                type="submit"
+                fullWidth
+                variant="contained"
+                onClick={validateInputs}
+                sx={{ backgroundColor: PRIMARY_COLOR, color: '#ffffff' }}
+              >
+                Log in
+              </Button>
+
+              <Link
+                component="button"
+                type="button"
+                onClick={handleClickOpen}
+                variant="body2"
+                sx={{ color: PRIMARY_COLOR, alignSelf: 'center' }}
+              >
+                Forgot your password?
+              </Link>
+            </Box>
+
+            <Divider>or</Divider>
+
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              <Button
+                fullWidth
+                variant="outlined"
+                onClick={() => handleGoogleSignup(navigate)}
+                startIcon={<GoogleIcon />}
+              >
+                Sign in with Google
+              </Button>
+
+              <Typography sx={{ textAlign: 'center' }}>
+                Don&apos;t have an account?{' '}
+                <Link href="/signup" variant="body2" sx={{ color: PRIMARY_COLOR }}>
+                  Sign up
+                </Link>
+              </Typography>
+            </Box>
+          </Card>
+        </SignInContainer>
+      </main>
+      <Footer />
     </div>
   );
 }
