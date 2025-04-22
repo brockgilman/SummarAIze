@@ -17,8 +17,8 @@ const Summaries = () => {
   const [activeSummary, setActiveSummary] = useState(null);
   const [modalPosition, setModalPosition] = useState({ top: 0, left: 0 });
   const [newNotebookName, setNewNotebookName] = useState('');
-
-
+  const [sortOption, setSortOption] = useState(''); // "date" or "notebook"
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
     // Set up cookie creation when component mounts
@@ -261,6 +261,36 @@ const Summaries = () => {
     );
   }
 
+  let filteredSummaries = summaries.filter((summary) => {
+    const isTrashed = notebooks.some(
+      (nb) => nb.name === 'trash' && nb.summaries.includes(summary.id)
+    );
+    return !isTrashed;
+  });
+  
+  // Search by content
+  if (searchQuery.trim() !== '') {
+    filteredSummaries = filteredSummaries.filter((summary) =>
+      summary['summary-content']?.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  }
+  
+  // Sort
+  if (sortOption === 'date') {
+    filteredSummaries.sort((a, b) => {
+      const dateA = a.createdAt?.toDate?.() || new Date(0);
+      const dateB = b.createdAt?.toDate?.() || new Date(0);
+      return dateB - dateA;
+    });
+  } else if (sortOption === 'notebook') {
+    filteredSummaries.sort((a, b) => {
+      const aNotebook = notebooks.find(nb => nb.summaries.includes(a.id))?.name || '';
+      const bNotebook = notebooks.find(nb => nb.summaries.includes(b.id))?.name || '';
+      return aNotebook.localeCompare(bNotebook);
+    });
+  }
+  
+
   return (
     
     <div className="flex h-screen bg-gray-50">
@@ -298,17 +328,31 @@ const Summaries = () => {
           </div>
         ) : (
           <div>
-            <div className="bg-white border border-gray-300 rounded shadow-sm hover:shadow-md transition-shadow">
-                <div className="flex flex-col items-center justify-center">
-                  <h2 className="text-xl text-gray-700 font-medium mb-6">New</h2>
-                  <button className="flex items-center text-sm font-medium text-gray-600 border border-gray-300 rounded px-3 py-1.5 hover:bg-gray-50">
-                    <svg className="w-4 h-4 mr-1 text-gray-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                      <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM6.293 6.707a1 1 0 010-1.414l3-3a1 1 0 011.414 0l3 3a1 1 0 01-1.414 1.414L11 5.414V13a1 1 0 11-2 0V5.414L7.707 6.707a1 1 0 01-1.414 0z" clipRule="evenodd" />
-                    </svg>
-                    Upload
-                  </button>
+            <div className="mb-6">
+              <div className="flex justify-between items-center max-w-4xl mx-auto">
+                {/* Search bar */}
+                <input
+                  type="text"
+                  placeholder="Search summaries..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-1/2 py-2 pl-4 pr-4 text-gray-700 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+
+                {/* Filter dropdown */}
+                <div className="relative">
+                  <select
+                    value={sortOption}
+                    onChange={(e) => setSortOption(e.target.value)}
+                    className="ml-4 py-2 px-4 border border-gray-300 rounded-full text-gray-700 bg-white"
+                  >
+                    <option value="">Sort</option>
+                    <option value="date">Date Created</option>
+                    <option value="notebook">Notebook</option>
+                  </select>
                 </div>
               </div>
+            </div>
             <div style={{
                     display: 'grid',
                     gridTemplateColumns: 'repeat(3, 1fr)',
@@ -318,15 +362,7 @@ const Summaries = () => {
               
               
               {/* Summary Cards */}
-              {summaries
-                .filter((summary) => {
-                  // Check if this summary is NOT in the "trash" notebook
-                  const isTrashed = notebooks.some(
-                    (nb) => nb.name === 'trash' && nb.summaries.includes(summary.id)
-                  );
-                  return !isTrashed;
-                })
-                .map((summary) => (
+              {filteredSummaries.map((summary) => (
                 <div
                   key={summary.id}
                   className="border-gray-300 rounded-lg p-4 bg-white shadow-sm hover:shadow-md transition-shadow cursor-pointer"
