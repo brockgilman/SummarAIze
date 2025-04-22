@@ -197,8 +197,8 @@ const Summaries = () => {
   
   // Function to create a new notebook with a specified name
   const handleCreateNotebook = async () => {
-    const trimmedName = newNotebookName.trim();
-    if (!trimmedName || notebooks.find(nb => nb.name === trimmedName)) return;
+    const trimmedName = newNotebookName.trim().toLowerCase();
+    if (!trimmedName || trimmedName === 'trash' || notebooks.find(nb => nb.name.toLowerCase() === trimmedName)) return;
   
     try {
       const notebookRef = doc(db, `users/${userId}/notebooks/${trimmedName}`);
@@ -217,15 +217,10 @@ const Summaries = () => {
       setSelectedNotebook(trimmedName);
       setNewNotebookName('');
       console.log(`Notebook "${trimmedName}" created.`);
-
-    // Check if the created notebook is named "LeBron"
-    if (trimmedName.toLowerCase() === 'lebron') {
-      playTacoTuesday();  // Play Taco Tuesday MP3 if the notebook is named "LeBron"
+    } catch (error) {
+      console.error("Error creating notebook:", error);
     }
-  } catch (error) {
-    console.error("Error creating notebook:", error);
-  }
-};
+  };
   
   // Helper function to play Taco Tuesday audio
   const playTacoTuesday = () => {
@@ -323,7 +318,15 @@ const Summaries = () => {
               
               
               {/* Summary Cards */}
-              {summaries.map((summary) => (
+              {summaries
+                .filter((summary) => {
+                  // Check if this summary is NOT in the "trash" notebook
+                  const isTrashed = notebooks.some(
+                    (nb) => nb.name === 'trash' && nb.summaries.includes(summary.id)
+                  );
+                  return !isTrashed;
+                })
+                .map((summary) => (
                 <div
                   key={summary.id}
                   className="border-gray-300 rounded-lg p-4 bg-white shadow-sm hover:shadow-md transition-shadow cursor-pointer"
@@ -459,6 +462,85 @@ const Summaries = () => {
                         <line x1="5" y1="12" x2="19" y2="12" />
                       </svg>
                     </div>
+                    <div
+                      style={{
+                        width: '28px',
+                        height: '28px',
+                        backgroundColor: '#f87171',
+                        borderRadius: '50%',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        cursor: 'pointer',
+                        boxShadow: '0 2px 5px rgba(0,0,0,0.1)',
+                      }}
+                      onClick={async (e) => {
+                        e.stopPropagation();
+
+                        const summaryId = summary.id;
+                        const trashNotebook = notebooks.find(nb => nb.name === 'trash');
+
+                        if (!trashNotebook) {
+                          // Trash notebook doesn't exist yet
+                          const notebookRef = doc(db, `users/${userId}/notebooks/trash`);
+                          await setDoc(notebookRef, {
+                            summary1: summaryId,
+                            total: 1,
+                          });
+
+                          const newNotebook = {
+                            id: 'trash',
+                            name: 'trash',
+                            total: 1,
+                            summary1: summaryId,
+                            summaries: [summaryId],
+                          };
+
+                          setNotebooks([...notebooks, newNotebook]);
+                          return;
+                        }
+
+                        // Check for duplicates
+                        if (trashNotebook.summaries.includes(summaryId)) {
+                          console.log('Already in trash');
+                          return;
+                        }
+
+                        const nextSummaryNum = trashNotebook.total + 1;
+                        const notebookRef = doc(db, `users/${userId}/notebooks/trash`);
+
+                        await updateDoc(notebookRef, {
+                          [`summary${nextSummaryNum}`]: summaryId,
+                          total: nextSummaryNum,
+                        });
+
+                        const updatedNotebooks = notebooks.map(nb => {
+                          if (nb.name === 'trash') {
+                            return {
+                              ...nb,
+                              [`summary${nextSummaryNum}`]: summaryId,
+                              summaries: [...nb.summaries, summaryId],
+                              total: nextSummaryNum,
+                            };
+                          }
+                          return nb;
+                        });
+
+                        setNotebooks(updatedNotebooks);
+                      }}
+                      title="Send to trash"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        stroke="white"
+                        strokeWidth="2"
+                        viewBox="0 0 24 24"
+                        style={{ width: '14px', height: '14px' }}
+                      >
+                        <path d="M3 6h18M8 6V4h8v2M10 11v6M14 11v6M5 6l1 14h12l1-14" />
+                      </svg>
+                    </div>
                   </div>
                 </div>
               ))}
@@ -522,10 +604,12 @@ const Summaries = () => {
             }}
           >
             <option value="">Choose a notebook</option>
-            {notebooks.map((notebook) => (
-              <option key={notebook.id} value={notebook.name}>
-                {notebook.name}
-              </option>
+            {notebooks
+              .filter(notebook => notebook.name.toLowerCase() !== 'trash')
+              .map((notebook) => (
+                <option key={notebook.id} value={notebook.name}>
+                  {notebook.name}
+                </option>
             ))}
           </select>
           <h4 style={{ textAlign: 'center', marginBottom: '8px' }}>or</h4>
