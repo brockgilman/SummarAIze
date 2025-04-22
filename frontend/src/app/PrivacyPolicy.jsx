@@ -1,6 +1,7 @@
 import React from 'react';
 import { Box, Typography, Container } from '@mui/material';
 import Navbar from '../components/Navbar';
+import Footer from '../components/Footer';
 
 const PrivacyPolicy = () => {
   return (
@@ -64,6 +65,7 @@ const PrivacyPolicy = () => {
           </Typography> */}
         </Box>
       </Container>
+      <Footer />
     </div>
   );
 };
