@@ -3,6 +3,52 @@ import { getUserID } from "../components/firebase/firebaseUserID";
 import Sidebar from "../components/Sidebar";
 import { collection, getDocs, doc, updateDoc, arrayUnion, deleteField, setDoc } from 'firebase/firestore';
 import { db } from '../components/firebase/firebaseConfig';
+import { 
+  TextField, 
+  InputAdornment, 
+  Select, 
+  MenuItem, 
+  FormControl,
+  Card,
+  CardContent,
+  CardActions,
+  Button,
+  IconButton,
+  Collapse,
+  styled,
+  Chip,
+  Typography
+} from '@mui/material';
+import { Search, Save, X, Plus, ArrowLeftCircle } from 'lucide-react';
+
+// Styled components for the expandable card
+const ExpandableCard = styled(Card)(({ theme, expanded }) => ({
+  transition: 'all 0.3s ease-in-out',
+  transform: expanded ? 'scale(1)' : 'scale(1)',
+  zIndex: expanded ? 1000 : 0,
+  position: expanded ? 'fixed' : 'relative',
+  top: expanded ? '50%' : 'auto',
+  left: expanded ? 'calc(50% + 150px)' : 'auto', // Center in the content area (300px sidebar / 2)
+  transform: expanded ? 'translate(-50%, -50%)' : 'none',
+  maxHeight: expanded ? 'none' : '300px',
+  width: expanded ? 'calc(70% - 32px)' : '300px',
+  height: expanded ? '70vh' : 'auto',
+  borderRadius: '20px',
+  boxShadow: expanded ? '0 8px 24px rgba(0,0,0,0.2)' : '0 4px 8px rgba(0,0,0,0.2)',
+  display: 'flex',
+  flexDirection: 'column',
+  '&:hover': {
+    boxShadow: expanded ? '0 8px 24px rgba(0,0,0,0.2)' : '0 6px 12px rgba(0,0,0,0.15)',
+  },
+}));
+
+// Helper function for word and sentence count
+const getTextStatistics = (text) => {
+  if (!text) return { words: 0, sentences: 0 };
+  const words = text.trim().split(/\s+/).filter(word => word.length > 0).length;
+  const sentences = text.split(/[.!?]+/).filter(sentence => sentence.trim().length > 0).length;
+  return { words, sentences };
+};
 
 const Trash = () => {
   // State variables to store summaries, notebooks, user ID, and various modal states
@@ -17,8 +63,10 @@ const Trash = () => {
   const [activeSummary, setActiveSummary] = useState(null);
   const [modalPosition, setModalPosition] = useState({ top: 0, left: 0 });
   const [newNotebookName, setNewNotebookName] = useState('');
-
-
+  const [sortOption, setSortOption] = useState(''); // "date" or "notebook"
+  const [searchQuery, setSearchQuery] = useState('');
+  const [editableSummary, setEditableSummary] = useState(null);
+  const [editedContent, setEditedContent] = useState('');
 
   useEffect(() => {
     // Set up cookie creation when component mounts
@@ -252,281 +300,573 @@ const Trash = () => {
     });
   };
   
+  // Add this function to handle saving the edited summary
+  const handleSaveSummary = async (summaryId) => {
+    try {
+      const summaryRef = doc(db, `users/${userId}/summaries/${summaryId}`);
+      await updateDoc(summaryRef, {
+        'summary-content': editedContent
+      });
+
+      // Update local state
+      setSummaries(prevSummaries => 
+        prevSummaries.map(summary => 
+          summary.id === summaryId 
+            ? { ...summary, 'summary-content': editedContent }
+            : summary
+        )
+      );
+
+      setEditableSummary(null);
+      setEditedContent('');
+    } catch (error) {
+      console.error("Error saving summary:", error);
+    }
+  };
+
+  // Function to revert a summary from trash to My Summaries
+  const handleRevertSummary = async (summaryId) => {
+    try {
+      const trashNotebook = notebooks.find(nb => nb.name === 'trash');
+      if (!trashNotebook) return;
+
+      // Find the key corresponding to the summary in the trash notebook
+      const summaryKey = Object.keys(trashNotebook).find(
+        (key) => trashNotebook[key] === summaryId && key.startsWith('summary')
+      );
+
+      if (!summaryKey) return;
+
+      const currentTotal = trashNotebook.total || 1;
+      const newTotal = currentTotal - 1;
+
+      const notebookRef = doc(db, `users/${userId}/notebooks/trash`);
+
+      // Update Firestore: delete the summary field and update total
+      await updateDoc(notebookRef, {
+        [summaryKey]: deleteField(),
+        total: newTotal,
+      });
+
+      // Update local state
+      const updatedNotebooks = notebooks.map(nb => {
+        if (nb.name === 'trash') {
+          const newSummaries = nb.summaries.filter(id => id !== summaryId);
+          const updated = { ...nb };
+          delete updated[summaryKey];
+          return {
+            ...updated,
+            summaries: newSummaries,
+            total: newTotal,
+          };
+        }
+        return nb;
+      });
+
+      setNotebooks(updatedNotebooks);
+      console.log(`Reverted summary ${summaryId} from trash to My Summaries`);
+    } catch (error) {
+      console.error("Error reverting summary from trash:", error);
+    }
+  };
 
   if (isLoading) {
     return (
       <div className="flex h-screen items-center justify-center bg-blue-100">
-        <div className="text-lg text-gray-600">Loading summaries...</div>
+        <div className="text-lg text-gray-600">Loading trash...</div>
       </div>
     );
   }
+
+  // Filter summaries to only show those in the trash notebook
+  let filteredSummaries = [];
+  const trashNotebook = notebooks.find(nb => nb.name === 'trash');
+  
+  if (trashNotebook) {
+    filteredSummaries = summaries.filter((summary) => 
+      trashNotebook.summaries.includes(summary.id)
+    );
+  }
+  
+  // Search by content
+  if (searchQuery.trim() !== '') {
+    filteredSummaries = filteredSummaries.filter((summary) =>
+      summary['summary-content']?.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  }
+  
+  // Sort
+  if (sortOption === 'date') {
+    filteredSummaries.sort((a, b) => {
+      const dateA = a.createdAt?.toDate?.() || new Date(0);
+      const dateB = b.createdAt?.toDate?.() || new Date(0);
+      return dateB - dateA;
+    });
+  } else if (sortOption === 'notebook') {
+    filteredSummaries.sort((a, b) => {
+      const aNotebook = notebooks.find(nb => nb.summaries.includes(a.id))?.name || '';
+      const bNotebook = notebooks.find(nb => nb.summaries.includes(b.id))?.name || '';
+      return aNotebook.localeCompare(bNotebook);
+    });
+  }
+  
 
   return (
     
     <div className="flex h-screen bg-gray-50">
     
       <Sidebar />
-      {/* Added left padding of 275px */}
-      <div className="flex-1 pr-8 py-6 overflow-auto"
-      style={{
-        marginLeft: '300px',
-      }}>
+      {editableSummary && (
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: '275px',
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0,0,0,0.5)',
+            zIndex: 999,
+            marginLeft: 0,
+            paddingLeft: 0,
+            borderLeft: 'none',
+          }}
+        />
+      )}
+      <div 
+        className="flex-1 pr-8 py-6 overflow-auto"
+        style={{
+          marginLeft: '300px',
+          position: 'relative',
+        }}
+      >
         <div style={{
           marginTop: '20px',
         }}>
         <h1 className="text-3xl font-bold mb-8">Trash</h1>
         </div>
         <div className="mb-6">
-          <div className="relative max-w-2xl mx-auto">
-            <input
-              type="text"
-              placeholder="Search..."
-              className="w-full py-2 pl-10 pr-4 text-gray-700 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          <div className="flex justify-between items-center max-w-4xl mx-auto">
+            <TextField
+              fullWidth
+              variant="outlined"
+              placeholder="Search trash..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <Search size={20} className="text-gray-500" />
+                  </InputAdornment>
+                ),
+                sx: {
+                  borderRadius: '8px',
+                  backgroundColor: 'white',
+                  '& .MuiOutlinedInput-notchedOutline': {
+                    borderColor: '#D1D5DB',
+                    borderWidth: '1.5px',
+                  },
+                  '&:hover .MuiOutlinedInput-notchedOutline': {
+                    borderColor: '#D1D5DB',
+                  },
+                  '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                    borderColor: '#0F2841',
+                    borderWidth: '2px',
+                  },
+                },
+              }}
+              sx={{
+                maxWidth: '600px',
+                '& .MuiInputBase-input': {
+                  padding: '12px 14px',
+                },
+              }}
             />
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <svg className="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="currentColor">
-                <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd" />
-              </svg>
-            </div>
+
+            {/* Sort dropdown */}
+            <FormControl sx={{ minWidth: 120, ml: 2 }}>
+              <Select
+                value={sortOption}
+                onChange={(e) => setSortOption(e.target.value)}
+                displayEmpty
+                sx={{
+                  backgroundColor: 'white',
+                  borderRadius: '8px',
+                  '& .MuiOutlinedInput-notchedOutline': {
+                    borderColor: '#D1D5DB',
+                    borderWidth: '1.5px',
+                  },
+                  '&:hover .MuiOutlinedInput-notchedOutline': {
+                    borderColor: '#D1D5DB',
+                  },
+                  '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                    borderColor: '#0F2841',
+                    borderWidth: '2px',
+                  },
+                  '& .MuiSelect-select': {
+                    padding: '12px 14px',
+                  },
+                }}
+              >
+                <MenuItem value="">Sort</MenuItem>
+                <MenuItem value="date">Date Created</MenuItem>
+                <MenuItem value="notebook">Notebook</MenuItem>
+              </Select>
+            </FormControl>
           </div>
         </div>
         
-        {summaries.length === 0 ? (
+        {filteredSummaries.length === 0 ? (
           <div className="text-center text-gray-500 mt-16">
-            <p className="text-xl">You don't have any deleted summaries</p>
+            <p className="text-xl">Your trash is empty</p>
+            <p className="mt-2">Deleted summaries will appear here</p>
           </div>
         ) : (
-          <div>
-            <div className="bg-white border border-gray-300 rounded shadow-sm hover:shadow-md transition-shadow">
-                <div className="flex flex-col items-center justify-center">
-                  <h2 className="text-xl text-gray-700 font-medium mb-6">New</h2>
-                  <button className="flex items-center text-sm font-medium text-gray-600 border border-gray-300 rounded px-3 py-1.5 hover:bg-gray-50">
-                    <svg className="w-4 h-4 mr-1 text-gray-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                      <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM6.293 6.707a1 1 0 010-1.414l3-3a1 1 0 011.414 0l3 3a1 1 0 01-1.414 1.414L11 5.414V13a1 1 0 11-2 0V5.414L7.707 6.707a1 1 0 01-1.414 0z" clipRule="evenodd" />
-                    </svg>
-                    Upload
-                  </button>
-                </div>
-              </div>
+          <div style={{
+            position: 'relative',
+            minHeight: '100%',
+          }}>
             <div style={{
-                    display: 'grid',
-                    gridTemplateColumns: 'repeat(3, 1fr)',
-                    columnGap: '15px',
-                    rowGap: '15px',
-                  }}>
-              
-              
-              {/* Summary Cards */}
-              {summaries
-                .filter((summary) => {
-                  // Check if this summary is in the "trash" notebook
-                  const isTrashed = notebooks.some(
-                    (nb) => nb.name === 'trash' && nb.summaries.includes(summary.id)
-                  );
-                  return isTrashed;
-                })
-                .map((summary) => (
-                <div
+              display: 'grid',
+              gridTemplateColumns: 'repeat(3, 1fr)',
+              columnGap: '15px',
+              rowGap: '15px',
+              position: 'relative',
+            }}>
+              {filteredSummaries.map((summary) => (
+                <ExpandableCard
                   key={summary.id}
-                  className="border-gray-300 rounded-lg p-4 bg-white shadow-sm hover:shadow-md transition-shadow cursor-pointer"
-                  style={{
-                    maxHeight: '300px',
-                    boxShadow: '0 4px 8px 0 rgba(0,0,0,0.2)',
-                    textAlign: 'center',
-                    padding: '10px 5px 0px 5px',
-                    width: '300px',
-                    textWrap: 'pretty',
-                    overflowX: 'hidden',
-                    borderRadius: '20px',
+                  expanded={editableSummary === summary.id}
+                  onClick={() => {
+                    if (editableSummary !== summary.id) {
+                      setEditableSummary(summary.id);
+                      setEditedContent(summary['summary-content']);
+                    }
                   }}
-                  onClick={() => setActiveSummary(summary)}
                 >
-                  <div className="px-6 py-4">
-                    <div className="relative h-[120px] text-gray-700 text-base"
-                    style={{
-                      position: 'relative',
-                      height: '200px',
-                      overflow: 'hidden',
-                    }}>
-                      <p className="whitespace-pre-wrap break-words"
-                      style={{
-
+                  {editableSummary === summary.id ? (
+                    <CardContent sx={{ flex: 1, overflow: 'hidden', pb: 0 }}>
+                      <div style={{ 
+                        display: 'flex', 
+                        flexDirection: 'column',
+                        height: '70vh',
+                        padding: '16px',
                       }}>
-                        {summary['summary-content']}
-                      </p>
-                      <div className="absolute bottom-0 left-0 w-full h-6 bg-gradient-to-t from-white to-transparent pointer-events-none"
-                      style={{
-                        position: 'absolute',
-                        bottom: '0',
-                        left: '0',
-                        height: '40px',
-                        width: '100%',
-                        background: 'linear-gradient(to top, white, transparent)',
-                        PointerEvent: 'none',
-                      }} />
-                    </div>
-                  </div>
-                  <div style={{ position: 'relative', marginTop: '10px', display: 'flex', marginBottom: '5px'}}>
-                    <div style={{
-                      display: 'flex',
-                      flexWrap: 'wrap',
-                      justifyContent: 'center',
-                      gap: '6px',
+                        <TextField
+                          fullWidth
+                          multiline
+                          value={editedContent}
+                          onChange={(e) => setEditedContent(e.target.value)}
+                          variant="outlined"
+                          onClick={(e) => e.stopPropagation()}
+                          sx={{
+                            flex: '1 1 auto',
+                            mb: 2,
+                            backgroundColor: '#FFFFFF',
+                            borderRadius: '15px',
+                            '& .MuiInputBase-root': {
+                              color: '#000',
+                              height: '100%',
+                              display: 'flex',
+                              flexDirection: 'column',
+                              backgroundColor: '#FFFFFF',
+                              borderRadius: '15px',
+                              padding: '16px',
+                              '& textarea': {
+                                height: '100% !important',
+                                textAlign: 'justify',
+                                overflowY: 'auto !important',
+                                fontSize: '16px',
+                                lineHeight: '1.6',
+                                padding: '0'
+                              }
+                            },
+                            '& .MuiOutlinedInput-notchedOutline': {
+                              borderColor: '#D1D5DB',
+                              borderWidth: '1.5px',
+                              borderRadius: '15px'
+                            },
+                            '&:hover .MuiOutlinedInput-notchedOutline': {
+                              borderColor: '#D1D5DB',
+                              borderWidth: '1.5px'
+                            },
+                            '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                              borderColor: '#0F2841',
+                              borderWidth: '2px'
+                            }
+                          }}
+                        />
+                        <div style={{
+                          display: 'flex',
+                          flexDirection: 'column',
+                          gap: '12px',
+                        }}>
+                          <div style={{
+                            display: 'flex',
+                            justifyContent: 'flex-start',
+                            gap: '16px',
+                            color: '#6B7280',
+                            fontSize: '14px',
+                            fontWeight: 500,
+                            borderTop: '1px solid rgba(0,0,0,0.1)',
+                            paddingTop: '12px',
+                          }}>
+                            <span>{getTextStatistics(editedContent).words} words</span>
+                            <span>{getTextStatistics(editedContent).sentences} sentences</span>
+                          </div>
+                          <CardActions 
+                            sx={{ 
+                              padding: '8px 0',
+                              display: 'flex',
+                              alignItems: 'center',
+                              backgroundColor: 'white',
+                              borderBottomLeftRadius: '20px',
+                              borderBottomRightRadius: '20px',
+                            }}
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <div style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '6px',
+                              flex: 1,
+                            }}>
+                              {notebooks
+                                .filter((nb) => nb.summaries.includes(summary.id))
+                                .map((nb) => (
+                                  <div key={nb.name} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                    <Chip
+                                      label={`#${nb.name}`}
+                                      sx={{
+                                        backgroundColor: '#0F2841',
+                                        color: 'white',
+                                        borderRadius: '100px',
+                                        '&:hover': {
+                                          backgroundColor: '#1a3d5f',
+                                        },
+                                        '& .MuiChip-deleteIcon': {
+                                          color: 'white',
+                                          padding: '3px',
+                                          borderRadius: '90%',
+                                          backgroundColor: '#0F2841',
+                                          transition: 'all 0.2s ease',
+                                          '&:hover': {
+                                            backgroundColor: 'white',
+                                            color: '#f87171',
+                                          },
+                                        },
+                                      }}
+                                      onDelete={(e) => {
+                                        e.stopPropagation();
+                                        handleRemoveFromNotebook(nb.name, summary.id);
+                                      }}
+                                    />
+                                  </div>
+                                ))}
+                            </div>
+                            <div style={{ display: 'flex', gap: '6px' }}>
+                              <IconButton
+                                size="small"
+                                sx={{
+                                  backgroundColor: '#0F2841',
+                                  width: '24px',
+                                  height: '24px',
+                                  color: 'white',
+                                  '&:hover': {
+                                    backgroundColor: '#1a3d5f',
+                                  },
+                                }}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleAddTagClick(e, summary.id);
+                                }}
+                              >
+                                <Plus size={14} />
+                              </IconButton>
+                              <IconButton
+                                size="small"
+                                sx={{
+                                  backgroundColor: '#10b981', // Green color for revert
+                                  width: '24px',
+                                  height: '24px',
+                                  color: 'white',
+                                  '&:hover': {
+                                    backgroundColor: '#059669', // Darker green on hover
+                                  },
+                                }}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleRevertSummary(summary.id);
+                                }}
+                              >
+                                <ArrowLeftCircle size={14} />
+                              </IconButton>
+                            </div>
+                            <div style={{ display: 'flex', gap: '8px', marginLeft: '8px' }}>
+                              <Button
+                                startIcon={<X size={16} />}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setEditableSummary(null);
+                                  setEditedContent('');
+                                }}
+                                color="error"
+                                variant="outlined"
+                                size="small"
+                                sx={{
+                                  borderColor: '#f87171',
+                                  color: '#f87171',
+                                  '&:hover': {
+                                    borderColor: '#ef4444',
+                                    color: '#ef4444',
+                                    backgroundColor: 'rgba(239, 68, 68, 0.04)',
+                                  }
+                                }}
+                              >
+                                Cancel
+                              </Button>
+                              <Button
+                                startIcon={<Save size={16} />}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleSaveSummary(summary.id);
+                                }}
+                                color="primary"
+                                variant="contained"
+                                size="small"
+                                sx={{
+                                  backgroundColor: '#0F2841',
+                                  '&:hover': {
+                                    backgroundColor: '#1a3d5f',
+                                  }
+                                }}
+                              >
+                                Save
+                              </Button>
+                            </div>
+                          </CardActions>
+                        </div>
+                      </div>
+                    </CardContent>
+                  ) : (
+                    <CardContent sx={{ 
+                      flex: 1, 
+                      overflow: 'hidden', 
+                      pb: '0 !important',  // Override default padding bottom
+                      pt: 2,
+                      px: 2,
+                      display: 'flex', 
+                      flexDirection: 'column',
+                      height: '100%',  // Ensure full height
+                      minHeight: '200px' // Minimum height to prevent content squishing
                     }}>
-                      {notebooks
-                        .filter((nb) => nb.name !== 'trash' && nb.summaries.includes(summary.id))
-                        .map((nb) => (
-                          <span
-                            key={nb.name}
-                            style={{
-                              position: 'relative',
-                              backgroundColor: 'lightgray',
-                              borderRadius: '100px',
-                              padding: '4px 10px',
-                              fontSize: '0.85rem',
-                              cursor: 'pointer',
-                              transition: 'background-color 0.2s',
+                      <div className="relative flex-1 text-gray-700 text-base overflow-hidden" style={{ minHeight: '150px', marginBottom: '48px' }}>
+                        <p className="whitespace-pre-wrap break-words">
+                          {summary['summary-content']}
+                        </p>
+                        <div className="absolute bottom-0 left-0 w-full h-10 bg-gradient-to-t from-white to-transparent" />
+                      </div>
+                      <CardActions 
+                        sx={{ 
+                          padding: '12px 16px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          backgroundColor: 'white',
+                          borderTop: '1px solid rgba(0, 0, 0, 0.1)',
+                          borderBottomLeftRadius: '20px',
+                          borderBottomRightRadius: '20px',
+                          position: 'absolute',
+                          bottom: 0,
+                          left: 0,
+                          right: 0,
+                          mt: 'auto',
+                          mx: 0,  // Reset margin compensation
+                          mb: 0,  // Reset margin compensation
+                        }}
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <div style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '6px',
+                          flex: 1,
+                          overflow: 'hidden',
+                        }}>
+                          {notebooks
+                            .filter((nb) => nb.summaries.includes(summary.id) && nb.name !== 'trash')
+                            .map((nb) => (
+                              <div key={nb.name} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                <Chip
+                                  label={`#${nb.name}`}
+                                  sx={{
+                                    backgroundColor: '#0F2841',
+                                    color: 'white',
+                                    borderRadius: '100px',
+                                    '&:hover': {
+                                      backgroundColor: '#1a3d5f',
+                                    },
+                                    '& .MuiChip-deleteIcon': {
+                                      color: 'white',
+                                      padding: '3px',
+                                      borderRadius: '90%',
+                                      backgroundColor: '#0F2841',
+                                      transition: 'all 0.2s ease',
+                                      '&:hover': {
+                                        backgroundColor: 'white',
+                                        color: '#f87171',
+                                      },
+                                    },
+                                  }}
+                                  onDelete={(e) => {
+                                    e.stopPropagation();
+                                    handleRemoveFromNotebook(nb.name, summary.id);
+                                  }}
+                                />
+                              </div>
+                            ))}
+                        </div>
+                        <div style={{ display: 'flex', gap: '6px', marginLeft: '8px', flexShrink: 0 }}>
+                          <IconButton
+                            size="small"
+                            sx={{
+                              backgroundColor: '#0F2841',
+                              width: '24px',
+                              height: '24px',
+                              color: 'white',
+                              '&:hover': {
+                                backgroundColor: '#1a3d5f',
+                              },
                             }}
-                            onMouseEnter={(e) => {
-                              e.currentTarget.style.backgroundColor = 'rgba(211, 211, 211, 0.5)';
-                            }}
-                            onMouseLeave={(e) => {
-                              e.currentTarget.style.backgroundColor = 'lightgray';
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleAddTagClick(e, summary.id);
                             }}
                           >
-                            #{nb.name}
-                            {/* Remove Button */}
-                            <span
-                              style={{
-                                position: 'absolute',
-                                top: '-4px',
-                                right: '-4px',
-                                width: '18px',
-                                height: '18px',
-                                borderRadius: '50%',
-                                backgroundColor: '#e53e3e',
-                                color: 'white',
-                                fontWeight: 'bold',
-                                fontSize: '12px',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                opacity: 0,
-                                transition: 'opacity 0.2s',
-                              }}
-                              className="remove-button"
-                              onClick={(e) => {
-                                e.stopPropagation(); // Prevent opening the summary
-                                handleRemoveFromNotebook(nb.name, summary.id);
-                              }}
-                              onMouseEnter={(e) => (e.currentTarget.style.opacity = '1')}
-                              onMouseLeave={(e) => (e.currentTarget.style.opacity = '0')}
-                            >
-                              ×
-                            </span>
-                          </span>
-
-                        ))}
-                    </div>
-
-                    {/* Plus Button Circle */}
-                    <div style={{
-                      position: 'relative',
-                      marginLeft: '5px',
-                      width: '28px',
-                      height: '28px',
-                      backgroundColor: 'lightgray',
-                      borderRadius: '50%',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      cursor: 'pointer',
-                      boxShadow: '0 2px 5px rgba(0,0,0,0.1)',
-                    }}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleAddTagClick(e, summary.id);
-                      }}
-                      title="Add to notebook"
-                    >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        stroke="gray"
-                        strokeWidth="2"
-                        viewBox="0 0 24 24"
-                        style={{ width: '14px', height: '14px' }}
-                      >
-                        <line x1="12" y1="5" x2="12" y2="19" />
-                        <line x1="5" y1="12" x2="19" y2="12" />
-                      </svg>
-                    </div>
-                    <div
-                      style={{
-                        width: '28px',
-                        height: '28px',
-                        backgroundColor: '#34d399', // green
-                        borderRadius: '50%',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        cursor: 'pointer',
-                        boxShadow: '0 2px 5px rgba(0,0,0,0.1)',
-                      }}
-                      onClick={async (e) => {
-                        e.stopPropagation();
-
-                        const trashNotebook = notebooks.find(nb => nb.name === 'trash');
-                        if (!trashNotebook) return;
-
-                        const summaryKey = Object.keys(trashNotebook).find(
-                          key => trashNotebook[key] === summary.id && key.startsWith('summary')
-                        );
-                        if (!summaryKey) return;
-
-                        const currentTotal = trashNotebook.total || 1;
-                        const newTotal = currentTotal - 1;
-
-                        const notebookRef = doc(db, `users/${userId}/notebooks/trash`);
-
-                        // Remove from Firestore
-                        await updateDoc(notebookRef, {
-                          [summaryKey]: deleteField(),
-                          total: newTotal,
-                        });
-
-                        // Update local state
-                        const updatedNotebooks = notebooks.map(nb => {
-                          if (nb.name === 'trash') {
-                            const newSummaries = nb.summaries.filter(id => id !== summary.id);
-                            const updated = { ...nb };
-                            delete updated[summaryKey];
-                            return {
-                              ...updated,
-                              summaries: newSummaries,
-                              total: newTotal,
-                            };
-                          }
-                          return nb;
-                        });
-
-                        setNotebooks(updatedNotebooks);
-                      }}
-                      title="Restore from trash"
-                    >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        stroke="white"
-                        strokeWidth="2"
-                        viewBox="0 0 24 24"
-                        style={{ width: '14px', height: '14px' }}
-                      >
-                        <path d="M9 14l-4-4 4-4M20 12H6" />
-                      </svg>
-                    </div>
-                  </div>
-                </div>
+                            <Plus size={14} />
+                          </IconButton>
+                          <IconButton
+                            size="small"
+                            sx={{
+                              backgroundColor: '#10b981', // Green color for revert
+                              width: '24px',
+                              height: '24px',
+                              color: 'white',
+                              '&:hover': {
+                                backgroundColor: '#059669', // Darker green on hover
+                              },
+                            }}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleRevertSummary(summary.id);
+                            }}
+                          >
+                            <ArrowLeftCircle size={14} />
+                          </IconButton>
+                        </div>
+                      </CardActions>
+                    </CardContent>
+                  )}
+                </ExpandableCard>
               ))}
 
               {activeSummary && (
@@ -672,6 +1012,5 @@ const Trash = () => {
     </div>
   );
 };
-
 
 export default Trash;
