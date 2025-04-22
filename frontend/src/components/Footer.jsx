@@ -10,7 +10,7 @@ const Footer = ({ isFixed = false }) => {
           © 2025 SummarAIze
         </div>
         <div className="footer-links">
-          <Link to="/privacy-policy" className="footer-link">
+          <Link to="/privacy" className="footer-link">
             Privacy Policy
           </Link>
           <a 
