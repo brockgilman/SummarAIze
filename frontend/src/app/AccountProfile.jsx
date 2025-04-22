@@ -1,3 +1,4 @@
+// Importing necessary React hooks and MUI components
 import { useEffect, useState } from "react";
 import {
   Box,
@@ -14,9 +15,15 @@ import {
   Checkbox,
   FormControlLabel,
 } from "@mui/material";
+
+// Custom Google icon
 import { GoogleIcon } from "../app/sign-up/components/CustomIcons";
+
+// Firebase utilities for retrieving user info
 import { getUserName } from "../components/firebase/firebaseUserName";
 import { getUserEmail } from "../components/firebase/firebaseUserEmail";
+
+// Firebase config, authentication, and Firestore
 import { auth, db } from "../components/firebase/firebaseConfig";
 import {
   updatePassword,
@@ -29,23 +36,29 @@ import {
 } from "firebase/auth";
 import { doc, getDoc, updateDoc } from "firebase/firestore";
 
+// Main Account Profile component
 const AccountProfile = () => {
+  // State variables for user information and UI interaction
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [summaryPurpose, setSummaryPurpose] = useState("School");
   const [emailUpdates, setEmailUpdates] = useState(false);
   const [googleLinked, setGoogleLinked] = useState(false);
 
+  // Dialog states for editing profile fields
   const [openDialog, setOpenDialog] = useState(null);
   const [newValue, setNewValue] = useState("");
   const [currentPassword, setCurrentPassword] = useState("");
 
+  // Effect hook to fetch user info and auth status
   useEffect(() => {
     const unsubscribeEmail = getUserEmail(setEmail);
     const unsubscribeName = getUserName(setName);
 
+    // Track auth state
     const unsubscribeAuth = onAuthStateChanged(auth, async (user) => {
       if (user) {
+        // Reference to Firestore user document
         const userDocRef = doc(db, "users", user.uid);
         const userSnap = await getDoc(userDocRef);
 
@@ -57,6 +70,7 @@ const AccountProfile = () => {
           }
         }
 
+        // Check if Google is linked
         const isGoogleLinked = user.providerData.some(
           (provider) => provider.providerId === "google.com"
         );
@@ -64,6 +78,7 @@ const AccountProfile = () => {
       }
     });
 
+    // Cleanup subscriptions on unmount
     return () => {
       unsubscribeEmail();
       unsubscribeName();
@@ -71,6 +86,7 @@ const AccountProfile = () => {
     };
   }, []);
 
+  // Handle email update preference change
   const handleEmailUpdatesChange = async (value) => {
     setEmailUpdates(value);
     const user = auth.currentUser;
@@ -83,6 +99,7 @@ const AccountProfile = () => {
     }
   };
 
+  // Handle summary purpose dropdown selection
   const handleSummaryPurposeChange = async (value) => {
     setSummaryPurpose(value);
     const user = auth.currentUser;
@@ -95,18 +112,21 @@ const AccountProfile = () => {
     }
   };
 
+  // Open modal dialog
   const handleOpen = (field) => {
     setOpenDialog(field);
     setNewValue("");
     setCurrentPassword("");
   };
 
+  // Close modal dialog
   const handleClose = () => {
     setOpenDialog(null);
     setNewValue("");
     setCurrentPassword("");
   };
 
+  // Handle saving updated name or password
   const handleSave = async () => {
     const user = auth.currentUser;
     if (!user) return;
@@ -115,6 +135,7 @@ const AccountProfile = () => {
     const userDocRef = doc(db, "users", user.uid);
 
     try {
+      // Handle name update
       if (openDialog === "name") {
         if (!trimmedValue) {
           alert("Name cannot be empty.");
@@ -124,6 +145,7 @@ const AccountProfile = () => {
         setName(trimmedValue);
       }
 
+      // Handle password update
       if (openDialog === "password") {
         if (!currentPassword || currentPassword.length < 6) {
           alert("Please enter your current password.");
@@ -147,6 +169,7 @@ const AccountProfile = () => {
     }
   };
 
+  // Handle linking Google account
   const handleLinkGoogle = async () => {
     const provider = new GoogleAuthProvider();
     try {
@@ -159,6 +182,7 @@ const AccountProfile = () => {
     }
   };
 
+  // Handle unlinking Google account
   const handleUnlinkGoogle = async () => {
     try {
       await unlink(auth.currentUser, "google.com");
@@ -174,7 +198,7 @@ const AccountProfile = () => {
     <Box>
       {/* Header */}
       <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 4 }}>
-        <Typography variant="h4" fontWeight="bold">Profile</Typography>
+        <Typography variant="h3" fontWeight="bold">Profile</Typography>
       </Box>
 
       {/* Account info */}
@@ -294,7 +318,7 @@ const AccountProfile = () => {
   );
 };
 
-// Profile info row
+// Reusable row component for displaying profile fields
 const InfoRow = ({ label, value, onClick, showUpdate = true }) => (
   <Box sx={{ mb: 4 }}>
     <Typography variant="body1" color="text.secondary" sx={{ mb: 1 }}>{label}</Typography>

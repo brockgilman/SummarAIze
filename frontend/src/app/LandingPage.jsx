@@ -12,21 +12,26 @@ export default function LandingPage() {
   const [showRememberMeNote, setShowRememberMeNote] = useState(false);
 
   useEffect(() => {
+    // Add a 'landing-page' class to the body for specific landing page styling
     document.body.classList.add('landing-page');
 
+    // Function to retrieve a cookie by name
     const getCookie = (name) => {
       const value = `; ${document.cookie}`;
       const parts = value.split(`; ${name}=`);
       if (parts.length === 2) return parts.pop().split(';').shift();
     };
 
+    // Check if the "rememberMe" cookie or localStorage value exists and is true
     const rememberMe =
       getCookie("rememberMe") === "true" ||
       localStorage.getItem("rememberMe") === "true";
 
+    // Check if the URL has the "fromExtension" parameter set to true
     const fromExtension =
       new URLSearchParams(window.location.search).get("fromExtension") === "true";
 
+    // Set up Firebase Auth state change listener
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
         if (fromExtension) {
@@ -44,6 +49,7 @@ export default function LandingPage() {
       }
     });
 
+    // Cleanup function to unsubscribe from auth listener and remove landing-page class
     return () => {
       unsubscribe();
       document.body.classList.remove('landing-page');

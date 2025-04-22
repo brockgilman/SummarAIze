@@ -1,3 +1,4 @@
+// Importing required React and MUI components
 import React from 'react';
 import { Typography, Box, Grid, Container, Paper, Avatar, Accordion, AccordionSummary, AccordionDetails } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
@@ -5,10 +6,11 @@ import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import { Link } from 'react-router-dom';
 
+// Developer team members' data
 const teamMembers = [
   {
     name: "Leo Cherevko",
-    bio: "2nd year CSE @ UF\nFull Stack Developer\nBackend",
+    bio: "2nd year CSE @ UF\nFull Stack Developer\nProject Management",
     image: "/developerpics/leocherevkopic.jpg"
   },
   {
@@ -28,6 +30,7 @@ const teamMembers = [
   }
 ];
 
+// FAQ content data
 const faqItems = [
   {
     question: "How do I install the SummarAIze Chrome extension?",

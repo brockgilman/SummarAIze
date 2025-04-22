@@ -1,4 +1,7 @@
+// Import React core features and hooks
 import React, { useEffect, useState } from 'react';
+
+// Import Material UI components for layout and styling
 import {
   Box,
   Button,
@@ -14,22 +17,38 @@ import {
   Stack,
   Card as MuiCard
 } from '@mui/material';
+
+// Import styling utility from MUI
 import { styled } from '@mui/material/styles';
+
+// Import custom components
 import ForgotPassword from './components/ForgotPassword';
 import { GoogleIcon } from './components/CustomIcons';
+
+// Import Google signup handler
 import { handleGoogleSignup } from "../../components/firebase/googleAuth";
+
+// Import router navigation hook
 import { useNavigate } from "react-router-dom";
+
+// Firebase auth and Firestore imports
 import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
 import { db } from "../../components/firebase/firebaseConfig";
 import { doc, getDoc } from "firebase/firestore";
+
+// Import logo/navbar component
 import LogoNavbar from "../../components/LogoNavbar";
+
+// Import bcrypt for password comparison
 import bcrypt from 'bcryptjs';
 import Navbar from '../../components/Navbar';
 import Footer from '../../components/Footer';
 
+// Constants for cookie and styling
 const COOKIE_AGE_DAYS = 7;
 const PRIMARY_COLOR = "#0F2841";
 
+// Styled Card component for login box
 const Card = styled(MuiCard)(({ theme }) => ({
   display: "flex",
   flexDirection: "column",
@@ -45,6 +64,7 @@ const Card = styled(MuiCard)(({ theme }) => ({
   },
 }));
 
+// Styled container that wraps the entire login page content
 const SignInContainer = styled(Stack)(({ theme }) => ({
   minHeight: "90vh",
   width: "100vw",
@@ -55,7 +75,9 @@ const SignInContainer = styled(Stack)(({ theme }) => ({
   backgroundColor: "#f0f0f0",
 }));
 
+// Main login component
 export default function LogIn() {
+  // State for managing error messages and modal visibility
   const [emailError, setEmailError] = useState(false);
   const [emailErrorMessage, setEmailErrorMessage] = useState('');
   const [passwordError, setPasswordError] = useState(false);
@@ -63,8 +85,10 @@ export default function LogIn() {
   const [open, setOpen] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
 
+  // Hook for navigating to other pages
   const navigate = useNavigate();
 
+  // Add class to body on mount for styling
   useEffect(() => {
     document.body.classList.add('signin-page');
     return () => {
@@ -72,12 +96,16 @@ export default function LogIn() {
     };
   }, []);
 
+  // Handler to show ForgotPassword modal
   const handleClickOpen = () => setOpen(true);
+
+  // Handler to close ForgotPassword modal
   const handleClose = () => setOpen(false);
 
+  // Submit handler for login form
   const handleSubmit = async (event) => {
-    event.preventDefault();
-    if (!validateInputs()) return;
+    event.preventDefault(); // Prevent default form submission
+    if (!validateInputs()) return; // Stop if validation fails
 
     const data = new FormData(event.currentTarget);
     const email = data.get("email");
@@ -85,23 +113,27 @@ export default function LogIn() {
 
     try {
       const auth = getAuth();
-      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const userCredential = await signInWithEmailAndPassword(auth, email, password); // Sign in via Firebase
       const user = userCredential.user;
+
+      // Get user document from Firestore
       const userDocRef = doc(db, "users", user.uid);
       const userDoc = await getDoc(userDocRef);
 
       if (userDoc.exists()) {
         const userData = userDoc.data();
-        const isPasswordValid = bcrypt.compareSync(password, userData.password);
+        const isPasswordValid = bcrypt.compareSync(password, userData.password); // Compare hashed password
 
         if (isPasswordValid) {
+          // Store user data in localStorage
           localStorage.setItem('extension_user', JSON.stringify({
             uid: user.uid,
             rememberMe: rememberMe,
           }));
-
+          
           localStorage.setItem("rememberMe", rememberMe ? "true" : "false");
 
+          // Set or clear cookies based on 'rememberMe'
           if (rememberMe) {
             document.cookie = `extension_user_uid=${user.uid}; path=/; max-age=${COOKIE_AGE_DAYS * 86400}; SameSite=None; Secure`;
             document.cookie = `rememberMe=true; path=/; max-age=${COOKIE_AGE_DAYS * 86400}; SameSite=None; Secure`;
@@ -110,6 +142,7 @@ export default function LogIn() {
             document.cookie = `rememberMe=false; path=/; max-age=0; SameSite=None; Secure`;
           }
 
+          // Redirect to main app
           navigate("/summaries");
         } else {
           throw new Error("Invalid password.");
@@ -120,6 +153,7 @@ export default function LogIn() {
     } catch (error) {
       console.error("Login Error:", error);
 
+      // Set error messages based on Firebase error codes
       let errorMessage = "Something went wrong. Please try again later.";
       if (error.code === "auth/invalid-credential" || error.code === "auth/wrong-password") {
         errorMessage = "The email or password you entered is incorrect.";
@@ -133,6 +167,7 @@ export default function LogIn() {
     }
   };
 
+  // Validate email and password fields before form submission
   const validateInputs = () => {
     const email = document.getElementById('email');
     const password = document.getElementById('password');
@@ -159,126 +194,9 @@ export default function LogIn() {
     return isValid;
   };
 
+  // Return JSX for login page layout
   return (
-    <div className="min-h-screen flex flex-col">
-      <Navbar />
-      <main className="flex-grow">
-        <CssBaseline enableColorScheme />
-        <LogoNavbar />
-        <SignInContainer direction="column">
-          <Card variant="outlined">
-            <Typography
-              component="h1"
-              variant="h4"
-              sx={{ width: '100%', fontSize: 'clamp(2rem, 10vw, 2.15rem)' }}
-            >
-              Log in
-            </Typography>
 
-            <Box
-              component="form"
-              onSubmit={handleSubmit}
-              noValidate
-              sx={{ display: 'flex', flexDirection: 'column', width: '100%', gap: 2 }}
-            >
-              <FormControl>
-                <FormLabel htmlFor="email">Email</FormLabel>
-                <TextField
-                  error={emailError}
-                  helperText={emailErrorMessage}
-                  id="email"
-                  type="email"
-                  name="email"
-                  placeholder="your@email.com"
-                  autoComplete="email"
-                  autoFocus
-                  required
-                  fullWidth
-                  variant="outlined"
-                  color={emailError ? 'error' : 'primary'}
-                  sx={{
-                    "& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                      borderColor: PRIMARY_COLOR,
-                    },
-                    "& .MuiInputLabel-root.Mui-focused": {
-                      color: PRIMARY_COLOR,
-                    },
-                  }}
-                />
-              </FormControl>
-
-              <FormControl>
-                <FormLabel htmlFor="password">Password</FormLabel>
-                <TextField
-                  error={passwordError}
-                  helperText={passwordErrorMessage}
-                  name="password"
-                  placeholder="••••••"
-                  type="password"
-                  id="password"
-                  autoComplete="current-password"
-                  required
-                  fullWidth
-                  variant="outlined"
-                  color={passwordError ? 'error' : 'primary'}
-                  sx={{
-                    "& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                      borderColor: PRIMARY_COLOR,
-                    },
-                    "& .MuiInputLabel-root.Mui-focused": {
-                      color: PRIMARY_COLOR,
-                    },
-                  }}
-                />
-              </FormControl>
-
-              <FormControl>
-                <FormControlLabel
-                  control={
-                    <Checkbox
-                      checked={rememberMe}
-                      onChange={(e) => setRememberMe(e.target.checked)}
-                      color="primary"
-                    />
-                  }
-                  label="Remember me"
-                />
-              </FormControl>
-
-              <ForgotPassword open={open} handleClose={handleClose} />
-
-              <Button
-                type="submit"
-                fullWidth
-                variant="contained"
-                onClick={validateInputs}
-                sx={{ backgroundColor: PRIMARY_COLOR, color: '#ffffff' }}
-              >
-                Log in
-              </Button>
-
-              <Link
-                component="button"
-                type="button"
-                onClick={handleClickOpen}
-                variant="body2"
-                sx={{ color: PRIMARY_COLOR, alignSelf: 'center' }}
-              >
-                Forgot your password?
-              </Link>
-            </Box>
-
-            <Divider>or</Divider>
-
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-              <Button
-                fullWidth
-                variant="outlined"
-                onClick={() => handleGoogleSignup(navigate)}
-                startIcon={<GoogleIcon />}
-              >
-                Sign in with Google
-              </Button>
 
               <Typography sx={{ textAlign: 'center' }}>
                 Don&apos;t have an account?{' '}

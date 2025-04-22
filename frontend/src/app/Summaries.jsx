@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { getUserID } from "../components/firebase/firebaseUserID";
 import Sidebar from "../components/Sidebar";
-import { collection, getDocs, doc, updateDoc, arrayUnion, deleteField } from 'firebase/firestore';
+import { collection, getDocs, doc, updateDoc, arrayUnion, deleteField, setDoc } from 'firebase/firestore';
 import { db } from '../components/firebase/firebaseConfig';
 
 const Summaries = () => {
+  // State variables to store summaries, notebooks, user ID, and various modal states
   const [summaries, setSummaries] = useState([]);
   const [notebooks, setNotebooks] = useState([]);
   const [userId, setUserId] = useState(null);
@@ -16,20 +17,16 @@ const Summaries = () => {
   const [activeSummary, setActiveSummary] = useState(null);
   const [modalPosition, setModalPosition] = useState({ top: 0, left: 0 });
   const [newNotebookName, setNewNotebookName] = useState('');
+  const [sortOption, setSortOption] = useState(''); // "date" or "notebook"
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
+    // Set up cookie creation when component mounts
     const unsubscribe = getUserID((uid) => {
       if (uid) {
-        const rememberMe = localStorage.getItem("rememberMe") === "true";
-  
-        if (rememberMe) {
-          setCookie('extension_user_uid', uid, 30);
-          setCookie('rememberMe', "true", 30);
-          console.log('✅ Cookie set for user:', uid);
-        } else {
-          console.log("🛑 Remember Me is false — cookie not set.");
-        }
-  
+        // Create cookie with the user's UID
+        setCookie('extension_user_uid', uid, 30); // Cookie expires in 30 days
+        console.log('User ID cookie created:', uid);
         setUserId(uid);
         fetchUserData(uid);
       } else {
@@ -37,29 +34,22 @@ const Summaries = () => {
         setIsLoading(false);
       }
     });
-  
+
+    // Clean up the auth listener when component unmounts
     return () => {
-      if (unsubscribe) unsubscribe();
+      if (unsubscribe) {
+        unsubscribe();
+      }
     };
-  }, []);
+  }, []); // Empty dependency array ensures this runs once on component mount
   
-  // Helper function to set cookie
-  const setCookie = (name, value, days) => {
-    let expires = '';
-    if (days) {
-      const date = new Date();
-      date.setTime(date.getTime() + (days * 86400 * 1000));
-      expires = '; expires=' + date.toUTCString();
-    }
-    document.cookie = `${name}=${encodeURIComponent(value)}${expires}; path=/; SameSite=None; Secure`;
-  };
-  
-  
+  // Function to remove a summary from a specific notebook
   const handleRemoveFromNotebook = async (notebookName, summaryId) => {
     try {
       const notebook = notebooks.find(nb => nb.name === notebookName);
       if (!notebook) return;
   
+      // Find the key corresponding to the summary in the notebook
       const summaryKey = Object.keys(notebook).find(
         (key) => notebook[key] === summaryId && key.startsWith('summary')
       );
@@ -99,9 +89,7 @@ const Summaries = () => {
     }
   };
   
-  
-  
-  
+  // Function to fetch user data from Firestore
   const fetchUserData = async (uid) => {
     try {
       // Fetch user's summaries
@@ -111,22 +99,6 @@ const Summaries = () => {
         id: doc.id,
         ...doc.data()
       }));
-      
-      // sort summaries by createdAt timestamp
-      const sortedSummaries = summariesData.sort((a, b) => {
-        
-        const getTimestamp = (doc) => {
-          if (!doc.createdAt) return 0;
-          
-          if (doc.createdAt.seconds) {
-            return doc.createdAt.seconds * 1000;
-          }
-          
-          return doc.createdAt;
-        };
-        
-        return getTimestamp(b) - getTimestamp(a);
-      });
       
       // Fetch user's notebooks
       const notebooksRef = collection(db, `users/${uid}/notebooks`);
@@ -141,7 +113,7 @@ const Summaries = () => {
         };
       });
       
-      setSummaries(sortedSummaries);
+      setSummaries(summariesData);
       setNotebooks(notebooksData);
       setIsLoading(false);
     } catch (error) {
@@ -150,6 +122,22 @@ const Summaries = () => {
     }
   };
 
+  // Helper function to set cookie
+  const setCookie = (name, value, days) => {
+    let expires = '';
+    
+    if (days) {
+      const date = new Date();
+      date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+      expires = '; expires=' + date.toUTCString();
+    }
+    
+    // Set cookie with SameSite=None and Secure flags to make it accessible from extension
+    document.cookie = `${name}=${encodeURIComponent(value)}${expires}; path=/; SameSite=None; Secure`;
+    console.log("Cookie online"); 
+  };
+
+  // Function to handle click on a summary to toggle expanded view
   const handleSummaryClick = (summaryId) => {
     if (expandedSummary === summaryId) {
       setExpandedSummary(null);
@@ -158,10 +146,11 @@ const Summaries = () => {
     }
   };
 
+  // Function to add a summary to a selected notebook
   const handleAddToNotebook = async () => {
     if (!selectedSummary || !selectedNotebook) return;
 
-    // Prevent duplicates
+    // Prevent duplicates by checking if the summary already exists in the selected notebook
     const targetNotebook = notebooks.find(nb => nb.name === selectedNotebook);
     if (targetNotebook?.summaries?.includes(selectedSummary)) {
       console.log("Summary already exists in this notebook.");
@@ -170,7 +159,6 @@ const Summaries = () => {
       return;
     }
 
-  
     try {
       const targetNotebook = notebooks.find(nb => nb.name === selectedNotebook);
       const currentTotal = targetNotebook?.total || 0;
@@ -185,7 +173,7 @@ const Summaries = () => {
         total: nextSummaryNum,
       });
   
-      // Update local state
+      // Update local state with the new notebook state
       const updatedNotebooks = notebooks.map(notebook => {
         if (notebook.name === selectedNotebook) {
           return {
@@ -207,13 +195,14 @@ const Summaries = () => {
     }
   };
   
+  // Function to create a new notebook with a specified name
   const handleCreateNotebook = async () => {
-    const trimmedName = newNotebookName.trim();
-    if (!trimmedName || notebooks.find(nb => nb.name === trimmedName)) return;
+    const trimmedName = newNotebookName.trim().toLowerCase();
+    if (!trimmedName || trimmedName === 'trash' || notebooks.find(nb => nb.name.toLowerCase() === trimmedName)) return;
   
     try {
       const notebookRef = doc(db, `users/${userId}/notebooks/${trimmedName}`);
-      await updateDoc(notebookRef, {
+      await setDoc(notebookRef, {
         total: 0
       });
   
@@ -233,6 +222,12 @@ const Summaries = () => {
     }
   };
   
+  // Helper function to play Taco Tuesday audio
+  const playTacoTuesday = () => {
+    const audio = new Audio('/TacoTuesday.mp3');
+    audio.play();
+    console.log('Taco Tuesday MP3 is playing!');
+  };
 
   const formatDate = (timestamp) => {
     if (!timestamp) return 'Unknown date';
@@ -258,28 +253,6 @@ const Summaries = () => {
   };
   
 
-  // format timestamp
-  const formatTimestamp = (timestamp) => {
-    if (!timestamp) return '';
-    
-    let date;
-    
-    if (timestamp.seconds) {
-      date = new Date(timestamp.seconds * 1000);
-    } else {
-      
-      date = new Date(timestamp);
-    }
-    
-    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    const month = months[date.getMonth()];
-    const day = date.getDate();
-    const hours = date.getHours().toString().padStart(2, '0');
-    const minutes = date.getMinutes().toString().padStart(2, '0');
-    
-    return `${month} ${day} ${hours}:${minutes}`;
-  };
-
   if (isLoading) {
     return (
       <div className="flex h-screen items-center justify-center bg-blue-100">
@@ -287,6 +260,36 @@ const Summaries = () => {
       </div>
     );
   }
+
+  let filteredSummaries = summaries.filter((summary) => {
+    const isTrashed = notebooks.some(
+      (nb) => nb.name === 'trash' && nb.summaries.includes(summary.id)
+    );
+    return !isTrashed;
+  });
+  
+  // Search by content
+  if (searchQuery.trim() !== '') {
+    filteredSummaries = filteredSummaries.filter((summary) =>
+      summary['summary-content']?.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  }
+  
+  // Sort
+  if (sortOption === 'date') {
+    filteredSummaries.sort((a, b) => {
+      const dateA = a.createdAt?.toDate?.() || new Date(0);
+      const dateB = b.createdAt?.toDate?.() || new Date(0);
+      return dateB - dateA;
+    });
+  } else if (sortOption === 'notebook') {
+    filteredSummaries.sort((a, b) => {
+      const aNotebook = notebooks.find(nb => nb.summaries.includes(a.id))?.name || '';
+      const bNotebook = notebooks.find(nb => nb.summaries.includes(b.id))?.name || '';
+      return aNotebook.localeCompare(bNotebook);
+    });
+  }
+  
 
   return (
     
@@ -325,17 +328,31 @@ const Summaries = () => {
           </div>
         ) : (
           <div>
-            <div className="bg-white border border-gray-300 rounded shadow-sm hover:shadow-md transition-shadow">
-                <div className="flex flex-col items-center justify-center">
-                  <h2 className="text-xl text-gray-700 font-medium mb-6">New</h2>
-                  <button className="flex items-center text-sm font-medium text-gray-600 border border-gray-300 rounded px-3 py-1.5 hover:bg-gray-50">
-                    <svg className="w-4 h-4 mr-1 text-gray-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                      <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM6.293 6.707a1 1 0 010-1.414l3-3a1 1 0 011.414 0l3 3a1 1 0 01-1.414 1.414L11 5.414V13a1 1 0 11-2 0V5.414L7.707 6.707a1 1 0 01-1.414 0z" clipRule="evenodd" />
-                    </svg>
-                    Upload
-                  </button>
+            <div className="mb-6">
+              <div className="flex justify-between items-center max-w-4xl mx-auto">
+                {/* Search bar */}
+                <input
+                  type="text"
+                  placeholder="Search summaries..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-1/2 py-2 pl-4 pr-4 text-gray-700 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+
+                {/* Filter dropdown */}
+                <div className="relative">
+                  <select
+                    value={sortOption}
+                    onChange={(e) => setSortOption(e.target.value)}
+                    className="ml-4 py-2 px-4 border border-gray-300 rounded-full text-gray-700 bg-white"
+                  >
+                    <option value="">Sort</option>
+                    <option value="date">Date Created</option>
+                    <option value="notebook">Notebook</option>
+                  </select>
                 </div>
               </div>
+            </div>
             <div style={{
                     display: 'grid',
                     gridTemplateColumns: 'repeat(3, 1fr)',
@@ -345,7 +362,7 @@ const Summaries = () => {
               
               
               {/* Summary Cards */}
-              {summaries.map((summary) => (
+              {filteredSummaries.map((summary) => (
                 <div
                   key={summary.id}
                   className="border-gray-300 rounded-lg p-4 bg-white shadow-sm hover:shadow-md transition-shadow cursor-pointer"
@@ -386,53 +403,12 @@ const Summaries = () => {
                       }} />
                     </div>
                   </div>
-                  <div style={{ 
-                    position: 'relative', 
-                    marginTop: '10px', 
-                    display: 'flex', 
-                    marginBottom: '5px',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    paddingRight: '10px'
-                  }}>
-                    {/* Plus Button Circle - Adjusted position */}
-                    <div style={{
-                      position: 'relative',
-                      width: '28px',
-                      height: '28px',
-                      backgroundColor: 'lightgray',
-                      borderRadius: '50%',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      cursor: 'pointer',
-                      boxShadow: '0 2px 5px rgba(0,0,0,0.1)',
-                    }}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleAddTagClick(e, summary.id);
-                      }}
-                      title="Add to notebook"
-                    >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        stroke="gray"
-                        strokeWidth="2"
-                        viewBox="0 0 24 24"
-                        style={{ width: '14px', height: '14px' }}
-                      >
-                        <line x1="12" y1="5" x2="12" y2="19" />
-                        <line x1="5" y1="12" x2="19" y2="12" />
-                      </svg>
-                    </div>
-
+                  <div style={{ position: 'relative', marginTop: '10px', display: 'flex', marginBottom: '5px'}}>
                     <div style={{
                       display: 'flex',
                       flexWrap: 'wrap',
                       justifyContent: 'center',
                       gap: '6px',
-                      flex: '1'
                     }}>
                       {notebooks
                         .filter((nb) => nb.summaries.includes(summary.id))
@@ -488,16 +464,118 @@ const Summaries = () => {
                           </span>
 
                         ))}
-                      
                     </div>
 
+                    {/* Plus Button Circle */}
                     <div style={{
-                      fontSize: '0.8rem',
-                      color: '#666',
-                      whiteSpace: 'nowrap',
-                      marginLeft: '10px'
-                    }}>
-                      {formatTimestamp(summary.createdAt)}
+                      position: 'relative',
+                      marginLeft: '5px',
+                      width: '28px',
+                      height: '28px',
+                      backgroundColor: 'lightgray',
+                      borderRadius: '50%',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      cursor: 'pointer',
+                      boxShadow: '0 2px 5px rgba(0,0,0,0.1)',
+                    }}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleAddTagClick(e, summary.id);
+                      }}
+                      title="Add to notebook"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        stroke="gray"
+                        strokeWidth="2"
+                        viewBox="0 0 24 24"
+                        style={{ width: '14px', height: '14px' }}
+                      >
+                        <line x1="12" y1="5" x2="12" y2="19" />
+                        <line x1="5" y1="12" x2="19" y2="12" />
+                      </svg>
+                    </div>
+                    <div
+                      style={{
+                        width: '28px',
+                        height: '28px',
+                        backgroundColor: '#f87171',
+                        borderRadius: '50%',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        cursor: 'pointer',
+                        boxShadow: '0 2px 5px rgba(0,0,0,0.1)',
+                      }}
+                      onClick={async (e) => {
+                        e.stopPropagation();
+
+                        const summaryId = summary.id;
+                        const trashNotebook = notebooks.find(nb => nb.name === 'trash');
+
+                        if (!trashNotebook) {
+                          // Trash notebook doesn't exist yet
+                          const notebookRef = doc(db, `users/${userId}/notebooks/trash`);
+                          await setDoc(notebookRef, {
+                            summary1: summaryId,
+                            total: 1,
+                          });
+
+                          const newNotebook = {
+                            id: 'trash',
+                            name: 'trash',
+                            total: 1,
+                            summary1: summaryId,
+                            summaries: [summaryId],
+                          };
+
+                          setNotebooks([...notebooks, newNotebook]);
+                          return;
+                        }
+
+                        // Check for duplicates
+                        if (trashNotebook.summaries.includes(summaryId)) {
+                          console.log('Already in trash');
+                          return;
+                        }
+
+                        const nextSummaryNum = trashNotebook.total + 1;
+                        const notebookRef = doc(db, `users/${userId}/notebooks/trash`);
+
+                        await updateDoc(notebookRef, {
+                          [`summary${nextSummaryNum}`]: summaryId,
+                          total: nextSummaryNum,
+                        });
+
+                        const updatedNotebooks = notebooks.map(nb => {
+                          if (nb.name === 'trash') {
+                            return {
+                              ...nb,
+                              [`summary${nextSummaryNum}`]: summaryId,
+                              summaries: [...nb.summaries, summaryId],
+                              total: nextSummaryNum,
+                            };
+                          }
+                          return nb;
+                        });
+
+                        setNotebooks(updatedNotebooks);
+                      }}
+                      title="Send to trash"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        stroke="white"
+                        strokeWidth="2"
+                        viewBox="0 0 24 24"
+                        style={{ width: '14px', height: '14px' }}
+                      >
+                        <path d="M3 6h18M8 6V4h8v2M10 11v6M14 11v6M5 6l1 14h12l1-14" />
+                      </svg>
                     </div>
                   </div>
                 </div>
@@ -562,10 +640,12 @@ const Summaries = () => {
             }}
           >
             <option value="">Choose a notebook</option>
-            {notebooks.map((notebook) => (
-              <option key={notebook.id} value={notebook.name}>
-                {notebook.name}
-              </option>
+            {notebooks
+              .filter(notebook => notebook.name.toLowerCase() !== 'trash')
+              .map((notebook) => (
+                <option key={notebook.id} value={notebook.name}>
+                  {notebook.name}
+                </option>
             ))}
           </select>
           <h4 style={{ textAlign: 'center', marginBottom: '8px' }}>or</h4>

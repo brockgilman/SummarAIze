@@ -10,11 +10,14 @@ import {
 import Navbar from "../components/Navbar";
 import Footer from '../components/Footer';
 
+// Main Features component
 const Features = () => {
+  // State hooks to manage user-selected options
   const [selectedTone, setSelectedTone] = useState("casual");
   const [selectedLength, setSelectedLength] = useState("short");
   const [selectedOrgFeature, setSelectedOrgFeature] = useState("save");
 
+  // Options for summary tone
   const toneFeatures = [
     {
       value: "casual",
@@ -36,6 +39,7 @@ const Features = () => {
     },
   ];
 
+  // Options for summary length
   const lengthFeatures = [
     {
       value: "short",
@@ -57,6 +61,7 @@ const Features = () => {
     },
   ];
 
+  // Options for organization features
   const organizationFeatures = [
     {
       value: "save",
@@ -78,6 +83,7 @@ const Features = () => {
     },
   ];
 
+  // Common button styles
   const buttonStyle = {
     width: "100%",
     maxWidth: "300px",
@@ -88,6 +94,7 @@ const Features = () => {
     padding: "8px 16px",
   };
 
+  // Style for selected buttons
   const selectedButtonStyle = {
     ...buttonStyle,
     backgroundColor: "#0F2841",
@@ -97,6 +104,7 @@ const Features = () => {
     },
   };
 
+  // Style for unselected buttons
   const unselectedButtonStyle = {
     ...buttonStyle,
     backgroundColor: "#CFD4DA",
@@ -106,7 +114,9 @@ const Features = () => {
     },
   };
 
+  // Reusable section renderer for each feature group (tone, length, organization)
   const renderFeatureSection = (title, description, features, selected, setSelected) => {
+    // Flip layout for the "Control Summary Length" section for visual variety
     const isFlipped = title === "Control Summary Length";
 
     return (
@@ -176,6 +186,7 @@ const Features = () => {
     );
   };
 
+  // Component rendering
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
