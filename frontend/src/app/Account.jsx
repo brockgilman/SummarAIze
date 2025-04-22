@@ -19,7 +19,7 @@ const Account = () => {
         }}
       >
         {/* Profile box with constrained max width and left shift */}
-        <Box sx={{ maxWidth: 800, ml: -60 }}>
+        <Box sx={{ maxWidth: 800, ml: -10 }}>
           <AccountProfile />
         </Box>
       </Box>

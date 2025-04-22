@@ -48,7 +48,7 @@ const Card = styled(MuiCard)(({ theme }) => ({
 const SignInContainer = styled(Stack)(({ theme }) => ({
   minHeight: "90vh",
   width: "100vw",
-  marginTop: '22px',
+  marginTop: '85px',
   display: "flex",
   flexDirection: "column",
   alignItems: "center",
@@ -290,7 +290,6 @@ export default function LogIn() {
           </Card>
         </SignInContainer>
       </main>
-      <Footer />
     </div>
   );
 }

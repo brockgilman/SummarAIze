@@ -26,7 +26,7 @@ function App() {
           <Route path="/generate" element={<Generate />} /> {/* Generate summary page */}
           <Route path="/trash" element={<Trash />} /> {/* Trash page */}
           <Route path="/account" element={<Account />} /> {/* Account page */}
-          <Route path="/privacy-policy" element={<PrivacyPolicy />} /> {/* Privacy policy page */}
+          <Route path="/privacy" element={<PrivacyPolicy />} /> {/* Privacy policy page */}
         </Routes>
       </div>
     </Router>
