@@ -269,7 +269,7 @@ const Generate = () => {
             marginLeft: '350px',
             marginRight: '350px',
             marginTop: '20px',
-            width: 'calc(100% - 350px)', 
+            width: 'calc(100% - 450px)', 
           }}
         >
           <h1 className="text-3xl font-bold mb-8">Generate Summary</h1>
