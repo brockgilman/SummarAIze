@@ -8,6 +8,42 @@ admin.initializeApp();
 
 const db = admin.firestore();
 
+exports.deleteOldTrashedSummaries = functions.pubsub
+    .schedule("every 1 minutes")
+    .onRun(async (context) => {
+      const now = new Date();
+      const threshold = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+
+
+      try {
+        const usersSnapshot = await db.collection("users").get();
+
+        for (const userDoc of usersSnapshot.docs) {
+          const userId = userDoc.id;
+          const summariesRef = db
+              .collection("users")
+              .doc(userId)
+              .collection("summaries");
+          const trashedQuery = await summariesRef
+              .where("trashedAt", "<=", threshold)
+              .get();
+
+          for (const summaryDoc of trashedQuery.docs) {
+            await summariesRef.doc(summaryDoc.id).delete();
+            console.log(`Deleted summary ${summaryDoc.id} for user ${userId}`);
+          }
+        }
+
+        return null;
+      } catch (error) {
+        console.error("Error deleting old trashed summaries:", error);
+        throw new functions.https.HttpsError(
+            "internal",
+            "Failed to delete old trashed summaries",
+            error,
+        );
+      }
+    });
 // Initialize Express
 const app = express();
 
@@ -101,7 +137,7 @@ app.use("*", (req, res) => {
     success: false,
     error: "Endpoint not found",
     message: `The requested endpoint ${req.originalUrl} does not exist`,
-    availableEndpoints: ["/", "/api/test", "/api/save-summary"]
+    availableEndpoints: ["/", "/api/test", "/api/save-summary"],
   });
 });
 
