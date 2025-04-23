@@ -20,6 +20,7 @@ import {
   Typography
 } from '@mui/material';
 import { Search, Save, X, Plus, Trash2 } from 'lucide-react';
+import AddToNotebook from './components/AddToNotebook';
 
 // Styled components for the expandable card
 const ExpandableCard = styled(Card)(({ theme, expanded }) => ({
@@ -195,25 +196,23 @@ const Summaries = () => {
   };
 
   // Function to add a summary to a selected notebook
-  const handleAddToNotebook = async () => {
-    if (!selectedSummary || !selectedNotebook) return;
+  const handleAddToNotebook = async (notebookName) => {
+    if (!selectedSummary || !notebookName) return;
 
     // Prevent duplicates by checking if the summary already exists in the selected notebook
-    const targetNotebook = notebooks.find(nb => nb.name === selectedNotebook);
+    const targetNotebook = notebooks.find(nb => nb.name === notebookName);
     if (targetNotebook?.summaries?.includes(selectedSummary)) {
       console.log("Summary already exists in this notebook.");
       setShowTagModal(false);
-      setSelectedNotebook('');
       return;
     }
 
     try {
-      const targetNotebook = notebooks.find(nb => nb.name === selectedNotebook);
+      const targetNotebook = notebooks.find(nb => nb.name === notebookName);
       const currentTotal = targetNotebook?.total || 0;
-      console.log(targetNotebook?.total);
       const nextSummaryNum = currentTotal + 1;
   
-      const notebookRef = doc(db, `users/${userId}/notebooks/${selectedNotebook}`);
+      const notebookRef = doc(db, `users/${userId}/notebooks/${notebookName}`);
   
       // Update Firestore: add new summary and increment total
       await updateDoc(notebookRef, {
@@ -223,7 +222,7 @@ const Summaries = () => {
   
       // Update local state with the new notebook state
       const updatedNotebooks = notebooks.map(notebook => {
-        if (notebook.name === selectedNotebook) {
+        if (notebook.name === notebookName) {
           return {
             ...notebook,
             summaries: [...notebook.summaries, selectedSummary],
@@ -236,8 +235,7 @@ const Summaries = () => {
   
       setNotebooks(updatedNotebooks);
       setShowTagModal(false);
-      setSelectedNotebook('');
-      console.log(`Added summary ${selectedSummary} as summary${nextSummaryNum} to notebook ${selectedNotebook}`);
+      console.log(`Added summary ${selectedSummary} as summary${nextSummaryNum} to notebook ${notebookName}`);
     } catch (error) {
       console.error("Error adding summary to notebook:", error);
     }
@@ -291,12 +289,11 @@ const Summaries = () => {
   const handleAddTagClick = (e, summaryId) => {
     e.stopPropagation();
     const rect = e.currentTarget.getBoundingClientRect();
-  
     setSelectedSummary(summaryId);
     setShowTagModal(true);
     setModalPosition({
-      top: rect.bottom + window.scrollY + 10, // position just below button
-      left: rect.left + rect.width / 2 + window.scrollX, // center horizontally
+      top: rect.bottom + window.scrollY + 10,
+      left: rect.left + rect.width / 2 + window.scrollX,
     });
   };
   
@@ -385,8 +382,8 @@ const Summaries = () => {
       )}
       <div 
         className="flex-1 pr-8 py-6 overflow-auto"
-        style={{
-          marginLeft: '300px',
+      style={{
+        marginLeft: '300px',
           position: 'relative',
         }}
       >
@@ -395,14 +392,14 @@ const Summaries = () => {
         }}>
         <h1 className="text-3xl font-bold mb-8">Summaries</h1>
         </div>
-        <div className="mb-6">
-          <div className="flex justify-between items-center max-w-4xl mx-auto">
+            <div className="mb-6">
+              <div className="flex justify-between items-center max-w-4xl mx-auto">
             <TextField
               fullWidth
               variant="outlined"
-              placeholder="Search summaries..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Search summaries..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
@@ -436,8 +433,8 @@ const Summaries = () => {
             {/* Sort dropdown */}
             <FormControl sx={{ minWidth: 120, ml: 2 }}>
               <Select
-                value={sortOption}
-                onChange={(e) => setSortOption(e.target.value)}
+                    value={sortOption}
+                    onChange={(e) => setSortOption(e.target.value)}
                 displayEmpty
                 sx={{
                   backgroundColor: 'white',
@@ -463,26 +460,26 @@ const Summaries = () => {
                 <MenuItem value="notebook">Notebook</MenuItem>
               </Select>
             </FormControl>
-          </div>
-        </div>
+                </div>
+              </div>
         
         {summaries.length === 0 ? (
           <div className="text-center text-gray-500 mt-16">
             <p className="text-xl">You don't have any summaries yet</p>
             <p className="mt-2">Use the extension to create your first summary</p>
-          </div>
+            </div>
         ) : (
           <div style={{
             position: 'relative',
             minHeight: '100%',
           }}>
             <div style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(3, 1fr)',
-              columnGap: '15px',
-              rowGap: '15px',
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(3, 1fr)',
+                    columnGap: '15px',
+                    rowGap: '15px',
               position: 'relative',
-            }}>
+                  }}>
               {filteredSummaries.map((summary) => (
                 <ExpandableCard
                   key={summary.id}
@@ -563,7 +560,7 @@ const Summaries = () => {
                           }}>
                             <span>{getTextStatistics(editedContent).words} words</span>
                             <span>{getTextStatistics(editedContent).sentences} sentences</span>
-                          </div>
+                    </div>
                           <CardActions 
                             sx={{ 
                               padding: '8px 0',
@@ -575,22 +572,22 @@ const Summaries = () => {
                             }}
                             onClick={(e) => e.stopPropagation()}
                           >
-                            <div style={{
-                              display: 'flex',
+                    <div style={{
+                      display: 'flex',
                               alignItems: 'center',
-                              gap: '6px',
+                      gap: '6px',
                               flex: 1,
-                            }}>
-                              {notebooks
-                                .filter((nb) => nb.summaries.includes(summary.id))
-                                .map((nb) => (
+                    }}>
+                      {notebooks
+                        .filter((nb) => nb.summaries.includes(summary.id))
+                        .map((nb) => (
                                   <div key={nb.name} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                                     <Chip
                                       label={`#${nb.name}`}
                                       sx={{
                                         backgroundColor: '#0F2841',
                                         color: 'white',
-                                        borderRadius: '100px',
+                              borderRadius: '100px',
                                         '&:hover': {
                                           backgroundColor: '#1a3d5f',
                                         },
@@ -639,7 +636,7 @@ const Summaries = () => {
                                   backgroundColor: '#f87171',
                                   width: '24px',
                                   height: '24px',
-                                  color: 'white',
+                                color: 'white',
                                   '&:hover': {
                                     backgroundColor: '#ef4444',
                                   },
@@ -702,7 +699,7 @@ const Summaries = () => {
                             <div style={{ display: 'flex', gap: '8px', marginLeft: '8px' }}>
                               <Button
                                 startIcon={<X size={16} />}
-                                onClick={(e) => {
+                              onClick={(e) => {
                                   e.stopPropagation();
                                   setEditableSummary(null);
                                   setEditedContent('');
@@ -740,7 +737,7 @@ const Summaries = () => {
                               >
                                 Save
                               </Button>
-                            </div>
+                    </div>
                           </CardActions>
                         </div>
                       </div>
@@ -783,9 +780,9 @@ const Summaries = () => {
                         }}
                         onClick={(e) => e.stopPropagation()}
                       >
-                        <div style={{
-                          display: 'flex',
-                          alignItems: 'center',
+                    <div style={{
+                      display: 'flex',
+                      alignItems: 'center',
                           gap: '6px',
                           flex: 1,
                           overflow: 'hidden',
@@ -834,80 +831,80 @@ const Summaries = () => {
                               '&:hover': {
                                 backgroundColor: '#1a3d5f',
                               },
-                            }}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleAddTagClick(e, summary.id);
-                            }}
+                    }}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleAddTagClick(e, summary.id);
+                      }}
                           >
                             <Plus size={14} />
                           </IconButton>
                           <IconButton
                             size="small"
                             sx={{
-                              backgroundColor: '#f87171',
+                        backgroundColor: '#f87171',
                               width: '24px',
                               height: '24px',
                               color: 'white',
                               '&:hover': {
                                 backgroundColor: '#ef4444',
                               },
-                            }}
-                            onClick={async (e) => {
-                              e.stopPropagation();
-                              const summaryId = summary.id;
-                              const trashNotebook = notebooks.find(nb => nb.name === 'trash');
+                      }}
+                      onClick={async (e) => {
+                        e.stopPropagation();
+                        const summaryId = summary.id;
+                        const trashNotebook = notebooks.find(nb => nb.name === 'trash');
 
-                              if (!trashNotebook) {
-                                const notebookRef = doc(db, `users/${userId}/notebooks/trash`);
-                                await setDoc(notebookRef, {
-                                  summary1: summaryId,
-                                  total: 1,
-                                });
+                        if (!trashNotebook) {
+                          const notebookRef = doc(db, `users/${userId}/notebooks/trash`);
+                          await setDoc(notebookRef, {
+                            summary1: summaryId,
+                            total: 1,
+                          });
 
-                                const newNotebook = {
-                                  id: 'trash',
-                                  name: 'trash',
-                                  total: 1,
-                                  summary1: summaryId,
-                                  summaries: [summaryId],
-                                };
+                          const newNotebook = {
+                            id: 'trash',
+                            name: 'trash',
+                            total: 1,
+                            summary1: summaryId,
+                            summaries: [summaryId],
+                          };
 
-                                setNotebooks([...notebooks, newNotebook]);
-                                return;
-                              }
+                          setNotebooks([...notebooks, newNotebook]);
+                          return;
+                        }
 
-                              if (trashNotebook.summaries.includes(summaryId)) {
-                                console.log('Already in trash');
-                                return;
-                              }
+                        if (trashNotebook.summaries.includes(summaryId)) {
+                          console.log('Already in trash');
+                          return;
+                        }
 
-                              const nextSummaryNum = trashNotebook.total + 1;
-                              const notebookRef = doc(db, `users/${userId}/notebooks/trash`);
+                        const nextSummaryNum = trashNotebook.total + 1;
+                        const notebookRef = doc(db, `users/${userId}/notebooks/trash`);
 
-                              await updateDoc(notebookRef, {
-                                [`summary${nextSummaryNum}`]: summaryId,
-                                total: nextSummaryNum,
-                              });
+                        await updateDoc(notebookRef, {
+                          [`summary${nextSummaryNum}`]: summaryId,
+                          total: nextSummaryNum,
+                        });
 
-                              const updatedNotebooks = notebooks.map(nb => {
-                                if (nb.name === 'trash') {
-                                  return {
-                                    ...nb,
-                                    [`summary${nextSummaryNum}`]: summaryId,
-                                    summaries: [...nb.summaries, summaryId],
-                                    total: nextSummaryNum,
-                                  };
-                                }
-                                return nb;
-                              });
+                        const updatedNotebooks = notebooks.map(nb => {
+                          if (nb.name === 'trash') {
+                            return {
+                              ...nb,
+                              [`summary${nextSummaryNum}`]: summaryId,
+                              summaries: [...nb.summaries, summaryId],
+                              total: nextSummaryNum,
+                            };
+                          }
+                          return nb;
+                        });
 
-                              setNotebooks(updatedNotebooks);
-                            }}
+                        setNotebooks(updatedNotebooks);
+                      }}
                           >
                             <Trash2 size={14} />
                           </IconButton>
-                        </div>
+                    </div>
                       </CardActions>
                     </CardContent>
                   )}
@@ -943,109 +940,16 @@ const Summaries = () => {
         )}
       </div>
       
-      {showTagModal && selectedSummary && (
-        <div
-          style={{
-            position: 'absolute',
-            top: `${modalPosition.top}px`,
-            left: `${modalPosition.left}px`,
-            transform: 'translateX(-50%)',
-            zIndex: 9999,
-            backgroundColor: 'white',
-            border: '1px solid #ccc',
-            borderRadius: '8px',
-            padding: '12px',
-            width: '250px',
-            boxShadow: '0 4px 10px rgba(0, 0, 0, 0.1)',
-          }}
-          onClick={(e) => e.stopPropagation()} // prevent modal click from expanding summary
-        >
-          <h3 style={{ fontSize: '1rem', marginBottom: '8px' }}>Add to Notebook</h3>
-          <select
-            value={selectedNotebook}
-            onChange={(e) => setSelectedNotebook(e.target.value)}
-            style={{
-              width: '100%',
-              padding: '6px 10px',
-              border: '1px solid #ccc',
-              borderRadius: '6px',
-              marginBottom: '12px',
-            }}
-          >
-            <option value="">Choose a notebook</option>
-            {notebooks
-              .filter(notebook => notebook.name.toLowerCase() !== 'trash')
-              .map((notebook) => (
-                <option key={notebook.id} value={notebook.name}>
-                  {notebook.name}
-                </option>
-            ))}
-          </select>
-          <h4 style={{ textAlign: 'center', marginBottom: '8px' }}>or</h4>
-            <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
-              <input
-                type="text"
-                placeholder="New notebook name"
-                value={newNotebookName}
-                onChange={(e) => setNewNotebookName(e.target.value)}
-                style={{
-                  flex: 1,
-                  padding: '6px 10px',
-                  border: '1px solid #ccc',
-                  borderRadius: '6px',
-                }}
-              />
-              <button
-                onClick={handleCreateNotebook}
-                disabled={!newNotebookName.trim() || notebooks.some(nb => nb.name === newNotebookName.trim())}
-                style={{
-                  padding: '6px 10px',
-                  backgroundColor: '#10b981', // green
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '6px',
-                  cursor: newNotebookName.trim() ? 'pointer' : 'default',
-                  opacity: newNotebookName.trim() ? 1 : 0.5,
-                }}
-                title="Create new notebook"
-              >
-                +
-              </button>
-            </div>
-
-
-          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
-            <button
-              onClick={() => setShowTagModal(false)}
-              style={{
-                padding: '6px 12px',
-                backgroundColor: '#f3f4f6',
-                border: 'none',
-                borderRadius: '4px',
-                color: '#333',
-                cursor: 'pointer',
-              }}
-            >
-              Cancel
-            </button>
-            <button
-              onClick={handleAddToNotebook}
-              disabled={!selectedNotebook}
-              style={{
-                padding: '6px 12px',
-                backgroundColor: '#2563eb',
-                color: 'white',
-                border: 'none',
-                borderRadius: '4px',
-                opacity: !selectedNotebook ? 0.5 : 1,
-                cursor: !selectedNotebook ? 'default' : 'pointer',
-              }}
-            >
-              Add
-            </button>
-          </div>
-        </div>
-      )}
+      <AddToNotebook 
+        showModal={showTagModal}
+        position={modalPosition}
+        onClose={() => setShowTagModal(false)}
+        notebooks={notebooks}
+        selectedSummary={selectedSummary}
+        userId={userId}
+        onAddToNotebook={handleAddToNotebook}
+        onNotebooksUpdate={setNotebooks}
+      />
       <style>
         {`
           span:hover .remove-button {
