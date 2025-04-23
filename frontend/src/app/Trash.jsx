@@ -17,9 +17,12 @@ import {
   Collapse,
   styled,
   Chip,
-  Typography
+  Typography,
+  Popover,
+  Paper
 } from '@mui/material';
-import { Search, Save, X, Plus, ArrowLeftCircle } from 'lucide-react';
+import { Search, Save, X, Plus, ArrowLeftCircle, Check } from 'lucide-react';
+import AddToNotebook from './components/AddToNotebook';
 
 // Styled components for the expandable card
 const ExpandableCard = styled(Card)(({ theme, expanded }) => ({
@@ -67,6 +70,8 @@ const Trash = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [editableSummary, setEditableSummary] = useState(null);
   const [editedContent, setEditedContent] = useState('');
+  const [anchorEl, setAnchorEl] = useState(null);
+  const [isAddingNotebook, setIsAddingNotebook] = useState(false);
 
   useEffect(() => {
     // Set up cookie creation when component mounts
@@ -195,25 +200,23 @@ const Trash = () => {
   };
 
   // Function to add a summary to a selected notebook
-  const handleAddToNotebook = async () => {
-    if (!selectedSummary || !selectedNotebook) return;
+  const handleAddToNotebook = async (notebookName) => {
+    if (!selectedSummary || !notebookName) return;
 
     // Prevent duplicates by checking if the summary already exists in the selected notebook
-    const targetNotebook = notebooks.find(nb => nb.name === selectedNotebook);
+    const targetNotebook = notebooks.find(nb => nb.name === notebookName);
     if (targetNotebook?.summaries?.includes(selectedSummary)) {
       console.log("Summary already exists in this notebook.");
       setShowTagModal(false);
-      setSelectedNotebook('');
       return;
     }
 
     try {
-      const targetNotebook = notebooks.find(nb => nb.name === selectedNotebook);
+      const targetNotebook = notebooks.find(nb => nb.name === notebookName);
       const currentTotal = targetNotebook?.total || 0;
-      console.log(targetNotebook?.total);
       const nextSummaryNum = currentTotal + 1;
   
-      const notebookRef = doc(db, `users/${userId}/notebooks/${selectedNotebook}`);
+      const notebookRef = doc(db, `users/${userId}/notebooks/${notebookName}`);
   
       // Update Firestore: add new summary and increment total
       await updateDoc(notebookRef, {
@@ -223,7 +226,7 @@ const Trash = () => {
   
       // Update local state with the new notebook state
       const updatedNotebooks = notebooks.map(notebook => {
-        if (notebook.name === selectedNotebook) {
+        if (notebook.name === notebookName) {
           return {
             ...notebook,
             summaries: [...notebook.summaries, selectedSummary],
@@ -236,8 +239,7 @@ const Trash = () => {
   
       setNotebooks(updatedNotebooks);
       setShowTagModal(false);
-      setSelectedNotebook('');
-      console.log(`Added summary ${selectedSummary} as summary${nextSummaryNum} to notebook ${selectedNotebook}`);
+      console.log(`Added summary ${selectedSummary} as summary${nextSummaryNum} to notebook ${notebookName}`);
     } catch (error) {
       console.error("Error adding summary to notebook:", error);
     }
@@ -248,6 +250,7 @@ const Trash = () => {
     const trimmedName = newNotebookName.trim().toLowerCase();
     if (!trimmedName || trimmedName === 'trash' || notebooks.find(nb => nb.name.toLowerCase() === trimmedName)) return;
   
+    setIsAddingNotebook(true);
     try {
       const notebookRef = doc(db, `users/${userId}/notebooks/${trimmedName}`);
       await setDoc(notebookRef, {
@@ -263,10 +266,17 @@ const Trash = () => {
   
       setNotebooks([...notebooks, newNotebook]);
       setSelectedNotebook(trimmedName);
+      
+      // Reset after a delay to show the animation
+      setTimeout(() => {
       setNewNotebookName('');
+        setIsAddingNotebook(false);
+      }, 1000);
+      
       console.log(`Notebook "${trimmedName}" created.`);
     } catch (error) {
       console.error("Error creating notebook:", error);
+      setIsAddingNotebook(false);
     }
   };
   
@@ -291,12 +301,13 @@ const Trash = () => {
   const handleAddTagClick = (e, summaryId) => {
     e.stopPropagation();
     const rect = e.currentTarget.getBoundingClientRect();
-  
+    console.log('Available notebooks:', notebooks); // Debug log
+    console.log('Filtered notebooks:', notebooks.filter(notebook => notebook.name.toLowerCase() !== 'trash')); // Debug log
     setSelectedSummary(summaryId);
     setShowTagModal(true);
     setModalPosition({
-      top: rect.bottom + window.scrollY + 10, // position just below button
-      left: rect.left + rect.width / 2 + window.scrollX, // center horizontally
+      top: rect.bottom + window.scrollY + 10,
+      left: rect.left + rect.width / 2 + window.scrollX,
     });
   };
   
@@ -370,6 +381,14 @@ const Trash = () => {
     }
   };
 
+  const handleDropdownClick = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleDropdownClose = () => {
+    setAnchorEl(null);
+  };
+
   if (isLoading) {
     return (
       <div className="flex h-screen items-center justify-center bg-blue-100">
@@ -434,8 +453,8 @@ const Trash = () => {
       )}
       <div 
         className="flex-1 pr-8 py-6 overflow-auto"
-        style={{
-          marginLeft: '300px',
+      style={{
+        marginLeft: '300px',
           position: 'relative',
         }}
       >
@@ -526,10 +545,10 @@ const Trash = () => {
             minHeight: '100%',
           }}>
             <div style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(3, 1fr)',
-              columnGap: '15px',
-              rowGap: '15px',
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(3, 1fr)',
+                    columnGap: '15px',
+                    rowGap: '15px',
               position: 'relative',
             }}>
               {filteredSummaries.map((summary) => (
@@ -612,7 +631,7 @@ const Trash = () => {
                           }}>
                             <span>{getTextStatistics(editedContent).words} words</span>
                             <span>{getTextStatistics(editedContent).sentences} sentences</span>
-                          </div>
+                    </div>
                           <CardActions 
                             sx={{ 
                               padding: '8px 0',
@@ -624,22 +643,22 @@ const Trash = () => {
                             }}
                             onClick={(e) => e.stopPropagation()}
                           >
-                            <div style={{
-                              display: 'flex',
+                    <div style={{
+                      display: 'flex',
                               alignItems: 'center',
-                              gap: '6px',
+                      gap: '6px',
                               flex: 1,
-                            }}>
-                              {notebooks
+                    }}>
+                      {notebooks
                                 .filter((nb) => nb.summaries.includes(summary.id))
-                                .map((nb) => (
+                        .map((nb) => (
                                   <div key={nb.name} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                                     <Chip
                                       label={`#${nb.name}`}
                                       sx={{
                                         backgroundColor: '#0F2841',
                                         color: 'white',
-                                        borderRadius: '100px',
+                              borderRadius: '100px',
                                         '&:hover': {
                                           backgroundColor: '#1a3d5f',
                                         },
@@ -683,24 +702,21 @@ const Trash = () => {
                                 <Plus size={14} />
                               </IconButton>
                               <IconButton
-                                size="small"
+                                onClick={() => handleRevertSummary(summary.id)}
                                 sx={{
-                                  backgroundColor: '#10b981', // Green color for revert
+                                  backgroundColor: '#10b981',
                                   width: '24px',
                                   height: '24px',
                                   color: 'white',
                                   '&:hover': {
-                                    backgroundColor: '#059669', // Darker green on hover
+                                    backgroundColor: '#059669',
+                                    transform: 'scale(1.05)',
                                   },
                                 }}
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleRevertSummary(summary.id);
-                                }}
                               >
-                                <ArrowLeftCircle size={14} />
+                                <ArrowLeftCircle size={16} />
                               </IconButton>
-                            </div>
+                    </div>
                             <div style={{ display: 'flex', gap: '8px', marginLeft: '8px' }}>
                               <Button
                                 startIcon={<X size={16} />}
@@ -785,9 +801,9 @@ const Trash = () => {
                         }}
                         onClick={(e) => e.stopPropagation()}
                       >
-                        <div style={{
-                          display: 'flex',
-                          alignItems: 'center',
+                    <div style={{
+                      display: 'flex',
+                      alignItems: 'center',
                           gap: '6px',
                           flex: 1,
                           overflow: 'hidden',
@@ -836,33 +852,30 @@ const Trash = () => {
                               '&:hover': {
                                 backgroundColor: '#1a3d5f',
                               },
-                            }}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleAddTagClick(e, summary.id);
-                            }}
+                    }}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleAddTagClick(e, summary.id);
+                      }}
                           >
                             <Plus size={14} />
                           </IconButton>
                           <IconButton
-                            size="small"
+                            onClick={() => handleRevertSummary(summary.id)}
                             sx={{
-                              backgroundColor: '#10b981', // Green color for revert
+                              backgroundColor: '#10b981',
                               width: '24px',
                               height: '24px',
                               color: 'white',
                               '&:hover': {
-                                backgroundColor: '#059669', // Darker green on hover
+                                backgroundColor: '#059669',
+                                transform: 'scale(1.05)',
                               },
                             }}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleRevertSummary(summary.id);
-                            }}
                           >
-                            <ArrowLeftCircle size={14} />
+                            <ArrowLeftCircle size={16} />
                           </IconButton>
-                        </div>
+                    </div>
                       </CardActions>
                     </CardContent>
                   )}
@@ -898,113 +911,31 @@ const Trash = () => {
         )}
       </div>
       
-      {showTagModal && selectedSummary && (
-        <div
-          style={{
-            position: 'absolute',
-            top: `${modalPosition.top}px`,
-            left: `${modalPosition.left}px`,
-            transform: 'translateX(-50%)',
-            zIndex: 9999,
-            backgroundColor: 'white',
-            border: '1px solid #ccc',
-            borderRadius: '8px',
-            padding: '12px',
-            width: '250px',
-            boxShadow: '0 4px 10px rgba(0, 0, 0, 0.1)',
-          }}
-          onClick={(e) => e.stopPropagation()} // prevent modal click from expanding summary
-        >
-          <h3 style={{ fontSize: '1rem', marginBottom: '8px' }}>Add to Notebook</h3>
-          <select
-            value={selectedNotebook}
-            onChange={(e) => setSelectedNotebook(e.target.value)}
-            style={{
-              width: '100%',
-              padding: '6px 10px',
-              border: '1px solid #ccc',
-              borderRadius: '6px',
-              marginBottom: '12px',
-            }}
-          >
-            <option value="">Choose a notebook</option>
-            {notebooks
-              .filter(notebook => notebook.name.toLowerCase() !== 'trash')
-              .map((notebook) => (
-                <option key={notebook.id} value={notebook.name}>
-                  {notebook.name}
-                </option>
-            ))}
-          </select>
-          <h4 style={{ textAlign: 'center', marginBottom: '8px' }}>or</h4>
-            <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
-              <input
-                type="text"
-                placeholder="New notebook name"
-                value={newNotebookName}
-                onChange={(e) => setNewNotebookName(e.target.value)}
-                style={{
-                  flex: 1,
-                  padding: '6px 10px',
-                  border: '1px solid #ccc',
-                  borderRadius: '6px',
-                }}
-              />
-              <button
-                onClick={handleCreateNotebook}
-                disabled={!newNotebookName.trim() || notebooks.some(nb => nb.name === newNotebookName.trim())}
-                style={{
-                  padding: '6px 10px',
-                  backgroundColor: '#10b981', // green
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '6px',
-                  cursor: newNotebookName.trim() ? 'pointer' : 'default',
-                  opacity: newNotebookName.trim() ? 1 : 0.5,
-                }}
-                title="Create new notebook"
-              >
-                +
-              </button>
-            </div>
-
-
-          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
-            <button
-              onClick={() => setShowTagModal(false)}
-              style={{
-                padding: '6px 12px',
-                backgroundColor: '#f3f4f6',
-                border: 'none',
-                borderRadius: '4px',
-                color: '#333',
-                cursor: 'pointer',
-              }}
-            >
-              Cancel
-            </button>
-            <button
-              onClick={handleAddToNotebook}
-              disabled={!selectedNotebook}
-              style={{
-                padding: '6px 12px',
-                backgroundColor: '#2563eb',
-                color: 'white',
-                border: 'none',
-                borderRadius: '4px',
-                opacity: !selectedNotebook ? 0.5 : 1,
-                cursor: !selectedNotebook ? 'default' : 'pointer',
-              }}
-            >
-              Add
-            </button>
-          </div>
-        </div>
-      )}
+      <AddToNotebook 
+        showModal={showTagModal}
+        position={modalPosition}
+        onClose={() => setShowTagModal(false)}
+        notebooks={notebooks}
+        selectedSummary={selectedSummary}
+        userId={userId}
+        onAddToNotebook={handleAddToNotebook}
+        onNotebooksUpdate={setNotebooks}
+      />
       <style>
         {`
           span:hover .remove-button {
             opacity: 1 !important;
+          }
+          
+          @keyframes checkmark {
+            0% {
+              transform: scale(0) rotate(-90deg);
+              opacity: 0;
+            }
+            100% {
+              transform: scale(1) rotate(0);
+              opacity: 1;
+            }
           }
         `}
       </style>
