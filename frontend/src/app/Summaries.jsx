@@ -196,33 +196,34 @@ const Summaries = () => {
   };
 
   // Function to add a summary to a selected notebook
-  const handleAddToNotebook = async (notebookName) => {
-    if (!selectedSummary || !notebookName) return;
+  const handleAddToNotebook = async () => {
+    if (!selectedSummary || !selectedNotebook) return;
 
     // Prevent duplicates by checking if the summary already exists in the selected notebook
-    const targetNotebook = notebooks.find(nb => nb.name === notebookName);
+    const targetNotebook = notebooks.find(nb => nb.name === selectedNotebook);
     if (targetNotebook?.summaries?.includes(selectedSummary)) {
       console.log("Summary already exists in this notebook.");
       setShowTagModal(false);
+      setSelectedNotebook('');
       return;
     }
 
     try {
-      const targetNotebook = notebooks.find(nb => nb.name === notebookName);
+      const targetNotebook = notebooks.find(nb => nb.name === selectedNotebook);
       const currentTotal = targetNotebook?.total || 0;
       const nextSummaryNum = currentTotal + 1;
-
-      const notebookRef = doc(db, `users/${userId}/notebooks/${notebookName}`);
-
+  
+      const notebookRef = doc(db, `users/${userId}/notebooks/${selectedNotebook}`);
+  
       // Update Firestore: add new summary and increment total
       await updateDoc(notebookRef, {
         [`summary${nextSummaryNum}`]: selectedSummary,
         total: nextSummaryNum,
       });
-
+  
       // Update local state with the new notebook state
       const updatedNotebooks = notebooks.map(notebook => {
-        if (notebook.name === notebookName) {
+        if (notebook.name === selectedNotebook) {
           return {
             ...notebook,
             summaries: [...notebook.summaries, selectedSummary],
@@ -232,10 +233,15 @@ const Summaries = () => {
         }
         return notebook;
       });
-
+  
       setNotebooks(updatedNotebooks);
       setShowTagModal(false);
-      console.log(`Added summary ${selectedSummary} as summary${nextSummaryNum} to notebook ${notebookName}`);
+      setSelectedNotebook('');
+      
+      // Refresh the data to ensure UI is up to date
+      await fetchUserData(userId);
+      
+      console.log(`Added summary ${selectedSummary} as summary${nextSummaryNum} to notebook ${selectedNotebook}`);
     } catch (error) {
       console.error("Error adding summary to notebook:", error);
     }
@@ -259,9 +265,18 @@ const Summaries = () => {
         summaries: []
       };
   
-      setNotebooks([...notebooks, newNotebook]);
+      // Update local state with the new notebook
+      const updatedNotebooks = [...notebooks, newNotebook];
+      setNotebooks(updatedNotebooks);
       setSelectedNotebook(trimmedName);
+      
+      // Play Taco Tuesday audio
+      playTacoTuesday();
+      
+      // Reset the input field
       setNewNotebookName('');
+      setShowTagModal(false);
+      
       console.log(`Notebook "${trimmedName}" created.`);
     } catch (error) {
       console.error("Error creating notebook:", error);
@@ -462,7 +477,7 @@ const Summaries = () => {
                   },
                 }}
               >
-                <MenuItem value="" disabled>Filter</MenuItem>
+                <MenuItem value="">Filter</MenuItem>
                 <MenuItem value="createdAt">Date Created</MenuItem>
                 <MenuItem value="updatedAt">Date Modified</MenuItem>
                 <MenuItem value="notebook">Notebook</MenuItem>
@@ -972,7 +987,10 @@ const Summaries = () => {
       <AddToNotebook 
         showModal={showTagModal}
         position={modalPosition}
-        onClose={() => setShowTagModal(false)}
+        onClose={() => {
+          setShowTagModal(false);
+          fetchUserData(userId); // Refresh the data after closing the modal
+        }}
         notebooks={notebooks}
         selectedSummary={selectedSummary}
         userId={userId}
