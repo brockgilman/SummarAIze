@@ -196,35 +196,33 @@ const Summaries = () => {
   };
 
   // Function to add a summary to a selected notebook
-  const handleAddToNotebook = async () => {
-    if (!selectedSummary || !selectedNotebook) return;
+  const handleAddToNotebook = async (notebookName) => {
+    if (!selectedSummary || !notebookName) return;
 
     // Prevent duplicates by checking if the summary already exists in the selected notebook
-    const targetNotebook = notebooks.find(nb => nb.name === selectedNotebook);
+    const targetNotebook = notebooks.find(nb => nb.name === notebookName);
     if (targetNotebook?.summaries?.includes(selectedSummary)) {
       console.log("Summary already exists in this notebook.");
       setShowTagModal(false);
-      setSelectedNotebook('');
       return;
     }
 
     try {
-      const targetNotebook = notebooks.find(nb => nb.name === selectedNotebook);
+      const targetNotebook = notebooks.find(nb => nb.name === notebookName);
       const currentTotal = targetNotebook?.total || 0;
-      console.log(targetNotebook?.total);
       const nextSummaryNum = currentTotal + 1;
-  
-      const notebookRef = doc(db, `users/${userId}/notebooks/${selectedNotebook}`);
-  
+
+      const notebookRef = doc(db, `users/${userId}/notebooks/${notebookName}`);
+
       // Update Firestore: add new summary and increment total
       await updateDoc(notebookRef, {
         [`summary${nextSummaryNum}`]: selectedSummary,
         total: nextSummaryNum,
       });
-  
+
       // Update local state with the new notebook state
       const updatedNotebooks = notebooks.map(notebook => {
-        if (notebook.name === selectedNotebook) {
+        if (notebook.name === notebookName) {
           return {
             ...notebook,
             summaries: [...notebook.summaries, selectedSummary],
@@ -234,11 +232,10 @@ const Summaries = () => {
         }
         return notebook;
       });
-  
+
       setNotebooks(updatedNotebooks);
       setShowTagModal(false);
-      setSelectedNotebook('');
-      console.log(`Added summary ${selectedSummary} as summary${nextSummaryNum} to notebook ${selectedNotebook}`);
+      console.log(`Added summary ${selectedSummary} as summary${nextSummaryNum} to notebook ${notebookName}`);
     } catch (error) {
       console.error("Error adding summary to notebook:", error);
     }
