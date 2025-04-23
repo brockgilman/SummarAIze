@@ -20,6 +20,7 @@ import {
   Typography
 } from '@mui/material';
 import { Search, Save, X, Plus, Trash2 } from 'lucide-react';
+import AddToNotebook from '../app/components/AddToNotebook';
 
 // Styled components for the expandable card
 const ExpandableCard = styled(Card)(({ theme, expanded }) => ({
@@ -464,7 +465,8 @@ const Summaries = () => {
                   },
                 }}
               >
-                <MenuItem value="createdAt">Filter</MenuItem>
+                <MenuItem value="" disabled>Filter</MenuItem>
+                <MenuItem value="createdAt">Date Created</MenuItem>
                 <MenuItem value="updatedAt">Date Modified</MenuItem>
                 <MenuItem value="notebook">Notebook</MenuItem>
               </Select>
@@ -970,109 +972,16 @@ const Summaries = () => {
         )}
       </div>
       
-      {showTagModal && selectedSummary && (
-        <div
-          style={{
-            position: 'absolute',
-            top: `${modalPosition.top}px`,
-            left: `${modalPosition.left}px`,
-            transform: 'translateX(-50%)',
-            zIndex: 9999,
-            backgroundColor: 'white',
-            border: '1px solid #ccc',
-            borderRadius: '8px',
-            padding: '12px',
-            width: '250px',
-            boxShadow: '0 4px 10px rgba(0, 0, 0, 0.1)',
-          }}
-          onClick={(e) => e.stopPropagation()} // prevent modal click from expanding summary
-        >
-          <h3 style={{ fontSize: '1rem', marginBottom: '8px' }}>Add to Notebook</h3>
-          <select
-            value={selectedNotebook}
-            onChange={(e) => setSelectedNotebook(e.target.value)}
-            style={{
-              width: '100%',
-              padding: '6px 10px',
-              border: '1px solid #ccc',
-              borderRadius: '6px',
-              marginBottom: '12px',
-            }}
-          >
-            <option value="">Choose a notebook</option>
-            {notebooks
-              .filter(notebook => notebook.name.toLowerCase() !== 'trash')
-              .map((notebook) => (
-                <option key={notebook.id} value={notebook.name}>
-                  {notebook.name}
-                </option>
-            ))}
-          </select>
-          <h4 style={{ textAlign: 'center', marginBottom: '8px' }}>or</h4>
-            <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
-              <input
-                type="text"
-                placeholder="New notebook name"
-                value={newNotebookName}
-                onChange={(e) => setNewNotebookName(e.target.value)}
-                style={{
-                  flex: 1,
-                  padding: '6px 10px',
-                  border: '1px solid #ccc',
-                  borderRadius: '6px',
-                }}
-              />
-              <button
-                onClick={handleCreateNotebook}
-                disabled={!newNotebookName.trim() || notebooks.some(nb => nb.name === newNotebookName.trim())}
-                style={{
-                  padding: '6px 10px',
-                  backgroundColor: '#10b981', // green
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '6px',
-                  cursor: newNotebookName.trim() ? 'pointer' : 'default',
-                  opacity: newNotebookName.trim() ? 1 : 0.5,
-                }}
-                title="Create new notebook"
-              >
-                +
-              </button>
-            </div>
-
-
-          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
-            <button
-              onClick={() => setShowTagModal(false)}
-              style={{
-                padding: '6px 12px',
-                backgroundColor: '#f3f4f6',
-                border: 'none',
-                borderRadius: '4px',
-                color: '#333',
-                cursor: 'pointer',
-              }}
-            >
-              Cancel
-            </button>
-            <button
-              onClick={handleAddToNotebook}
-              disabled={!selectedNotebook}
-              style={{
-                padding: '6px 12px',
-                backgroundColor: '#2563eb',
-                color: 'white',
-                border: 'none',
-                borderRadius: '4px',
-                opacity: !selectedNotebook ? 0.5 : 1,
-                cursor: !selectedNotebook ? 'default' : 'pointer',
-              }}
-            >
-              Add
-            </button>
-          </div>
-        </div>
-      )}
+      <AddToNotebook 
+        showModal={showTagModal}
+        position={modalPosition}
+        onClose={() => setShowTagModal(false)}
+        notebooks={notebooks}
+        selectedSummary={selectedSummary}
+        userId={userId}
+        onAddToNotebook={handleAddToNotebook}
+        onNotebooksUpdate={setNotebooks}
+      />
       <style>
         {`
           span:hover .remove-button {

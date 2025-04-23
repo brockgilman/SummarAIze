@@ -415,10 +415,16 @@ const Trash = () => {
   }
   
   // Sort
-  if (sortOption === 'date') {
+  if (sortOption === 'createdAt') {
     filteredSummaries.sort((a, b) => {
       const dateA = a.createdAt?.toDate?.() || new Date(0);
       const dateB = b.createdAt?.toDate?.() || new Date(0);
+      return dateB - dateA;
+    });
+  } else if (sortOption === 'updatedAt') {
+    filteredSummaries.sort((a, b) => {
+      const dateA = a.updatedAt?.toDate?.() || new Date(0);
+      const dateB = b.updatedAt?.toDate?.() || new Date(0);
       return dateB - dateA;
     });
   } else if (sortOption === 'notebook') {
@@ -526,8 +532,9 @@ const Trash = () => {
                   },
                 }}
               >
-                <MenuItem value="">Sort</MenuItem>
-                <MenuItem value="date">Date Created</MenuItem>
+                <MenuItem value="" disabled>Filter</MenuItem>
+                <MenuItem value="createdAt">Date Created</MenuItem>
+                <MenuItem value="updatedAt">Date Modified</MenuItem>
                 <MenuItem value="notebook">Notebook</MenuItem>
               </Select>
             </FormControl>
@@ -708,13 +715,13 @@ const Trash = () => {
                                   width: '24px',
                                   height: '24px',
                                   color: 'white',
+                                  padding: '3px',
                                   '&:hover': {
                                     backgroundColor: '#059669',
-                                    transform: 'scale(1.05)',
                                   },
                                 }}
                               >
-                                <ArrowLeftCircle size={16} />
+                                <ArrowLeftCircle size={20} />
                               </IconButton>
                     </div>
                             <div style={{ display: 'flex', gap: '8px', marginLeft: '8px' }}>
@@ -867,13 +874,13 @@ const Trash = () => {
                               width: '24px',
                               height: '24px',
                               color: 'white',
+                              padding: '3px',
                               '&:hover': {
                                 backgroundColor: '#059669',
-                                transform: 'scale(1.05)',
                               },
                             }}
                           >
-                            <ArrowLeftCircle size={16} />
+                            <ArrowLeftCircle size={20} />
                           </IconButton>
                     </div>
                       </CardActions>
