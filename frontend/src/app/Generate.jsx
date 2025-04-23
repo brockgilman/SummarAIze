@@ -8,6 +8,7 @@ import { getUserID } from '../components/firebase/firebaseUserID';
 import { db } from '../components/firebase/firebaseConfig';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 
+
 // Custom MUI theme styling
 const theme = createTheme({
   palette: {
@@ -85,7 +86,7 @@ const Generate = () => {
   const [userId, setUserId] = useState(null);
 
   // Groq API Key
-  const API_KEY = "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";
+  const API_KEY = import.meta.env.VITE_GROQ_API_KEY;
 
   // Helper function to count words and sentences
   const countWordsAndSentences = (text) => {
