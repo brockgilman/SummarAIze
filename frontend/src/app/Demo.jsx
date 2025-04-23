@@ -179,7 +179,7 @@ const Demo = () => {
                   borderRadius: '25px',
                   overflow: 'hidden',
                   backgroundColor: '#FFFFFF',
-                  marginTop: '32px'
+                  marginTop: '36px'
                 }}>
                 <div style={{ 
                   flex: '1',
