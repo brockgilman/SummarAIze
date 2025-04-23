@@ -8,11 +8,14 @@ admin.initializeApp();
 
 const db = admin.firestore();
 
-const deleteOldTrashedSummaries = functions.pubsub
-    .schedule("every 1 minutes")
+exports.deleteOldTrashedSummaries = functions.pubsub
+    .schedule("every 24 hours")
+    .timeZone("America/New_York")
     .onRun(async (context) => {
       const now = new Date();
-      const threshold = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+      const threshold = new Date(
+          now.getTime() - 30 * 24 * 60 * 60 * 1000,
+      );
 
       try {
         const usersSnapshot = await db.collection("users").get();
@@ -23,23 +26,26 @@ const deleteOldTrashedSummaries = functions.pubsub
               .collection("users")
               .doc(userId)
               .collection("summaries");
+
           const trashedQuery = await summariesRef
               .where("trashedAt", "<=", threshold)
               .get();
 
           for (const summaryDoc of trashedQuery.docs) {
             await summariesRef.doc(summaryDoc.id).delete();
-            console.log(`Deleted summary ${summaryDoc.id} for user ${userId}`);
+
+            console.log(
+                `Deleted summary ${summaryDoc.id} for user ${userId}`,
+            );
           }
         }
 
         return null;
       } catch (error) {
-        console.error("Error deleting old trashed summaries:", error);
-        throw new functions.https.HttpsError(
-            "internal",
-            "Failed to delete old trashed summaries",
-            error,
+        console.error("Deletion error:", error);
+
+        throw new Error(
+            `Failed to delete old trashed summaries: ${error.message}`,
         );
       }
     });
@@ -142,4 +148,3 @@ app.use("*", (req, res) => {
 
 // IMPORTANT: Export as 'api' to match the name in firebase.json
 exports.api = functions.https.onRequest(app);
-exports.deleteOldTrashedSummaries = deleteOldTrashedSummaries;
