@@ -44,18 +44,28 @@ const AddToNotebook = ({
         summaries: []
       };
 
-      onNotebooksUpdate([...notebooks, newNotebook]);
+      const updatedNotebooks = [...notebooks, newNotebook];
+      onNotebooksUpdate(updatedNotebooks);
       setSelectedNotebook(trimmedName);
       
       setTimeout(() => {
         setNewNotebookName('');
         setIsAddingNotebook(false);
+        onClose();
       }, 1000);
       
       console.log(`Notebook "${trimmedName}" created.`);
     } catch (error) {
       console.error("Error creating notebook:", error);
       setIsAddingNotebook(false);
+    }
+  };
+
+  const handleAddClick = () => {
+    if (selectedNotebook) {
+      onAddToNotebook(selectedNotebook);
+      setSelectedNotebook('');
+      onClose();
     }
   };
 
@@ -179,7 +189,7 @@ const AddToNotebook = ({
         />
         <IconButton
           onClick={handleCreateNotebook}
-          disabled={!newNotebookName.trim() || notebooks.some(nb => nb.name === newNotebookName.trim())}
+          disabled={!newNotebookName.trim() || notebooks.some(nb => nb.name.toLowerCase() === newNotebookName.trim().toLowerCase())}
           sx={{
             backgroundColor: isAddingNotebook ? '#059669' : '#10b981',
             width: '40px',
@@ -237,6 +247,7 @@ const AddToNotebook = ({
           onClick={() => {
             onAddToNotebook(selectedNotebook);
             setSelectedNotebook('');
+            onClose();
           }}
           disabled={!selectedNotebook}
           color="primary"
