@@ -1,4 +1,4 @@
-const API_KEY = "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";
+const API_KEY = import.meta.env.VITE_GROQ_API_KEY;
 
 // Add permission to the manifest.json to access cookies
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
