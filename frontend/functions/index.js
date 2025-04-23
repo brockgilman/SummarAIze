@@ -17,7 +17,7 @@ const createApp = () => {
   app.use(cors({
     origin: "*", // Allow all origins for development
     methods: ["GET", "POST"],
-    allowedHeaders: ["Content-Type", "Authorization"]
+    allowedHeaders: ["Content-Type", "Authorization"],
   }));
 
   // Parse JSON bodies
@@ -36,8 +36,8 @@ const createApp = () => {
       version: "1.0.0",
       endpoints: {
         "/api/test": "GET - Test if the API is working",
-        "/api/save-summary": "POST - Save a new summary"
-      }
+        "/api/save-summary": "POST - Save a new summary",
+      },
     });
   });
 
@@ -112,46 +112,3 @@ const createApp = () => {
 
 // Export the Express app wrapped in an HTTPS function
 exports.api = functions.https.onRequest(createApp());
-
-// This is the new function you added
-exports.deleteOldTrashedSummaries = functions.pubsub
-    .schedule("every 24 hours")
-    .timeZone("America/New_York")
-    .onRun(async (context) => {
-      const now = new Date();
-      const threshold = new Date(
-          now.getTime() - 30 * 24 * 60 * 60 * 1000,
-      );
-
-      try {
-        const usersSnapshot = await db.collection("users").get();
-
-        for (const userDoc of usersSnapshot.docs) {
-          const userId = userDoc.id;
-          const summariesRef = db
-              .collection("users")
-              .doc(userId)
-              .collection("summaries");
-
-          const trashedQuery = await summariesRef
-              .where("trashedAt", "<=", threshold)
-              .get();
-
-          for (const summaryDoc of trashedQuery.docs) {
-            await summariesRef.doc(summaryDoc.id).delete();
-
-            console.log(
-                `Deleted summary ${summaryDoc.id} for user ${userId}`,
-            );
-          }
-        }
-
-        return null;
-      } catch (error) {
-        console.error("Deletion error:", error);
-
-        throw new Error(
-            `Failed to delete old trashed summaries: ${error.message}`,
-        );
-      }
-    });
