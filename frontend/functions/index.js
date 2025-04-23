@@ -8,49 +8,6 @@ admin.initializeApp();
 
 const db = admin.firestore();
 
-// This is the new function you added
-exports.deleteOldTrashedSummaries = functions.pubsub
-    .schedule("every 24 hours")
-    .timeZone("America/New_York")
-    .onRun(async (context) => {
-      const now = new Date();
-      const threshold = new Date(
-          now.getTime() - 30 * 24 * 60 * 60 * 1000,
-      );
-
-      try {
-        const usersSnapshot = await db.collection("users").get();
-
-        for (const userDoc of usersSnapshot.docs) {
-          const userId = userDoc.id;
-          const summariesRef = db
-              .collection("users")
-              .doc(userId)
-              .collection("summaries");
-
-          const trashedQuery = await summariesRef
-              .where("trashedAt", "<=", threshold)
-              .get();
-
-          for (const summaryDoc of trashedQuery.docs) {
-            await summariesRef.doc(summaryDoc.id).delete();
-
-            console.log(
-                `Deleted summary ${summaryDoc.id} for user ${userId}`,
-            );
-          }
-        }
-
-        return null;
-      } catch (error) {
-        console.error("Deletion error:", error);
-
-        throw new Error(
-            `Failed to delete old trashed summaries: ${error.message}`,
-        );
-      }
-    });
-
 // Define Express app in a function to avoid execution at module scope
 const createApp = () => {
   // Initialize Express
@@ -155,3 +112,46 @@ const createApp = () => {
 
 // Export the Express app wrapped in an HTTPS function
 exports.api = functions.https.onRequest(createApp());
+
+// This is the new function you added
+exports.deleteOldTrashedSummaries = functions.pubsub
+    .schedule("every 24 hours")
+    .timeZone("America/New_York")
+    .onRun(async (context) => {
+      const now = new Date();
+      const threshold = new Date(
+          now.getTime() - 30 * 24 * 60 * 60 * 1000,
+      );
+
+      try {
+        const usersSnapshot = await db.collection("users").get();
+
+        for (const userDoc of usersSnapshot.docs) {
+          const userId = userDoc.id;
+          const summariesRef = db
+              .collection("users")
+              .doc(userId)
+              .collection("summaries");
+
+          const trashedQuery = await summariesRef
+              .where("trashedAt", "<=", threshold)
+              .get();
+
+          for (const summaryDoc of trashedQuery.docs) {
+            await summariesRef.doc(summaryDoc.id).delete();
+
+            console.log(
+                `Deleted summary ${summaryDoc.id} for user ${userId}`,
+            );
+          }
+        }
+
+        return null;
+      } catch (error) {
+        console.error("Deletion error:", error);
+
+        throw new Error(
+            `Failed to delete old trashed summaries: ${error.message}`,
+        );
+      }
+    });
