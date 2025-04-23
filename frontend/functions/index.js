@@ -8,12 +8,11 @@ admin.initializeApp();
 
 const db = admin.firestore();
 
-exports.deleteOldTrashedSummaries = functions.pubsub
+const deleteOldTrashedSummaries = functions.pubsub
     .schedule("every 1 minutes")
     .onRun(async (context) => {
       const now = new Date();
       const threshold = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-
 
       try {
         const usersSnapshot = await db.collection("users").get();
@@ -143,3 +142,4 @@ app.use("*", (req, res) => {
 
 // IMPORTANT: Export as 'api' to match the name in firebase.json
 exports.api = functions.https.onRequest(app);
+exports.deleteOldTrashedSummaries = deleteOldTrashedSummaries;
