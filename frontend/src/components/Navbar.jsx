@@ -5,7 +5,7 @@ import Logo from './Logo';
 const Navbar = () => {
   // TODO: Function to redirect user to SummarAIze extension on Chrome webstore
   const handleGetSummarAIze = () => {
-      window.location.href = 'https://chromewebstore.google.com/';
+      window.location.href = 'https://chromewebstore.google.com/detail/nlpbgjhkmgeocnplhoigfiiopfpckebc?utm_source=item-share-cb';
   };
 
   // Navbar elements and page redirects
