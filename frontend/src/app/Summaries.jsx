@@ -20,7 +20,7 @@ import {
   Typography
 } from '@mui/material';
 import { Search, Save, X, Plus, Trash2 } from 'lucide-react';
-import AddToNotebook from '../app/components/AddToNotebook';
+import AddToNotebook from './components/AddToNotebook';
 
 // Styled components for the expandable card
 const ExpandableCard = styled(Card)(({ theme, expanded }) => ({
@@ -196,7 +196,7 @@ const Summaries = () => {
   };
 
   // Function to add a summary to a selected notebook
-  const handleAddToNotebook = async () => {
+  const handleAddToNotebook = async (selectedNotebook) => {
     if (!selectedSummary || !selectedNotebook) return;
 
     // Prevent duplicates by checking if the summary already exists in the selected notebook
@@ -240,6 +240,9 @@ const Summaries = () => {
       
       // Refresh the data to ensure UI is up to date
       await fetchUserData(userId);
+      if (selectedNotebook.toLowerCase() === "lebron") {
+        playTacoTuesday();
+      }      
       
       console.log(`Added summary ${selectedSummary} as summary${nextSummaryNum} to notebook ${selectedNotebook}`);
     } catch (error) {
