@@ -1,4 +1,4 @@
-const API_KEY = "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";
+const API_KEY = "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";
 
 // Add permission to the manifest.json to access cookies
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
@@ -10,7 +10,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         'Authorization': `Bearer ${API_KEY}`
       },
       body: JSON.stringify({
-        model: "llama3-70b-8192",
+        model: "llama-3.1-8b-instant",
         messages: [{
           role: "user",
           content: request.prompt
